@@ -1,0 +1,12 @@
+#!/bin/bash
+# Prevent commits directly to the main branch.
+# Install: cp git-hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+if [ "$branch" = "main" ]; then
+  echo "ERROR: Direct commits to 'main' are not allowed."
+  echo "Create a feature branch and open a PR instead:"
+  echo "  git checkout -b my-feature"
+  exit 1
+fi

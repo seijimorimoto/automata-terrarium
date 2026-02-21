@@ -25,6 +25,21 @@ docs(settings): document permission presets
 chore: update .gitignore
 ```
 
+## Pull Request Template
+
+```markdown
+## Summary
+<!-- 1-3 bullet points describing what this PR does and why -->
+
+## Changes
+<!-- List of notable changes, grouped by area if needed -->
+
+## Test plan
+<!-- How to verify this works — checklist format -->
+- [ ] Step 1
+- [ ] Step 2
+```
+
 ## Branching
 
 - Never commit directly to `main` — a pre-commit hook enforces this.

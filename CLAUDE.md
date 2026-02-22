@@ -44,6 +44,11 @@ chore: update .gitignore
 
 - Never commit directly to `main` — a pre-commit hook enforces this.
 - Create feature branches for all changes and merge via PRs.
+- Name branches using the format `u/{user_name}/{feature_title}` (e.g., `u/johndoe/organize-core-by-business-concern`).
+
+## Shell commands
+
+- When running commands like `git commit -m` or `az repos pr create --description`, always use single quotes around string arguments to avoid permission issues caused by shell expansion of `$()` or similar constructs.
 
 ## Project Structure
 

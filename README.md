@@ -22,12 +22,20 @@ settings/  - Reusable settings snippets and configurations
 
 ## Usage
 
-Each directory contains its own README with setup instructions. To use any item, copy or symlink it into your `~/.claude/` configuration directory.
+Each directory contains its own README with setup instructions. To use any item, copy or symlink it into your target project's `.claude/skills/` directory.
 
 ### Quick reference
 
 | Type     | Install location              | Docs                          |
 |----------|-------------------------------|-------------------------------|
-| Skills   | `~/.claude/skills/`           | [skills/README.md](skills/)   |
-| Hooks    | `~/.claude/settings.json`     | [hooks/README.md](hooks/)     |
-| Settings | `~/.claude/settings.json`     | [settings/README.md](settings/) |
+| Skills   | `<project>/.claude/skills/`   | [skills/README.md](skills/)   |
+| Hooks    | `<project>/.claude/settings.json` | [hooks/README.md](hooks/)     |
+| Settings | `<project>/.claude/settings.json` | [settings/README.md](settings/) |
+
+### Available skills
+
+| Skill | Description | Docs |
+|-------|-------------|------|
+| `/ado-pr` | Create Azure DevOps PRs with standardized formatting | [README](skills/ado-pr/README.md) |
+| `/ado-resume-pr` | Resume the Claude session that created a specific PR | [SKILL.md](skills/ado-resume-pr/SKILL.md) |
+| `/ado-pr-status` | List all tracked PRs linked to Claude sessions | [SKILL.md](skills/ado-pr-status/SKILL.md) |

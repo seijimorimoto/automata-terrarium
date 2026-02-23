@@ -59,6 +59,32 @@ settings/    - Reusable settings snippets
 git-hooks/   - Git hooks for repo workflow (not Claude hooks)
 ```
 
+## Documentation Conventions
+
+### Paths
+
+- Use **Windows-style backslashes** (`\`) as the primary path format in all inline references and examples (e.g., `~\.claude\hooks\`, `<project-root>\.claude\skills\`).
+- Always show both **user-level** (`~\.claude\...`) and **project-level** (`<project-root>\.claude\...`) install locations.
+
+### Code blocks
+
+- Show **Windows (PowerShell)** commands first, followed by **Linux / macOS** alternatives in a separate code block.
+- Use `powershell` as the language tag for Windows blocks, `sh` for Linux/macOS.
+- Exception: platform-specific items (e.g., a Windows-only hook) should only show commands for their platform, without the `# Windows (PowerShell)` comment header.
+
+### Installation instructions
+
+- Each skill and hook README must include:
+  1. **Prerequisites** with install commands (not just names).
+  2. **Copy-to-`.claude`** step showing how to install at user or project level.
+  3. **Registration** step (for hooks: settings.json config; for skills: just the copy is enough).
+- Parent-level READMEs (`skills/README.md`, `hooks/README.md`) must include an **Available [Skills/Hooks]** table listing all items.
+- The repo-level `README.md` must mirror those tables for discoverability.
+
+### Naming
+
+- Use platform suffixes for platform-specific items (e.g., `notify-windows` instead of `notify`).
+
 ## Guidelines
 
 - Each skill must live in its own folder under `skills/`.

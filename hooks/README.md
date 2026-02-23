@@ -4,7 +4,25 @@ Event-driven scripts that run in response to Claude Code tool calls.
 
 ## Installation
 
-Add hook entries to `~/.claude/settings.json` under the `"hooks"` key:
+### 1. Copy hook files into your `.claude` folder
+
+Hooks must live inside a `.claude` directory for Claude Code to find them. Copy the desired hook folder to either location:
+
+- **User-level** (applies to all projects): `~/.claude/hooks/`
+- **Project-level** (applies to one project): `<project-root>/.claude/hooks/`
+
+For example, to install the `notify` hook for all projects:
+
+```sh
+cp -r hooks/notify ~/.claude/hooks/
+```
+
+### 2. Register the hook in settings
+
+Add hook entries to the matching `settings.json` under the `"hooks"` key:
+
+- **User-level**: `~/.claude/settings.json`
+- **Project-level**: `<project-root>/.claude/settings.json`
 
 ```json
 {
@@ -18,6 +36,8 @@ Add hook entries to `~/.claude/settings.json` under the `"hooks"` key:
   }
 }
 ```
+
+> **Note:** Hook paths in settings are relative to the `.claude` directory they live in.
 
 ## Hook events examples
 

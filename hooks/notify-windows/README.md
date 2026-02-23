@@ -16,18 +16,18 @@ Install-Module -Name BurntToast
 
 ### 1. Copy to your `.claude` folder
 
-Copy the `notify` folder to either location:
+Copy the `notify-windows` folder to either location:
 
-- **User-level** (all projects): `~/.claude/hooks/`
-- **Project-level** (one project): `<project-root>/.claude/hooks/`
+- **User-level** (all projects): `~\.claude\hooks\`
+- **Project-level** (one project): `<project-root>\.claude\hooks\`
 
-```sh
-cp -r hooks/notify ~/.claude/hooks/
+```powershell
+Copy-Item -Recurse hooks\notify-windows ~\.claude\hooks\
 ```
 
 ### 2. Register in settings
 
-Add the following to the matching `settings.json` (`~/.claude/settings.json` for user-level, or `<project-root>/.claude/settings.json` for project-level):
+Add the following to the matching `settings.json` (`~\.claude\settings.json` for user-level, or `<project-root>\.claude\settings.json` for project-level):
 
 ```json
 {
@@ -38,7 +38,7 @@ Add the following to the matching `settings.json` (`~/.claude/settings.json` for
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -File hooks\\notify\\notify.ps1"
+            "command": "powershell -ExecutionPolicy Bypass -File hooks\\notify-windows\\notify.ps1"
           }
         ]
       }

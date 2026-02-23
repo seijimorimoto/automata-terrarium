@@ -4,9 +4,10 @@ These skills bring GitHub-like PR session linking to Azure DevOps. When you crea
 
 ## Prerequisites
 
-- Azure CLI with Azure DevOps extension: `az extension add --name azure-devops`
-- Authenticated with Azure DevOps: `az login`
-- Windows PowerShell 5.1+ (included with Windows)
+- **Azure CLI** — [Install guide](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
+- **Azure DevOps extension** — Install with: `az extension add --name azure-devops`
+- **Authenticated with Azure DevOps** — Sign in with: `az login`
+- **Windows PowerShell 5.1+** — Included with Windows
 
 ## Available Skills
 
@@ -18,19 +19,42 @@ These skills bring GitHub-like PR session linking to Azure DevOps. When you crea
 
 ## Installation
 
-Copy all three skill folders into your target project's `.claude/skills/` directory:
+Copy all three skill folders to either location:
 
-```bash
-# All ADO skills
+- **Project-level** (one project): `<project-root>\.claude\skills\`
+- **User-level** (all projects): `~\.claude\skills\`
+
+```powershell
+# Windows (PowerShell)
+
+# All ADO skills (project-level)
+Copy-Item -Recurse skills\ado-pr, skills\ado-resume-pr, skills\ado-pr-status <your-project>\.claude\skills\
+
+# All ADO skills (user-level)
+Copy-Item -Recurse skills\ado-pr, skills\ado-resume-pr, skills\ado-pr-status ~\.claude\skills\
+
+# Or symlink them (project-level)
+New-Item -ItemType SymbolicLink -Path <your-project>\.claude\skills\ado-pr -Target (Resolve-Path skills\ado-pr)
+New-Item -ItemType SymbolicLink -Path <your-project>\.claude\skills\ado-resume-pr -Target (Resolve-Path skills\ado-resume-pr)
+New-Item -ItemType SymbolicLink -Path <your-project>\.claude\skills\ado-pr-status -Target (Resolve-Path skills\ado-pr-status)
+```
+
+```sh
+# Linux / macOS
+
+# All ADO skills (project-level)
 cp -r skills/ado-pr skills/ado-resume-pr skills/ado-pr-status <your-project>/.claude/skills/
 
-# Or symlink them
+# All ADO skills (user-level)
+cp -r skills/ado-pr skills/ado-resume-pr skills/ado-pr-status ~/.claude/skills/
+
+# Or symlink them (project-level)
 ln -s "$(pwd)/skills/ado-pr" <your-project>/.claude/skills/ado-pr
 ln -s "$(pwd)/skills/ado-resume-pr" <your-project>/.claude/skills/ado-resume-pr
 ln -s "$(pwd)/skills/ado-pr-status" <your-project>/.claude/skills/ado-pr-status
 ```
 
-Once installed, the skills are available to anyone who clones the target project -- no extra setup beyond the prerequisites.
+For project-level installs, the skills are available to anyone who clones the target project — no extra setup beyond the prerequisites.
 
 ---
 

@@ -18,14 +18,29 @@ See the [ADO PR Integration README](ado-pr/README.md) for full documentation, in
 
 ## Installation
 
-Copy or symlink skill folders into your target project's `.claude/skills/` directory:
+Skills must live inside a `.claude\skills\` directory for Claude Code to find them. Copy or symlink skill folders to either location:
 
-```bash
-# Single skill
+- **Project-level** (one project): `<project-root>\.claude\skills\`
+- **User-level** (all projects): `~\.claude\skills\`
+
+```powershell
+# Windows (PowerShell)
+
+# Single skill (project-level)
+Copy-Item -Recurse skills\my-skill <your-project>\.claude\skills\
+
+# All skills (user-level)
+Copy-Item -Recurse skills\* ~\.claude\skills\
+```
+
+```sh
+# Linux / macOS
+
+# Single skill (project-level)
 cp -r skills/my-skill <your-project>/.claude/skills/
 
-# All skills
-cp -r skills/*/ <your-project>/.claude/skills/
+# All skills (user-level)
+cp -r skills/*/ ~/.claude/skills/
 ```
 
 ## Creating a New Skill

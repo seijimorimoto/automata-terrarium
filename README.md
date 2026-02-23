@@ -6,7 +6,13 @@ A collection of custom Claude Code skills, hooks, and settings.
 
 After cloning, install the git pre-commit hook to enforce the PR-only workflow:
 
-```bash
+```powershell
+# Windows (PowerShell)
+Copy-Item git-hooks\pre-commit .git\hooks\pre-commit
+```
+
+```sh
+# Linux / macOS
 cp git-hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 ```
 
@@ -26,11 +32,13 @@ Each directory contains its own README with setup instructions. To use any item,
 
 ### Quick reference
 
-| Type     | Install location              | Docs                          |
-|----------|-------------------------------|-------------------------------|
-| Skills   | `<project>/.claude/skills/`   | [skills/README.md](skills/)   |
-| Hooks    | `<project>/.claude/settings.json` | [hooks/README.md](hooks/)     |
-| Settings | `<project>/.claude/settings.json` | [settings/README.md](settings/) |
+> **Paths:** Shown in Windows format (`\`). On Linux/macOS, use forward slashes (`/`) instead.
+
+| Type     | Install location                                       | Docs                          |
+|----------|--------------------------------------------------------|-------------------------------|
+| Skills   | `~\.claude\skills\` or `<project>\.claude\skills\`     | [skills/README.md](skills/)   |
+| Hooks    | `~\.claude\hooks\` or `<project>\.claude\hooks\`       | [hooks/README.md](hooks/)     |
+| Settings | `~\.claude\settings.json` or `<project>\.claude\settings.json` | [settings/README.md](settings/) |
 
 ### Available skills
 
@@ -39,3 +47,9 @@ Each directory contains its own README with setup instructions. To use any item,
 | `/ado-pr` | Create Azure DevOps PRs with standardized formatting | [README](skills/ado-pr/README.md) |
 | `/ado-resume-pr` | Resume the Claude session that created a specific PR | [SKILL.md](skills/ado-resume-pr/SKILL.md) |
 | `/ado-pr-status` | List all tracked PRs linked to Claude sessions | [SKILL.md](skills/ado-pr-status/SKILL.md) |
+
+### Available hooks
+
+| Hook | Description | Platform | Docs |
+|------|-------------|----------|------|
+| `notify-windows` | Windows toast notifications for Claude Code events | Windows | [README](hooks/notify-windows/README.md) |

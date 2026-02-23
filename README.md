@@ -48,6 +48,13 @@ Each directory contains its own README with setup instructions. To use any item,
 | `/ado-resume-pr` | Resume the Claude session that created a specific PR | [SKILL.md](skills/ado-resume-pr/SKILL.md) |
 | `/ado-pr-status` | List all tracked PRs linked to Claude sessions | [SKILL.md](skills/ado-pr-status/SKILL.md) |
 
+### Available settings
+
+| Preset | Description | Docs |
+|--------|-------------|------|
+| `base` | General-purpose permissions — file ops, git, grep | [base.json](settings/base.json) |
+| `dotnet` | C#/.NET permissions and the C# LSP plugin | [dotnet.json](settings/dotnet.json) |
+
 ### Available hooks
 
 | Hook | Description | Platform | Docs |

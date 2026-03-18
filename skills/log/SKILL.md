@@ -1,7 +1,7 @@
 ---
 name: log
 description: Append a timestamped work entry to the current week's log file
-argument-hint: "<note> [--impact \"Impact description\"]"
+argument-hint: "<note> [--impact \"Impact description\"] [--week 2026-W12] [--date 2026-03-16]"
 ---
 
 # Work Log Entry
@@ -13,6 +13,8 @@ Appends a timestamped entry to the current week's work log file.
 ```
 /log Fixed the auth middleware bug in ReadServices --impact "Reduced P1 incidents by eliminating token expiry crashes"
 /log Reviewed PR #4521 for tenant isolation changes
+/log Backfill entry from last week --week 2026-W11
+/log Completed design doc --date 2026-03-10 --impact "Unblocked frontend team"
 ```
 
 ## Instructions
@@ -23,37 +25,35 @@ When this skill is invoked with `$ARGUMENTS`:
 
 Read the config file at `~/.claude/work-status-config.json`.
 
-If the file does not exist, tell the user:
-
-> Configuration file not found. Please create `~/.claude/work-status-config.json` with at minimum:
-> ```json
-> {
->   "statusRepoPath": "~/repos/my-status"
-> }
-> ```
-> See the [config reference](#configuration-reference) below for all options.
-
-Then stop.
+If the file does not exist, silently use defaults (`statusRepoPath` = `~/.claude/work-status/`). Do **not** block or prompt the user.
 
 ### 2. Parse Arguments
 
 Parse `$ARGUMENTS` for:
-- **note** — all free text (everything that is not a recognized flag)
+- **note** — all free text (everything that is not a recognized flag or its value)
 - **--impact "..."** — optional impact description (the quoted string after `--impact`)
+- **--week YYYY-WNN** — optional; target the ISO week specified (e.g., `2026-W11`). Resolve to Monday–Sunday of that week.
+- **--date YYYY-MM-DD** — optional; target the ISO week that contains the given date.
+
+`--week` and `--date` are **mutually exclusive**. If both are provided, tell the user to pick one and stop.
+
+Default (no time flag): current ISO week.
 
 ### 3. Determine File Path
 
 1. Resolve `statusRepoPath` from config (default: `~/.claude/work-status/` if not set).
-2. Calculate the current ISO week number and year (e.g., `2026-W12`).
-3. Calculate the week's date range (Monday–Sunday).
-4. Target file: `<statusRepoPath>/work-log/<YYYY>-W<WW>.md`
+2. Using the resolved week (from Step 2), calculate:
+   - The ISO week number and year (e.g., `2026-W12`).
+   - The week's start date (Monday) and end date (Sunday) in `YYYY-MM-DD` format.
+3. Target file: `<statusRepoPath>/work-log/<startDate>_to_<endDate>.md`
+   (e.g., `~/.claude/work-status/work-log/2026-03-16_to_2026-03-22.md`)
 
 ### 4. Create or Append
 
 **If the file does not exist**, create it with this template:
 
 ```markdown
-# Work Log — <YYYY>-W<WW> (<Mon date> – <Sun date>)
+# Work Log — <YYYY>-W<WW> (<startDate> – <endDate>)
 
 | Date | Entry | Impact |
 |------|-------|--------|
@@ -62,11 +62,15 @@ Parse `$ARGUMENTS` for:
 **Then** append a new row to the table:
 
 ```
-| <YYYY-MM-DD> | <note> | <impact or —> |
+| <date> | <note> | <impact or —> |
 ```
 
-- Use today's date for the Date column.
-- If `--impact` was not provided, use `—` (em dash) in the Impact column.
+The Date column value:
+- Default (no time flag): today's date (`YYYY-MM-DD`)
+- If `--date` was provided: use that date
+- If `--week` was provided: use today's date (the flag only controls which file to target)
+
+If `--impact` was not provided, use `—` (em dash) in the Impact column.
 
 ### 5. Confirm
 

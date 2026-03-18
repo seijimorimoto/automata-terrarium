@@ -98,22 +98,34 @@ For each repo in `defaultRepos`:
    - **Status**: completed or active
    - **Number of files changed**
    - **Target branch**: include only if it differs from the repo's default branch (main/master)
-   - **URL**: use the URL from the tool response directly (e.g., `_links.web.href` or `url` field)
+   - **URL**: use `_links.web.href` from the tool response (the web UI link)
    - **Summary and Impact**: parse the PR description body to extract Summary, Key Changes, and Impact sections (following the `/ado-pr` template format)
 
 Since repos using squash-merge have a 1:1 mapping between PRs and commits, do **not** list individual commits under PRs.
 
 #### 3b. ADO Work Items
 
-Use `mcp__ado__wit_my_work_items` to get work items assigned to the user. For each item, note:
-- **Title**, **Type**, **State**, **Area Path**
-- **ChangedDate**: used to classify as active or stale (see Step 4)
-- **URL**: use the URL from the tool response directly
-- **Description/comments summary**: if description or comments are available, extract a brief summary of key details
+**Step 1 — Fetch item IDs and basic fields:**
 
-**Active vs. Stale classification:**
+Use `mcp__ado__wit_my_work_items` to get work items assigned to the user. This returns IDs, titles, types, states, area paths, and `ChangedDate`.
+
+**Step 2 — Classify as active or stale:**
+
 - **Active This Week**: items with `ChangedDate` within the report date range (startDate to endDate, inclusive).
 - **Stale (No Recent Updates)**: assigned items whose `ChangedDate` falls outside the report date range.
+
+For each item, note:
+- **Title**, **Type**, **State**, **Area Path**
+- **ChangedDate**
+- **URL**: use `_links.html.href` from the tool response (the web UI link, **not** the `url` field which points to the REST API)
+
+**Step 3 — Fetch descriptions only for active items:**
+
+For items classified as **Active This Week**, use `mcp__ado__wit_get_work_items_batch_by_ids` to fetch `System.Description` in batches of **10 items at a time** (to stay within tool response limits). Extract a brief summary of key details from the description.
+
+Do **not** fetch descriptions for stale items — they only need ID, title, and URL.
+
+> **Why batches of 10?** The `System.Description` field contains rich HTML that can be very large. Fetching too many items with descriptions in a single call can exceed tool response token limits, causing failures or requiring workarounds like Python parsing scripts.
 
 #### 3c. Local Work Log
 
@@ -150,10 +162,10 @@ Combine all gathered data into a single report.
 
 #### Hyperlinked References
 
-Use URLs from tool responses directly — do not construct URLs manually:
-- ADO Work Items: `[#78901]({url from tool response})`
-- ADO PRs: `[PR #123]({url from tool response})`
-- Todoist tasks: `[task title]({url from tool response})`
+Use web UI URLs from tool responses — **never** use the `url` field for ADO items (it points to the REST API and renders as raw JSON):
+- ADO Work Items: `[#78901]({_links.html.href})` — the web UI edit page
+- ADO PRs: `[PR #123]({_links.web.href})` — the web UI PR page
+- Todoist tasks: `[task title]({url})` — Todoist's `url` field is already a web link
 
 #### Detailed Format
 

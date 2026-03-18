@@ -117,7 +117,7 @@ Use `mcp__ado__wit_my_work_items` to get work items assigned to the user. For ea
 
 #### 3c. Local Work Log
 
-Read the file `<statusRepoPath>/work-log/<weekLabel>.md` if it exists. Parse the markdown table rows into entries. Include the impact annotation inline if present.
+Read the file `<statusRepoPath>/work-log/<startDate>_to_<endDate>.md` if it exists. Parse the markdown table rows into entries. Include the impact annotation inline if present.
 
 #### 3d. Todoist Completed Tasks
 

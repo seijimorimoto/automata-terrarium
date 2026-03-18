@@ -8,6 +8,7 @@ Reusable Claude Code settings snippets and configurations.
 |--------|------|-------------|
 | Base | `base.json` | General-purpose permissions — file ops, git, grep |
 | .NET | `dotnet.json` | C#/.NET permissions and the C# LSP plugin |
+| Work Status | `work-status.json` | ADO + Todoist MCP permissions for work-status tracking skills |
 
 ## Installation
 

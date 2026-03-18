@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__ado__repo_search_commits",
+      "mcp__ado__repo_list_pull_requests_by_commits",
+      "mcp__ado__wit_create_work_item",
+      "mcp__ado__wit_update_work_item",
+      "mcp__ado__wit_my_work_items",
+      "mcp__ado__wit_add_work_item_comment",
+      "mcp__ado__wit_link_work_item_to_pull_request",
+      "mcp__ado__work_list_team_iterations",
+      "mcp__todoist__find-completed-tasks",
+      "mcp__todoist__find-tasks",
+      "mcp__todoist__find-tasks-by-date",
+      "mcp__todoist__find-labels",
+      "mcp__todoist__find-projects",
+      "mcp__todoist__user-info"
+    ]
+  }
+}

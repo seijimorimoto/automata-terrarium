@@ -1,7 +1,7 @@
 ---
 name: weekly-status
 description: Generate a weekly status report from ADO, Todoist, and local work log
-argument-hint: "[--week 2026-W12] [--file] [--format manager]"
+argument-hint: "[--week 2026-W12] [--date 2026-03-16] [--from DATE --to DATE] [--output console|file|both] [--format detailed|manager|both]"
 ---
 
 # Weekly Status Report Generator
@@ -13,15 +13,27 @@ Generates a comprehensive weekly status report by aggregating data from Azure De
 ```
 /weekly-status
 /weekly-status --week 2026-W12
-/weekly-status --format manager
-/weekly-status --file --format manager
+/weekly-status --date 2026-03-16
+/weekly-status --from 2026-03-16 --to 2026-03-22
+/weekly-status --output console --format manager
+/weekly-status --output file --format detailed
 ```
 
 ## Parameters
 
-- `--week` — ISO week to report on (default: current week). Format: `YYYY-WNN`.
-- `--file` — Also write the report to a local file in the status repo.
-- `--format manager` — Output concise bullets suitable for a manager update.
+- `--week` — ISO week to report on. Format: `YYYY-WNN`. Default: current week.
+- `--date` — A specific date; resolves to the ISO week containing that date. Format: `YYYY-MM-DD`.
+- `--from` / `--to` — Arbitrary date range, **inclusive at both ends**. Format: `YYYY-MM-DD`.
+- `--output` — Where the report goes. Values: `console`, `file`, `both` (default: `both`).
+  - `console` — display only, no file written.
+  - `file` — write to archive only, no console display.
+  - `both` — display to console AND archive to file.
+- `--format` — Which report style(s) to produce. Values: `detailed`, `manager`, `both` (default: `both`).
+  - `detailed` — full grouped report with rich detail.
+  - `manager` — concise bullets for manager updates.
+  - `both` — produce both formats. When output includes console, display both. When output includes file, archive the detailed version.
+
+The three time range options (`--week`, `--date`, `--from`/`--to`) are **mutually exclusive**. If none is specified, the current ISO week is used.
 
 ## Instructions
 
@@ -50,12 +62,24 @@ Then stop.
 
 Required config keys for this skill: `userEmail`, `adoProject`, `defaultRepos`.
 
-### 2. Determine Week Range
+### 2. Determine Date Range
 
-Parse `--week` argument or calculate the current ISO week. Derive:
-- **weekLabel**: `YYYY-WNN`
-- **monday**: start date (YYYY-MM-DD)
-- **sunday**: end date (YYYY-MM-DD)
+Parse the time range argument from `$ARGUMENTS`. The three options are mutually exclusive:
+
+1. **`--week YYYY-WNN`** — resolve to Monday and Sunday of that ISO week.
+2. **`--date YYYY-MM-DD`** — resolve to the ISO week containing that date (Monday–Sunday).
+3. **`--from YYYY-MM-DD --to YYYY-MM-DD`** — use directly as the date range.
+4. **No argument** — use the current ISO week (Monday–Sunday).
+
+All dates are interpreted in the user's **local timezone** (system clock).
+
+Derive:
+- **weekLabel**: `YYYY-WNN` (for `--from`/`--to`, derive from the start date)
+- **startDate**: first day of the range (YYYY-MM-DD)
+- **endDate**: last day of the range (YYYY-MM-DD), inclusive
+- **queryEndDate**: endDate + 1 day — used for API calls that treat the upper bound as exclusive (e.g., ADO `toDate`, Todoist `until`)
+
+**Archive filename**: Always `<startDate>_to_<endDate>.md` (e.g., `2026-03-16_to_2026-03-22.md`), regardless of which parameter was used.
 
 ### 3. Gather Data (run independent sources in parallel)
 
@@ -66,17 +90,34 @@ For each repo in `defaultRepos`:
 1. Use `mcp__ado__repo_search_commits` with:
    - `projectName`: from config `adoProject`
    - `searchText`: config `userEmail`
-   - `fromDate`: monday
-   - `toDate`: sunday + 1 day (to include sunday's commits)
+   - `fromDate`: startDate
+   - `toDate`: queryEndDate
 2. For any commits found, use `mcp__ado__repo_list_pull_requests_by_commits` to find associated PRs.
+3. For each PR found, extract:
+   - **Title**
+   - **Status**: completed or active
+   - **Number of files changed**
+   - **Target branch**: include only if it differs from the repo's default branch (main/master)
+   - **URL**: use the URL from the tool response directly (e.g., `_links.web.href` or `url` field)
+   - **Summary and Impact**: parse the PR description body to extract Summary, Key Changes, and Impact sections (following the `/ado-pr` template format)
+
+Since repos using squash-merge have a 1:1 mapping between PRs and commits, do **not** list individual commits under PRs.
 
 #### 3b. ADO Work Items
 
-Use `mcp__ado__wit_my_work_items` to get work items assigned to the user. Filter results to items that were active or updated during the target week.
+Use `mcp__ado__wit_my_work_items` to get work items assigned to the user. For each item, note:
+- **Title**, **Type**, **State**, **Area Path**
+- **ChangedDate**: used to classify as active or stale (see Step 4)
+- **URL**: use the URL from the tool response directly
+- **Description/comments summary**: if description or comments are available, extract a brief summary of key details
+
+**Active vs. Stale classification:**
+- **Active This Week**: items with `ChangedDate` within the report date range (startDate to endDate, inclusive).
+- **Stale (No Recent Updates)**: assigned items whose `ChangedDate` falls outside the report date range.
 
 #### 3c. Local Work Log
 
-Read the file `<statusRepoPath>/work-log/<weekLabel>.md` if it exists. Parse the markdown table rows into entries.
+Read the file `<statusRepoPath>/work-log/<weekLabel>.md` if it exists. Parse the markdown table rows into entries. Include the impact annotation inline if present.
 
 #### 3d. Todoist Completed Tasks
 
@@ -84,15 +125,21 @@ Read the file `<statusRepoPath>/work-log/<weekLabel>.md` if it exists. Parse the
 2. **Recursively collect all descendant project IDs**: walk the project tree to find all children, grandchildren, etc. of the matched project.
 3. For each project ID (parent + all descendants), use `mcp__todoist__find-completed-tasks` with:
    - `projectId`: the project ID
-   - `since`: monday date
-   - `until`: sunday date + 1 day
+   - `since`: startDate
+   - `until`: queryEndDate (endDate + 1 day, since `until` is exclusive)
    - `getBy`: `"completion"`
 4. If `todoistLabels` is configured, also use label filtering to include tasks matching those labels regardless of project.
 5. Deduplicate tasks that appear in both project and label results.
+6. For each task, capture:
+   - **Content** (task title)
+   - **Project name**
+   - **URL**: use the `url` field from the task object in the tool response
 
 ### 4. Synthesize Report
 
-Combine all gathered data into a single report:
+Combine all gathered data into a single report.
+
+#### Grouping and Deduplication
 
 1. **Group by project/feature area** — not by source. Determine grouping from:
    - ADO work item area paths
@@ -100,48 +147,73 @@ Combine all gathered data into a single report:
    - Todoist project names
    - Work log entry content
 2. **Deduplicate** — entries that appear in multiple sources (e.g., a commit and a work log entry about the same work) should be merged into one line.
-3. **Format** the report using this structure:
+
+#### Hyperlinked References
+
+Use URLs from tool responses directly — do not construct URLs manually:
+- ADO Work Items: `[#78901]({url from tool response})`
+- ADO PRs: `[PR #123]({url from tool response})`
+- Todoist tasks: `[task title]({url from tool response})`
+
+#### Detailed Format
 
 ```markdown
-# Weekly Status — <weekLabel> (<Mon date> – <Sun date>)
+# Weekly Status — <weekLabel> (<startDate> – <endDate>)
 
 ## <Feature Area / Project 1>
-- Completed item description (PR #123)
-- Another item (ADO #456)
+- **[PR #123](url)**: <PR title> (<N> files changed) — <Completed|Active>
+  - **Summary:** <extracted from PR description body>
+  - **Impact:** <extracted from PR description body>
+- **[#78901](url)**: <Work item title> (<Type>, <State>, <Area Path>)
+  - <brief summary from description/comments if available>
 
 ## <Feature Area / Project 2>
-- Item description
+- [Task title](todoist-url) (Todoist, <project name>)
+- <Work log entry> — Impact: <annotation>
 
-## Ongoing / In Progress
-- Items started but not completed
+## Active This Week
+- **[#78902](url)**: <Title> (<Type>, <State>) — updated <date>
+  - <brief summary from description/comments if available>
 
-## Todoist Tasks Completed
-- Task descriptions not covered above
+## Stale (No Recent Updates)
+> These items are assigned to you but have not been updated during this period.
+- [#45001](url): <Title>
+- [#45002](url): <Title>
 ```
 
-If `--format manager` is specified, use a more concise format:
+#### Manager Format
+
 ```markdown
 # Status Update — <weekLabel>
 
 **Completed:**
-- Concise bullet 1
-- Concise bullet 2
+- <Concise description> ([PR #123](url))
+- <Concise description> ([#78901](url))
 
 **In Progress:**
-- Concise bullet
+- <Concise description> ([#78902](url))
 
 **Blocked / Needs Attention:**
 - (if any)
 ```
 
+#### Format Selection
+
+- If `--format both` (default): produce both detailed and manager formats.
+- If `--format detailed`: produce only the detailed format.
+- If `--format manager`: produce only the manager format.
+
 ### 5. Archive
 
-Always write the report to `<statusRepoPath>/weekly-statuses/<weekLabel>.md`, creating directories as needed.
+Write the report to `<statusRepoPath>/weekly-statuses/<startDate>_to_<endDate>.md`, creating directories as needed.
+
+- When `--output` is `file` or `both`: write the file. When archiving with `--format both`, archive the **detailed** version.
+- When `--output` is `console`: skip archiving entirely.
 
 ### 6. Output
 
-- Display the full report to the user.
-- If `--file` was specified, confirm the local file path.
+- When `--output` is `console` or `both`: display the report(s) to the user. If `--format both`, display both detailed and manager formats (separated by a horizontal rule).
+- When `--output` is `file`: confirm the archive file path but do not display the report.
 - Prompt: **"Any items have notable impact worth capturing? You can use `/log <note> --impact \"...\"` to annotate them."**
 
 ## Configuration Reference

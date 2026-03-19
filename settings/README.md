@@ -8,6 +8,7 @@ Reusable Claude Code settings snippets and configurations.
 |--------|------|-------------|
 | Base | `base.json` | General-purpose permissions — file ops, git, grep |
 | .NET | `dotnet.json` | C#/.NET permissions and the C# LSP plugin |
+| Work Status | `work-status.json` | MCP tool permissions for weekly status tracking (ADO + Todoist) |
 
 ## Installation
 
@@ -38,6 +39,19 @@ code <project-root>/.claude/settings.json
 ```
 
 Then manually merge the chosen entries from the desired preset into your settings file.
+
+### Work Status preset — additional path permissions
+
+The `work-status.json` preset covers MCP tool permissions, but users should also add **Read/Write permissions** for their `statusRepoPath` directories to avoid permission prompts. For example, if `statusRepoPath` is `~/source/repos/work-status/`:
+
+```json
+"Read(~/source/repos/work-status/weekly-statuses/**)",
+"Read(~/source/repos/work-status/work-log/**)",
+"Write(~/source/repos/work-status/weekly-statuses/**)",
+"Write(~/source/repos/work-status/work-log/**)"
+```
+
+Add these entries to the `permissions.allow` array in your settings file, adjusting the path to match your configured `statusRepoPath`.
 
 ## What goes here
 

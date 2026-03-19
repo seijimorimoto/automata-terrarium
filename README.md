@@ -47,6 +47,8 @@ Each directory contains its own README with setup instructions. To use any item,
 | `/ado-pr` | Create Azure DevOps PRs with standardized formatting | [README](skills/ado-pr/README.md) |
 | `/ado-resume-pr` | Resume the Claude session that created a specific PR | [SKILL.md](skills/ado-resume-pr/SKILL.md) |
 | `/ado-pr-status` | List all tracked PRs linked to Claude sessions | [SKILL.md](skills/ado-pr-status/SKILL.md) |
+| `/log` | Append timestamped work entries to a weekly log | [SKILL.md](skills/log/SKILL.md) |
+| `/weekly-status` | Generate weekly status from ADO + Todoist + local log | [README](skills/weekly-status/README.md) |
 
 ### Available settings
 
@@ -54,6 +56,7 @@ Each directory contains its own README with setup instructions. To use any item,
 |--------|-------------|------|
 | `base` | General-purpose permissions — file ops, git, grep | [base.json](settings/base.json) |
 | `dotnet` | C#/.NET permissions and the C# LSP plugin | [dotnet.json](settings/dotnet.json) |
+| `work-status` | MCP tool permissions for weekly status tracking (ADO + Todoist) | [work-status.json](settings/work-status.json) |
 
 ### Available hooks
 

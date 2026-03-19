@@ -16,6 +16,15 @@ A suite of skills that bring GitHub-like PR session linking to Azure DevOps.
 
 See the [ADO PR Integration README](ado-pr/README.md) for full documentation, installation, and troubleshooting.
 
+### Weekly Work Status Tracking
+
+Skills for logging work, generating status reports, and preparing performance review materials. Data is stored in a configurable directory (default: `~\.claude\work-status\`). See [Configuration](weekly-status/README.md#prerequisites) for setup.
+
+| Skill | Description |
+|-------|-------------|
+| [`/log`](log/) | Append a timestamped work entry to the current week's log |
+| [`/weekly-status`](weekly-status/) | Generate a weekly status report from ADO, Todoist, and local log |
+
 ## Installation
 
 Skills must live inside a `.claude\skills\` directory for Claude Code to find them. Copy or symlink skill folders to either location:

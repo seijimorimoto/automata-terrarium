@@ -18,16 +18,12 @@ See the [ADO PR Integration README](ado-pr/README.md) for full documentation, in
 
 ### Weekly Work Status Tracking
 
-A suite of skills for tracking weekly work, generating status reports, managing ADO tasks, and preparing performance review narratives.
+Skills for logging work, generating status reports, and preparing performance review materials. Data is stored in a configurable directory (default: `~\.claude\work-status\`). See [Configuration](weekly-status/README.md#prerequisites) for setup.
 
 | Skill | Description |
 |-------|-------------|
-| [`/log`](log/) | Append a timestamped work entry to the current week's log file |
-| [`/weekly-status`](weekly-status/) | Generate a weekly status report from ADO, Todoist, and local work log |
-| [`/ado-task`](ado-task/) | Create, update, and manage Azure DevOps work items |
-| [`/review-prep`](review-prep/) | Synthesize archived weekly statuses into impact-focused review narratives |
-
-All four skills share a common config file (`~\.claude\work-status-config.json`). See the [weekly-status README](weekly-status/README.md) for full setup instructions.
+| [`/log`](log/) | Append a timestamped work entry to the current week's log |
+| [`/weekly-status`](weekly-status/) | Generate a weekly status report from ADO, Todoist, and local log |
 
 ## Installation
 

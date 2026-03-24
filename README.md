@@ -47,11 +47,13 @@ Each directory contains its own README with setup instructions. To use any item,
 | `/ado-pr` | Create Azure DevOps PRs with standardized formatting | [README](skills/ado-pr/README.md) |
 | `/ado-resume-pr` | Resume the Claude session that created a specific PR | [SKILL.md](skills/ado-resume-pr/SKILL.md) |
 | `/ado-pr-status` | List all tracked PRs linked to Claude sessions | [SKILL.md](skills/ado-pr-status/SKILL.md) |
+| `/ado-task` | Create, update, complete, and list Azure DevOps work items | [README](skills/ado-task/README.md) |
 
 ### Available settings
 
 | Preset | Description | Docs |
 |--------|-------------|------|
+| `ado` | Azure DevOps MCP tool permissions — PRs, work items, iterations, repos | [ado.json](settings/ado.json) |
 | `base` | General-purpose permissions — file ops, git, grep | [base.json](settings/base.json) |
 | `dotnet` | C#/.NET permissions and the C# LSP plugin | [dotnet.json](settings/dotnet.json) |
 

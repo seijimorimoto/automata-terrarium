@@ -16,6 +16,14 @@ A suite of skills that bring GitHub-like PR session linking to Azure DevOps.
 
 See the [ADO PR Integration README](ado-pr/README.md) for full documentation, installation, and troubleshooting.
 
+### Azure DevOps Work Item Management
+
+| Skill | Description |
+|-------|-------------|
+| [`/ado-task`](ado-task/) | Create, update, complete, and list Azure DevOps work items |
+
+See the [ADO Task README](ado-task/README.md) for full documentation, installation, and configuration.
+
 ## Installation
 
 Skills must live inside a `.claude\skills\` directory for Claude Code to find them. Copy or symlink skill folders to either location:

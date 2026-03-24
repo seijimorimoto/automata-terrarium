@@ -1,23 +1,34 @@
 {
   "permissions": {
     "allow": [
+      "Bash(cat *)",
+      "Bash(cd *)",
       "Bash(cp *)",
       "Bash(dir *)",
+      "Bash(find *)",
       "Bash(git add *)",
       "Bash(git branch *)",
       "Bash(git checkout *)",
+      "Bash(git commit)",
       "Bash(git commit *)",
+      "Bash(git config user.email)",
+      "Bash(git config user.name)",
+      "Bash(git diff)",
       "Bash(git diff *)",
       "Bash(git fetch *)",
       "Bash(git log *)",
+      "Bash(git push)",
       "Bash(git push *)",
       "Bash(git remote *)",
       "Bash(git show *)",
       "Bash(git stash *)",
+      "Bash(git status)",
       "Bash(git status *)",
       "Bash(grep *)",
       "Bash(ls *)",
-      "Bash(mkdir *)"
+      "Bash(mkdir *)",
+      "Bash(python -m json.tool *)",
+      "Bash(test *)"
     ]
   }
 }

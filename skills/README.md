@@ -16,6 +16,14 @@ A suite of skills that bring GitHub-like PR session linking to Azure DevOps.
 
 See the [ADO PR Integration README](ado-pr/README.md) for full documentation, installation, and troubleshooting.
 
+### Azure DevOps Work Item Management
+
+| Skill | Description |
+|-------|-------------|
+| [`/ado-task`](ado-task/) | Create, update, complete, and list Azure DevOps work items |
+
+See the [ADO Task README](ado-task/README.md) for full documentation, installation, and configuration.
+
 ### Weekly Work Status Tracking
 
 Skills for logging work, generating status reports, and preparing performance review materials. Data is stored in a configurable directory (default: `~\.claude\work-status\`). See [Configuration](weekly-status/README.md#prerequisites) for setup.

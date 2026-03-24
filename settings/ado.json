@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(az repos pr create *)",
+      "Bash(az repos pr update *)",
+      "mcp__ado__repo_create_pull_request",
+      "mcp__ado__repo_get_pull_request_by_id",
+      "mcp__ado__repo_get_repo_by_name_or_id",
+      "mcp__ado__repo_list_branches_by_repo",
+      "mcp__ado__repo_list_pull_requests_by_repo_or_project",
+      "mcp__ado__repo_update_pull_request",
+      "mcp__ado__wit_add_work_item_comment",
+      "mcp__ado__wit_create_work_item",
+      "mcp__ado__wit_get_work_items_batch_by_ids",
+      "mcp__ado__wit_my_work_items",
+      "mcp__ado__wit_update_work_item",
+      "mcp__ado__wit_update_work_items_batch",
+      "mcp__ado__work_list_team_iterations"
+    ]
+  }
+}

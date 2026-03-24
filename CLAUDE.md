@@ -90,3 +90,4 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
 - Each skill must live in its own folder under `skills/`.
 - Every directory should have a `README.md` explaining its contents and usage.
 - Do not commit secrets, credentials, or `.env` files.
+- Permission entries in settings preset files (`settings\*.json`) must be sorted alphabetically.

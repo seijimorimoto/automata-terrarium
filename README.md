@@ -18,6 +18,25 @@ cp git-hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 
 This prevents direct commits to `main` — all changes must go through feature branches and pull requests.
 
+### Local skill testing
+
+The repo includes a `.claude\skills` symlink pointing to the `skills\` directory. This lets Claude Code discover and run skills directly from the repo without copying them to your user-level `~\.claude\skills\` directory.
+
+> **Note:** On Windows, symlinks may require Developer Mode enabled or an elevated terminal. If the symlink doesn't work after cloning, recreate it manually:
+
+```powershell
+# Windows (PowerShell — run as admin or with Developer Mode enabled)
+New-Item -ItemType SymbolicLink -Path .claude\skills -Target (Resolve-Path skills)
+
+# Or using mklink (Command Prompt — run as admin)
+mklink /D .claude\skills skills
+```
+
+```sh
+# Linux / macOS
+ln -sf "$(pwd)/skills" .claude/skills
+```
+
 ## Structure
 
 ```

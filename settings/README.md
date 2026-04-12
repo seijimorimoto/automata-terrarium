@@ -8,6 +8,7 @@ Reusable Claude Code settings snippets and configurations.
 |--------|------|-------------|
 | Base | `base.json` | General-purpose permissions — file ops, git, grep |
 | ADO | `ado.json` | Azure DevOps MCP tool permissions — PRs, work items, iterations, repos |
+| GitHub | `github.json` | GitHub CLI (`gh`) permissions — PR creation, merging, and status |
 | .NET | `dotnet.json` | C#/.NET permissions and the C# LSP plugin |
 | Work Status | `work-status.json` | MCP tool permissions for weekly status tracking (ADO + Todoist) |
 

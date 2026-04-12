@@ -33,6 +33,14 @@ Skills for logging work, generating status reports, and preparing performance re
 | [`/log`](log/) | Append a timestamped work entry to the current week's log |
 | [`/weekly-status`](weekly-status/) | Generate a weekly status report from ADO, Todoist, and local log |
 
+### GitHub Quick PR
+
+| Skill | Description |
+|-------|-------------|
+| [`/quick-pr`](quick-pr/) | Create a branch, commit, push, open a GitHub PR, squash-merge, and clean up |
+
+See the [Quick PR README](quick-pr/README.md) for full documentation, installation, and usage.
+
 ## Installation
 
 Skills must live inside a `.claude\skills\` directory for Claude Code to find them. Copy or symlink skill folders to either location:

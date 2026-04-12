@@ -68,6 +68,7 @@ Each directory contains its own README with setup instructions. To use any item,
 | `/ado-pr-status` | List all tracked PRs linked to Claude sessions | [SKILL.md](skills/ado-pr-status/SKILL.md) |
 | `/ado-task` | Create, update, complete, and list Azure DevOps work items | [README](skills/ado-task/README.md) |
 | `/log` | Append timestamped work entries to a weekly log | [SKILL.md](skills/log/SKILL.md) |
+| `/quick-pr` | Create a branch, commit, push, open a GitHub PR, merge, and clean up | [README](skills/quick-pr/README.md) |
 | `/weekly-status` | Generate weekly status from ADO + Todoist + local log | [README](skills/weekly-status/README.md) |
 
 ### Available settings
@@ -77,6 +78,7 @@ Each directory contains its own README with setup instructions. To use any item,
 | `ado` | Azure DevOps MCP tool permissions — PRs, work items, iterations, repos | [ado.json](settings/ado.json) |
 | `base` | General-purpose permissions — file ops, git, grep | [base.json](settings/base.json) |
 | `dotnet` | C#/.NET permissions and the C# LSP plugin | [dotnet.json](settings/dotnet.json) |
+| `github` | GitHub CLI (`gh`) permissions — PR creation, merging, and status | [github.json](settings/github.json) |
 | `work-status` | MCP tool permissions for weekly status tracking (ADO + Todoist) | [work-status.json](settings/work-status.json) |
 
 ### Available hooks

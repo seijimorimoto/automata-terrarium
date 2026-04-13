@@ -83,17 +83,19 @@ Derive:
 
 ### 3. Gather Data (run independent sources in parallel)
 
-#### 3a. ADO Commits & PRs
+#### 3a. ADO Pull Requests
 
 For each repo in `defaultRepos`:
 
-1. Use `mcp__ado__repo_search_commits` with:
-   - `projectName`: from config `adoProject`
-   - `searchText`: config `userEmail`
-   - `fromDate`: startDate
-   - `toDate`: queryEndDate
-2. For any commits found, use `mcp__ado__repo_list_pull_requests_by_commits` to find associated PRs.
-3. For each PR found, extract:
+1. Use `mcp__ado__repo_list_pull_requests_by_repo_or_project` to list PRs directly. Make **two calls in parallel**:
+   - **Completed PRs**: `status: "Completed"`, `top: 50`
+   - **Active PRs**: `status: "Active"`, `top: 50`
+   - Both with `project`: config `adoProject`, `repositoryId`: the repo name
+2. **Client-side filter** the combined results:
+   - **Author**: `createdBy.uniqueName` matches config `userEmail` (case-insensitive)
+   - **Date range (completed)**: `closedDate` falls within startDate–endDate (inclusive)
+   - **Date range (active)**: `creationDate` falls within startDate–endDate (inclusive)
+3. For each matching PR, extract:
    - **Title**
    - **Status**: completed or active
    - **Number of files changed**
@@ -101,7 +103,7 @@ For each repo in `defaultRepos`:
    - **URL**: use `_links.web.href` from the tool response (the web UI link)
    - **Summary and Impact**: parse the PR description body to extract Summary, Key Changes, and Impact sections (following the `/ado-pr` template format)
 
-Since repos using squash-merge have a 1:1 mapping between PRs and commits, do **not** list individual commits under PRs.
+> **Why direct PR listing instead of commit search?** The previous approach used `mcp__ado__repo_search_commits` with `searchText: userEmail`, which searches commit *comments* — not author metadata. Squash-merge commits use the PR title as their comment, causing most PRs to be silently missed.
 
 #### 3b. ADO Work Items
 
@@ -147,18 +149,99 @@ Read the file `<statusRepoPath>/work-log/<startDate>_to_<endDate>.md` if it exis
    - **Project name**
    - **URL**: use the `url` field from the task object in the tool response
 
-### 4. Synthesize Report
+### 4. Present Items and Propose Grouping
 
-Combine all gathered data into a single report.
+Before synthesizing the final report, present all collected data to the user for review.
+
+#### Part A — Show all items with IDs
+
+Display a flat list of all items from every source, using prefixed identifiers for easy reference:
+- `P<n>` = PR (e.g., `P1`, `P2`)
+- `A<n>` = ADO work item — active this week only (e.g., `A1`, `A2`)
+- `T<n>` = Todoist completed task (e.g., `T1`, `T2`)
+- `W<n>` = Work log entry (e.g., `W1`, `W2`)
+
+Format:
+```markdown
+## Collected Items
+
+**PRs:**
+[P1] PR #5036714: [ENST] Fix IKeyVaultReader DI registration... — Completed
+[P2] PR #5038063: [ENST] Fix Kiota HTTP handler DI registration... — Completed
+[P3] PR #5045104: [ENST] Register Kiota serialization factories... — Completed
+[P4] PR #5038062: [NSCS] Configure MEO certificate and auth settings... — Completed
+
+**ADO Work Items (active this week):**
+[A1] #7114889: Register in 1P app a trusted subject name... (Task, Active)
+[A2] #7029123: Angel Seiji Morimoto Burgos - SCP (User Story, New)
+[A3] #6950056: [PROD] Sev 3: Major alert email not sent... (Bug, Active)
+
+**Todoist:**
+[T1] Fix Missing IKeyVaultReader DI Registration in ENST (Notification Services Cloud)
+[T2] Fix ServiceIdentitySettings.ManagedIdentityClientId... (Notification Services Cloud)
+[T3] Create minor update requests in MEO... (On Call & Issues)
+
+**Work Log:**
+[W1] 2026-03-23: Cleaned up ADO items assigned to me
+[W2] 2026-03-25: Created GEAR-CAP request for OneCert domain registrations...
+[W3] 2026-03-27: Added new MOBR v2 pipeline for deploying SCP 1P...
+```
+
+#### Part B — Show proposed grouping
+
+Propose feature-area groups by analyzing item titles, ADO area paths, Todoist project names, and work log content. Merge items that represent the same work across sources. Use the item IDs for reference:
+
+```markdown
+## Proposed Grouping
+
+**Group 1 — ENST / Notification Services Cloud:**
+  [P1]+[T1] (merged — same IKeyVaultReader DI fix)
+  [P2]+[T2] (merged — same Kiota handler DI fix)
+  [P3]
+
+**Group 2 — 1P App / MEO Authentication:**
+  [P4], [A1], [W2], [W3]
+
+**Group 3 — On Call & Issues:**
+  [A3], [T3]
+
+**Ungrouped:**
+  [W1] (standalone — ADO cleanup)
+
+**Active This Week** (auto-section, not editable):
+  [A1], [A2], [A3]
+
+**Stale** (auto-section, not editable):
+  (items with no recent updates)
+```
+
+#### Part C — Confirmation loop
+
+Prompt the user:
+> **Does this grouping look right?** You can:
+> - **Confirm**: "looks good" / "ready" → proceed to final report
+> - Move items: "move W1 to Group 1"
+> - Merge items: "merge A1 with W2"
+> - Split items: "split P1 and T1"
+> - Rename groups: "rename Group 2 to 'MEO Certificate Setup'"
+> - Add/remove groups
+
+**If the user requests changes:**
+1. Apply the requested changes
+2. Re-display the **updated grouping** (Part B format, with changes reflected)
+3. Ask for confirmation again
+
+**Repeat this cycle** until the user explicitly confirms the grouping is ready (e.g., "looks good", "ready", "go ahead").
+
+### 5. Synthesize Report
+
+Only runs after the user confirms the grouping. Combine data using the **confirmed grouping**.
 
 #### Grouping and Deduplication
 
-1. **Group by project/feature area** — not by source. Determine grouping from:
-   - ADO work item area paths
-   - PR target repos
-   - Todoist project names
-   - Work log entry content
-2. **Deduplicate** — entries that appear in multiple sources (e.g., a commit and a work log entry about the same work) should be merged into one line.
+- Use the confirmed groups from Step 4 as the feature-area sections
+- For merged items (e.g., `[P1]+[T1]`), combine into a single entry — use the PR as the primary item and incorporate any additional context from the Todoist task or work log entry
+- The **Active This Week** and **Stale** sections are auto-generated and not subject to user grouping
 
 #### Hyperlinked References
 
@@ -215,14 +298,14 @@ Use web UI URLs from tool responses — **never** use the `url` field for ADO it
 - If `--format detailed`: produce only the detailed format.
 - If `--format manager`: produce only the manager format.
 
-### 5. Archive
+### 6. Archive
 
 Write the report to `<statusRepoPath>/weekly-statuses/<startDate>_to_<endDate>.md`, creating directories as needed.
 
 - When `--output` is `file` or `both`: write the file. When archiving with `--format both`, archive the **detailed** version.
 - When `--output` is `console`: skip archiving entirely.
 
-### 6. Output
+### 7. Output
 
 - When `--output` is `console` or `both`: display the report(s) to the user. If `--format both`, display both detailed and manager formats (separated by a horizontal rule).
 - When `--output` is `file`: confirm the archive file path but do not display the report.
@@ -232,7 +315,7 @@ Write the report to `<statusRepoPath>/weekly-statuses/<startDate>_to_<endDate>.m
 
 | Key | Required | Default | Description |
 |-----|----------|---------|-------------|
-| `userEmail` | Yes | — | Your email for filtering ADO commits |
+| `userEmail` | Yes | — | Your email for filtering ADO PRs by author |
 | `adoProject` | Yes | — | Azure DevOps project name |
 | `adoTeam` | No | — | ADO team name (for sprint resolution) |
 | `statusRepoPath` | No | `~/.claude/work-status/` | Root directory for status data |

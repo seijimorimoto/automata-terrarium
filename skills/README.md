@@ -41,6 +41,14 @@ Skills for logging work, generating status reports, and preparing performance re
 
 See the [Quick PR README](quick-pr/README.md) for full documentation, installation, and usage.
 
+### Git Worktree Cleanup
+
+| Skill | Description |
+|-------|-------------|
+| [`/cleanup-worktree`](cleanup-worktree/) | Remove a git worktree and its associated local branch after PR merge |
+
+See the [Cleanup Worktree README](cleanup-worktree/README.md) for full documentation.
+
 ## Installation
 
 Skills must live inside a `.claude\skills\` directory for Claude Code to find them. Copy or symlink skill folders to either location:

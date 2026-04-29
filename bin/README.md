@@ -11,6 +11,7 @@ Per-category scripts cover skills, hooks, and settings. The `seiji-claude-sync` 
 | `seiji-claude-install` (`.ps1`) | One-time PATH setup. Appends a keyed marker block to your shell profile pointing at this repo's `bin/`. Idempotent. |
 | `seiji-claude-sync` (`.ps1`) | Wrapper. Runs every per-category sync in order. |
 | `seiji-claude-sync-skills` (`.ps1`) | Copies each subfolder of `skills/` to `~\.claude\skills\<name>\`. |
+| `seiji-claude-sync-agents` (`.ps1`) | Copies each `agents/*.md` (skipping README) to `~\.claude\agents\<name>.md`. |
 | `seiji-claude-sync-hooks` (`.ps1`) | Copies each subfolder of `hooks/` to `~\.claude\hooks\<name>\`. Script-files only — does not register hooks in `settings.json`. |
 | `seiji-claude-sync-settings` (`.ps1`) | Merges every `settings\*.json` into `~\.claude\settings.json` per the rules below. |
 
@@ -80,13 +81,13 @@ Caveat for Windows: symbolic links typically need either Developer Mode enabled 
 ### Wrapper
 
 ```powershell
-seiji-claude-sync.ps1               # run skills -> hooks -> settings
+seiji-claude-sync.ps1               # run skills -> agents -> hooks -> settings
 seiji-claude-sync.ps1 -DryRun       # preview every step without writing
 seiji-claude-sync.ps1 -NoBackup     # skip the settings-file backup
 ```
 
 ```sh
-seiji-claude-sync               # run skills -> hooks -> settings
+seiji-claude-sync               # run skills -> agents -> hooks -> settings
 seiji-claude-sync --dry-run     # preview every step without writing
 seiji-claude-sync --no-backup   # skip the settings-file backup
 ```
@@ -97,6 +98,7 @@ seiji-claude-sync --no-backup   # skip the settings-file backup
 
 ```powershell
 seiji-claude-sync-skills.ps1
+seiji-claude-sync-agents.ps1
 seiji-claude-sync-hooks.ps1
 seiji-claude-sync-settings.ps1 -DryRun
 seiji-claude-sync-settings.ps1 -NoBackup   # write merged file but skip the backup
@@ -104,6 +106,7 @@ seiji-claude-sync-settings.ps1 -NoBackup   # write merged file but skip the back
 
 ```sh
 seiji-claude-sync-skills
+seiji-claude-sync-agents
 seiji-claude-sync-hooks
 seiji-claude-sync-settings --dry-run
 seiji-claude-sync-settings --no-backup     # write merged file but skip the backup

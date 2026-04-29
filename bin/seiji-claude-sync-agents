@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# seiji-claude-sync-agents — copy each <repo>/agents/*.md to ~/.claude/agents/.
+# Use --dry-run to preview without writing.
+#
+# Agents are single markdown files (with YAML frontmatter); they don't
+# live in subfolders. This sync mirrors that file-level shape: each
+# agents/<name>.md becomes ~/.claude/agents/<name>.md.
+set -euo pipefail
+
+DRY_RUN=0
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=1 ;;
+    -h|--help)
+      cat <<'EOF'
+Usage: seiji-claude-sync-agents [--dry-run]
+
+Copies each agents/*.md from this repo to ~/.claude/agents/<name>.md.
+With --dry-run, prints planned actions without writing.
+EOF
+      exit 0
+      ;;
+    *)
+      echo "seiji-claude-sync-agents: unknown argument: $arg" >&2
+      exit 2
+      ;;
+  esac
+done
+
+SCRIPT_PATH="$(readlink -f "$0")"
+SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SRC_DIR="$REPO_ROOT/agents"
+DST_DIR="$HOME/.claude/agents"
+
+if [ ! -d "$SRC_DIR" ]; then
+  echo "seiji-claude-sync-agents: source not found: $SRC_DIR" >&2
+  exit 1
+fi
+
+if [ "$DRY_RUN" -eq 0 ]; then
+  mkdir -p "$DST_DIR"
+fi
+
+count=0
+shopt -s nullglob
+for src in "$SRC_DIR"/*.md; do
+  name="$(basename "$src")"
+  # Skip the README — it's repo documentation, not an agent definition.
+  case "$name" in
+    README.md|readme.md) continue ;;
+  esac
+  dst="$DST_DIR/$name"
+  if [ "$DRY_RUN" -eq 1 ]; then
+    echo "[dry-run] sync agent '$name': $src -> $dst"
+  else
+    cp -f "$src" "$dst"
+    echo "synced agent '$name'"
+  fi
+  count=$((count + 1))
+done
+shopt -u nullglob
+
+if [ "$DRY_RUN" -eq 1 ]; then
+  echo "[dry-run] would sync $count agent(s) to $DST_DIR"
+else
+  echo "synced $count agent(s) to $DST_DIR"
+fi

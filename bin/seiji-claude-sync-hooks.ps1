@@ -1,0 +1,51 @@
+# seiji-claude-sync-hooks.ps1 — copy each <repo>\hooks\<name>\ to ~\.claude\hooks\<name>\
+# Use -DryRun to preview without writing.
+#
+# This script copies hook scripts only. It does NOT register hooks in
+# ~\.claude\settings.json — that responsibility belongs to
+# seiji-claude-sync-settings.ps1, which merges settings\*.json presets.
+[CmdletBinding()]
+param(
+    [switch]$DryRun
+)
+
+$ErrorActionPreference = 'Stop'
+
+$ScriptDir = Split-Path -Parent $PSCommandPath
+$RepoRoot  = Split-Path -Parent $ScriptDir
+$SrcDir    = Join-Path $RepoRoot 'hooks'
+$DstDir    = Join-Path $HOME '.claude\hooks'
+
+if (-not (Test-Path -LiteralPath $SrcDir)) {
+    Write-Error "seiji-claude-sync-hooks: source not found: $SrcDir"
+    exit 1
+}
+
+if (-not $DryRun -and -not (Test-Path -LiteralPath $DstDir)) {
+    New-Item -ItemType Directory -Path $DstDir -Force | Out-Null
+}
+
+$count = 0
+Get-ChildItem -LiteralPath $SrcDir -Directory | Sort-Object Name | ForEach-Object {
+    $src  = $_.FullName
+    $name = $_.Name
+    $dst  = Join-Path $DstDir $name
+    if ($DryRun) {
+        Write-Host "[dry-run] sync hook '$name': $src -> $dst"
+    }
+    else {
+        if (Test-Path -LiteralPath $dst) {
+            Remove-Item -LiteralPath $dst -Recurse -Force
+        }
+        Copy-Item -LiteralPath $src -Destination $dst -Recurse -Force
+        Write-Host "synced hook '$name'"
+    }
+    $count++
+}
+
+if ($DryRun) {
+    Write-Host "[dry-run] would sync $count hook(s) to $DstDir"
+}
+else {
+    Write-Host "synced $count hook(s) to $DstDir"
+}

@@ -92,6 +92,7 @@ Each directory contains its own README with setup instructions. To use any item,
 | Hook | Description | Platform | Docs |
 |------|-------------|----------|------|
 | `notify-windows` | Windows toast notifications for Claude Code events | Windows | [README](hooks/notify-windows/README.md) |
+| `verify-runner-bash-guard` | PreToolUse hook restricting `verify-runner` subagent Bash to a read-only allowlist; falls back to no-op when context can't be detected | Cross-platform | [README](hooks/verify-runner-bash-guard/README.md) |
 
 ### Sync infrastructure (`bin/`)
 

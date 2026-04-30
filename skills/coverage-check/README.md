@@ -13,9 +13,9 @@ Used standalone for spot checks before opening a PR — and consumed by `/implem
 |--------------|------|---------|
 | Python | `pytest-cov` | `pip install pytest pytest-cov` |
 | TypeScript / JavaScript | `jest` (with built-in coverage), `vitest`, or `c8` | `npm install -D jest @types/jest` (etc.) |
-| .NET | Coverlet (bundled with `Microsoft.NET.Test.Sdk`) | usually already in test projects |
-| Go | `go test -cover` | bundled with the Go toolchain |
-| Rust | `cargo-tarpaulin` or `cargo-llvm-cov` | `cargo install cargo-tarpaulin` |
+| .NET | Coverlet (bundled with `Microsoft.NET.Test.Sdk`) | `dotnet add package coverlet.collector` |
+| Go | `go test -cover` (built into the Go toolchain) | `winget install GoLang.Go` / `brew install go` |
+| Rust | `cargo-tarpaulin` or `cargo-llvm-cov` | `cargo install cargo-tarpaulin` / `cargo install cargo-llvm-cov` |
 
 If the project has no detectable tool, the skill returns `[]` (or one `report`-tier note) and exits cleanly.
 
@@ -61,26 +61,30 @@ Git read commands are covered by [`settings/base.json`](../../settings/base.json
 
 ## Output
 
-A single JSON array on stdout. Each object describes one uncovered chunk:
+A single JSON object on stdout with a project-level `summary` and a list of per-chunk `findings`:
 
 ```json
 {
-  "tier": "soft_block | report",
-  "file": "path/to/file",
-  "line_start": 42,
-  "line_end": 58,
-  "chunk_kind": "pure_logic | trivial | untestable | generated",
-  "uncovered_lines": [44, 45, 47, 50],
-  "message": "short explanation",
   "summary": {
     "diff_coverage_pct": 67.5,
     "threshold": 80,
     "gap_lines": 14
-  }
+  },
+  "findings": [
+    {
+      "tier": "soft_block | report",
+      "file": "path/to/file",
+      "line_start": 42,
+      "line_end": 58,
+      "chunk_kind": "pure_logic | trivial | untestable | generated",
+      "uncovered_lines": [44, 45, 47, 50],
+      "message": "short explanation"
+    }
+  ]
 }
 ```
 
-`summary` is identical on every finding — it carries the project-level snapshot so any single finding answers "did we hit the threshold?".
+`summary` is `null` when the run produced no coverage numbers (no tool detected, run failed, or empty diff). `findings` is always an array — empty if there's nothing to flag.
 
 ### Chunk kinds (heuristic)
 

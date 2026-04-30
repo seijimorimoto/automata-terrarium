@@ -23,28 +23,32 @@ Used standalone for spot checks before opening a PR — and consumed by `/implem
 
 ## Output
 
-Returns a JSON array of finding objects to stdout. Each object describes one uncovered chunk:
+Returns a single JSON object to stdout with two top-level keys: a project-level `summary` and a list of per-chunk `findings`:
 
 ```json
 {
-  "tier": "soft_block | report",
-  "file": "path/to/file",
-  "line_start": 42,
-  "line_end": 58,
-  "chunk_kind": "pure_logic | trivial | untestable | generated",
-  "uncovered_lines": [44, 45, 47, 50],
-  "message": "short explanation",
   "summary": {
     "diff_coverage_pct": 67.5,
     "threshold": 80,
     "gap_lines": 14
-  }
+  },
+  "findings": [
+    {
+      "tier": "soft_block | report",
+      "file": "path/to/file",
+      "line_start": 42,
+      "line_end": 58,
+      "chunk_kind": "pure_logic | trivial | untestable | generated",
+      "uncovered_lines": [44, 45, 47, 50],
+      "message": "short explanation"
+    }
+  ]
 }
 ```
 
-`summary` is the same on every finding — it carries the project-level numbers so a downstream tool can read it from any one finding.
+`summary` is `null` when the run produced no coverage numbers (no tool detected, coverage run failed, or empty diff). `findings` is always an array — empty when there's nothing to report.
 
-If no coverage tool can be detected, the skill returns `[]` and exits 0.
+If no coverage tool can be detected, the skill returns `{ "summary": null, "findings": [] }` (optionally with one `report`-tier finding describing the miss) and exits 0.
 
 ## Instructions
 
@@ -69,7 +73,7 @@ Inspect project files (in priority order):
 | `go.mod` | **`go test -cover`** | `go test -coverprofile=coverage.out ./...` |
 | `Cargo.toml` with `cargo-tarpaulin` or `cargo-llvm-cov` config | **cargo-tarpaulin / cargo-llvm-cov** | `cargo tarpaulin --out Xml` or `cargo llvm-cov --lcov` |
 
-If no tool is detected, the skill emits a single `report`-tier finding with `message` "no coverage tool detected for this project" and exits 0. The orchestrator may surface this so the user can either configure one or skip the check.
+If no tool is detected, the skill emits `{ "summary": null, "findings": [{ "tier": "report", "message": "no coverage tool detected for this project", ... }] }` and exits 0. The orchestrator may surface this so the user can either configure one or skip the check.
 
 ### 3. Resolve threshold
 
@@ -114,16 +118,16 @@ When unsure between two kinds, pick the more conservative one (i.e., prefer `pur
 | Yes | No | `report` |
 | No | (n/a) | `report` |
 
-### 8. Emit findings
+### 8. Emit output
 
-Print one JSON array to stdout. No prose, no markdown fences. Every finding carries the same `summary` object (project-level snapshot).
+Print a single JSON object `{ "summary": {...}, "findings": [...] }` to stdout. No prose, no markdown fences. The `summary` is computed once at the project level; per-chunk objects in `findings` carry only line-targeted info.
 
 If `summary.diff_coverage_pct` is at or above the threshold (or there's no threshold), still emit per-chunk findings so the orchestrator can present line-targeted info — but tier them all as `report`.
 
 ### 9. Exit semantics
 
-- No coverage tool detected → `[]` (or one `report`-tier note, see above), exit 0.
-- Coverage run fails → emit one `report`-tier finding with `message` describing the failure (stderr tail, exit code), exit 0.
+- No coverage tool detected → `{ "summary": null, "findings": [] }` (optionally with one `report`-tier finding describing the miss), exit 0.
+- Coverage run fails → `{ "summary": null, "findings": [{ "tier": "report", "message": "<failure description: stderr tail, exit code>", ... }] }`, exit 0.
 - Never exit non-zero.
 
 ## Examples

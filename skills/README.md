@@ -57,6 +57,22 @@ See the [Cleanup Worktree README](cleanup-worktree/README.md) for full documenta
 
 See the [Doc Review README](doc-review/README.md) for what it checks, the per-language doc-comment recognizers, and the output schema.
 
+### Standards Verification
+
+| Skill | Description |
+|-------|-------------|
+| [`/standards-check`](standards-check/) | Discover a repo's standards files, extract rules, check the diff against them; emits tiered JSON findings (`hard_block` / `soft_block` / `report`) |
+
+See the [Standards Check README](standards-check/README.md) for prereqs, output schema, the diff-scoped discovery model, and how to extend the pre-baked recognizers.
+
+### Plan Implementation
+
+| Skill | Description |
+|-------|-------------|
+| [`/implement`](implement/) | Carry out an approved plan: branch (or worktree), per-step commits, draft PR via the right PR-creation skill |
+
+See the [Implement Plan README](implement/README.md) for prereqs, the parameter table, the workflow, and how to register a new PR-creation skill in the auto-detection table.
+
 ## Installation
 
 Skills must live inside a `.claude\skills\` directory for Claude Code to find them. Copy or symlink skill folders to either location:

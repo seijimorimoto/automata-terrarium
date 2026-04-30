@@ -49,6 +49,14 @@ See the [Quick PR README](quick-pr/README.md) for full documentation, installati
 
 See the [Cleanup Worktree README](cleanup-worktree/README.md) for full documentation.
 
+### Coverage Check
+
+| Skill | Description |
+|-------|-------------|
+| [`/coverage-check`](coverage-check/) | Detect the project's coverage tool, run coverage scoped to the diff, classify each uncovered chunk by kind (`pure_logic` / `trivial` / `untestable` / `generated`); emits JSON findings |
+
+See the [Coverage Check README](coverage-check/README.md) for the supported toolchains, threshold resolution, output schema, and chunk-kind heuristics.
+
 ### Documentation Review
 
 | Skill | Description |

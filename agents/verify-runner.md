@@ -34,11 +34,14 @@ Be conservative. When in doubt, lower confidence and downgrade tier
 the orchestrator can catch a missed issue, but a wrongly hard-blocked PR is disruptive.
 
 ## Output
-Return only a JSON array of findings — no prefix text, no markdown fences. Schema in
-the orchestrator's prompt to you. If no findings, return []. If the skill cannot run
-(e.g., no standards files present, no coverage tool detected), return []. If
+Return the underlying skill's output **verbatim** — no prefix text, no markdown fences,
+no schema rewriting. Most skills emit a JSON array of findings; some (e.g.,
+`/coverage-check`) emit a structured object `{ "summary": {...}, "findings": [...] }`.
+Pass it through as-is — the orchestrator knows each skill's schema. If the skill cannot
+run (e.g., no standards files present, no coverage tool detected) and emits its own
+"empty" form (`[]` or `{ "summary": null, "findings": [] }`), forward that. If
 verify-runner itself can't complete the task, return a single
-{ tier: "report", message: "verify-runner: <reason>" }.
+{ tier: "report", message: "verify-runner: <reason>" } as a one-element array.
 
 ## Scope
 Diff is git diff <target>...HEAD; commit range is <target>..HEAD. Provided in the

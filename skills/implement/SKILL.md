@@ -158,12 +158,14 @@ The verify phase is the heart of `/implement`'s quality gate. It runs after the 
      Run /<skill-name> against the current diff. The target branch is
      `<target-branch>`. Pass --target <target-branch> to the skill.
 
-     Return only a JSON array of finding objects per the skill's
-     documented schema. No prose, no markdown fences. If there are no
-     findings, return [].
+     Return the skill's stdout verbatim — no prose, no markdown fences,
+     no rewriting of its schema. Most skills emit a JSON array of
+     findings; `/coverage-check` emits `{ "summary": {...}, "findings":
+     [...] }`. If there are no findings, forward whatever empty form
+     the skill produced (`[]` or `{ "summary": null, "findings": [] }`).
      ```
 
-2. **Collect.** Concatenate the JSON arrays returned from each subagent. Each finding carries an implicit "source" tag — the skill it came from — by virtue of which subagent returned it. Track this so iteration 2+ knows which subagents to re-spawn.
+2. **Collect.** From each subagent's response, extract the findings list — for skills that emit a JSON array (`/standards-check`, `/review`, `/security-review`, `/doc-review`, `/simplify`), the response *is* the list; for `/coverage-check`, read `findings` out of the `{summary, findings}` object and stash `summary` separately (used in step 4 for the coverage sub-loop and in the verify-summary PR block). Each finding carries an implicit "source" tag — the skill it came from — by virtue of which subagent returned it. Track this so iteration 2+ knows which subagents to re-spawn.
 
 3. **Classify.** Bucket findings by tier:
    - `hard_block` — must fix before push.

@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# seiji-claude-sync-skills — copy each <repo>/skills/<name>/ to ~/.claude/skills/<name>/
+# Use --dry-run to preview without writing.
+set -euo pipefail
+
+DRY_RUN=0
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=1 ;;
+    -h|--help)
+      cat <<'EOF'
+Usage: seiji-claude-sync-skills [--dry-run]
+
+Copies each subfolder of <repo>/skills/ to ~/.claude/skills/<name>/.
+Existing destination folders are removed before copy so deletions in the
+source propagate. With --dry-run, prints planned actions without writing.
+EOF
+      exit 0
+      ;;
+    *)
+      echo "seiji-claude-sync-skills: unknown argument: $arg" >&2
+      exit 2
+      ;;
+  esac
+done
+
+SCRIPT_PATH="$(readlink -f "$0")"
+SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SRC_DIR="$REPO_ROOT/skills"
+DST_DIR="$HOME/.claude/skills"
+
+if [ ! -d "$SRC_DIR" ]; then
+  echo "seiji-claude-sync-skills: source not found: $SRC_DIR" >&2
+  exit 1
+fi
+
+if [ "$DRY_RUN" -eq 0 ]; then
+  mkdir -p "$DST_DIR"
+fi
+
+count=0
+for src in "$SRC_DIR"/*/; do
+  [ -d "$src" ] || continue
+  name="$(basename "$src")"
+  dst="$DST_DIR/$name"
+  if [ "$DRY_RUN" -eq 1 ]; then
+    echo "[dry-run] sync skill '$name': $src -> $dst"
+  else
+    rm -rf "$dst"
+    cp -R "$src" "$dst"
+    echo "synced skill '$name'"
+  fi
+  count=$((count + 1))
+done
+
+if [ "$DRY_RUN" -eq 1 ]; then
+  echo "[dry-run] would sync $count skill(s) to $DST_DIR"
+else
+  echo "synced $count skill(s) to $DST_DIR"
+fi

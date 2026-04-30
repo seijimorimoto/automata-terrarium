@@ -46,22 +46,30 @@ When this skill is invoked:
 ### 1. Resolve scope
 
 - **Target branch.** Use `--target` if provided; else `git symbolic-ref refs/remotes/origin/HEAD --short` (strip `origin/`). Fall back to `main`.
-- **Diff range.** `git diff <target>...HEAD` for code changes; `git log <target>..HEAD --format=%s` for commit subjects; `git log <target>..HEAD --format=%H %s` for full identification.
+- **Changed files.** `git diff <target>...HEAD --name-only` (also includes adds, deletes, renames). If empty, return `[]` and stop.
+- **Diff content.** `git diff <target>...HEAD` for unified diff; `git log <target>..HEAD --format=%H %s` for commit identification.
 
-### 2. Discover standards files
+### 2. Discover standards files (diff-scoped)
 
-Walk from the current working directory up to the repo root. Collect these files when they exist:
+Discovery is **driven by the changed paths**, so the skill behaves correctly in monorepos where each subproject has its own standards file.
+
+For every changed file, walk **upward** from the file's directory to the repo root. At each level, collect these files when they exist:
 
 - `CLAUDE.md`
 - `AGENTS.md`
 - `.cursorrules`
-- `.github/copilot-instructions.md`
+
+Always also include the repo-root copies of the above plus `.github/copilot-instructions.md` (this last one is conventionally repo-root only) — that catches repo-wide rules even when no changed file lives at the root.
+
+Each discovered standards file has a **scope** equal to its containing directory. The scope is what governs which changed files a rule applies to (see step 4).
 
 Then expand discovery:
 
-- **Linked files.** Parse each discovered file for markdown links of the form `[label](relative/path.md)`. If the link target points at another file inside the repo, add it to the standards set (recursive — but limit recursion depth to 3 to avoid runaway expansion).
-- **`--include` flag.** Add every comma-separated path the user passed.
-- **`.standards-check.sources`.** If a `.standards-check.sources` file exists at the repo root, read it; each non-empty, non-`#` line is a repo-relative path to add to the set.
+- **Linked files.** Parse each discovered standards file for markdown links of the form `[label](relative/path.md)`. If the link target points at another file inside the repo, add it to the standards set with the same scope as its parent (recursive — limit recursion depth to 3 to avoid runaway expansion).
+- **`--include` flag.** Add every comma-separated path the user passed. Scope = repo root (treat as repo-wide).
+- **`.standards-check.sources`.** If a `.standards-check.sources` file exists at the repo root, read it; each non-empty, non-`#` line is a repo-relative path to add. Scope = repo root.
+
+**Standards files added in the current diff** are picked up the same way as existing ones — the skill applies brand-new rules to the rest of the diff. (If a PR introduces standards, that PR is exactly when you want them enforced.)
 
 If the resulting set is empty, return `[]` and stop.
 
@@ -72,6 +80,8 @@ For each standards file, read it carefully and enumerate the rules it states. Fo
 - **Mechanical** — a deterministic check is possible (e.g., commit-message format, branch-name pattern, file naming, presence of a header, sort order in a JSON array).
 - **Judgment** — interpretation required (e.g., "keep functions small", "prefer composition over inheritance", "don't add features beyond what the task requires").
 
+Every rule **inherits the scope of the standards file it came from** — that's the directory containing the file. Rules don't get promoted to a wider scope based on what they're about; if a rule is meant to apply repo-wide, it should live in a repo-root standards file.
+
 Pre-baked recognizers for common patterns (apply automatically when the source mentions them):
 
 - **Conventional Commits.** If the source explicitly mentions Conventional Commits or the `<type>(<scope>): <summary>` pattern, run the helper script `scripts/check-conventional-commits.sh` (or `.ps1`) against `git log <target>..HEAD --format=%H %s` to validate every commit subject. Each non-conforming commit is one finding.
@@ -80,7 +90,16 @@ Pre-baked recognizers for common patterns (apply automatically when the source m
 
 When a rule isn't covered by a recognizer, fall back to inspecting the diff manually and emit findings using best judgment.
 
-### 4. Tier each finding
+### 4. Apply rules to changed files (scope check)
+
+For each rule, evaluate it only against the slice of the diff that falls inside the rule's scope:
+
+- A rule from `<scope-dir>/AGENTS.md` (or any standards file under `<scope-dir>`) applies to changed files at paths under `<scope-dir>/`.
+- A rule from a repo-root standards file applies to every changed file (scope = whole repo).
+- Inherently file-scoped rules (e.g., "all `*.py` files must have a docstring at the top") that come from a sub-directory standards file apply only to files within that directory.
+- Inherently global rules (commit subjects, branch names, etc.) that the recognizers handle: these target git artifacts (commits, branches), not files. Only run them when the rule comes from a standards file whose scope contains the work-target. In practice that means **commit-message and branch-name rules run only when the source standards file is at the repo root**, since any individual commit can affect files under multiple subdirectories.
+
+### 5. Tier each finding
 
 | Rule type | Confidence | Tier |
 | --- | --- | --- |
@@ -90,13 +109,15 @@ When a rule isn't covered by a recognizer, fall back to inspecting the diff manu
 
 A finding is mechanical+high-confidence only when the check is fully deterministic and a false positive is implausible (e.g., a commit subject that obviously fails the Conventional Commits regex). When in doubt, downgrade — `soft_block` and `report` are recoverable; a wrongly hard-blocked PR is disruptive.
 
-### 5. Emit findings
+### 6. Emit findings
 
 Print one JSON array to stdout. No prose, no markdown fences. If invoked from a `verify-runner` subagent under `/implement`, the orchestrator parses this directly. Always include the exact rule text in `rule_quote`, copy-pasted from the source — the orchestrator surfaces it to the user when explaining a block.
 
+`source_file` carries the standards file's repo-relative path; the rule's scope is the directory containing that file (no separate `scope` field on findings). The orchestrator can derive scope by reading `source_file`'s path.
+
 If a finding can't be tied to a specific file/line (e.g., a commit-message violation), set `file` and `line` to null but keep `source_file` populated.
 
-### 6. Exit semantics
+### 7. Exit semantics
 
 - Standards files not found → `[]`, exit 0.
 - Any other error (e.g., bad `--include` path) → empty `[]`, but write a `report`-tier finding with `message` describing the issue. Exit 0.
@@ -123,5 +144,7 @@ Inside `/implement`'s verify phase, the orchestrator spawns a `verify-runner` su
 ## Behavior notes
 
 - The skill is **read-only** — never modifies files, commits, or branches. All output is to stdout.
-- Discovery is **path-deterministic**: walking from cwd up to repo root means the same files are picked up regardless of where you invoke from inside the tree.
+- Discovery is **diff-scoped and deterministic**: only standards files reachable by walking upward from a changed file's directory (or sitting at the repo root) are considered. Same diff produces the same standards set regardless of where you invoke the skill from inside the tree.
+- A rule's scope is the directory containing its source standards file. Rules don't get promoted to a wider scope based on what they're about — if a rule should apply repo-wide, put it in a repo-root standards file. (See step 4 of the Instructions for the full scope-check semantics.)
+- In single-project repos, the diff-scoped walk converges on the same set as a cwd-up walk would have produced, so behavior is unchanged. The new model only diverges from the old one in monorepos with per-subproject standards files.
 - Pre-baked recognizers can be extended by adding new helpers under `scripts/` and referencing them in the rule-extraction step above.

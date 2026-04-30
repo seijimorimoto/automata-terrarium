@@ -4,6 +4,8 @@ Repo-agnostic standards verifier. Discovers a repo's standards files (`CLAUDE.md
 
 Useful standalone for spot checks before opening a PR — and consumed by `/implement`'s verify phase, where it runs in parallel with other quality gates.
 
+Discovery is **diff-scoped**: standards files are picked up by walking upward from each changed file's directory to the repo root. Each rule's scope is the directory containing its source standards file, which makes the skill behave correctly in monorepos with per-subproject standards. See [Discovery](#discovery) for details.
+
 ## Prerequisites
 
 - **Git** — the skill calls `git diff`, `git log`, `git rev-parse`, `git symbolic-ref`.
@@ -52,7 +54,26 @@ If you're using `bin/seiji-claude-sync`, just run it once and `/standards-check`
 | `--target` | No | `git symbolic-ref refs/remotes/origin/HEAD` (typically `main`); falls back to `main` | Target branch for the diff |
 | `--include` | No | (none) | Comma-separated repo-relative paths to extra standards files |
 
-A `.standards-check.sources` file at the repo root (one repo-relative path per line, `#` for comments) is always read in addition to `--include`.
+A `.standards-check.sources` file at the repo root (one repo-relative path per line, `#` for comments) is always read in addition to `--include`. Both `--include` and `.standards-check.sources` are treated as **repo-wide** (scope = repo root).
+
+## Discovery
+
+The skill discovers standards files based on the paths in the diff, not the cwd:
+
+1. Run `git diff <target>...HEAD --name-only` to get the list of changed files.
+2. For each changed file, walk upward from its directory to the repo root. At each level, pick up `CLAUDE.md`, `AGENTS.md`, `.cursorrules` if they exist.
+3. Always also include the repo-root copies plus `.github/copilot-instructions.md` (this last one is conventionally repo-root only).
+4. Each discovered file's **scope** is the directory it lives in. Rules from `apps/web/AGENTS.md` apply only to changed files under `apps/web/`. Rules from the repo-root `CLAUDE.md` apply to every changed file.
+5. Linked files (markdown links from a discovered file to another file in the repo) inherit their parent's scope.
+6. `--include` and `.standards-check.sources` entries are treated as scope = repo root.
+
+If the diff is empty, the skill returns `[]` immediately. If standards files are found but no changed file falls inside any rule's scope, the skill also returns `[]`.
+
+**Standards files added in the same diff** are picked up and applied. If a PR introduces new standards, that's exactly when you want them enforced.
+
+### Single-project vs monorepo
+
+In a single-project repo, walking upward from any changed file converges on the same root, so the discovered set is identical to what a "walk from cwd up to root" approach would produce. The diff-scoped approach only diverges from the cwd-up approach in monorepos with per-subproject standards files — and there it does the obviously-right thing (only the relevant subproject's rules apply to each file).
 
 ## Output
 
@@ -129,7 +150,8 @@ The skill does not need to be re-installed — `SKILL.md` is read each invocatio
 
 | Problem | Solution |
 |---------|----------|
-| Returns `[]` even when CLAUDE.md exists | Confirm you're inside the repo (cwd inside the tree). Discovery walks up from cwd to the repo root. |
+| Returns `[]` even when CLAUDE.md exists | Confirm there's actually a diff vs `--target`: `git diff <target>...HEAD --name-only`. Discovery is driven by the changed paths, so an empty diff yields no findings. |
+| Subproject `AGENTS.md` not picked up | Discovery walks upward from each changed file's directory. If no changed file lives under that subproject, its standards file isn't in scope and its rules don't apply. Add `--include path/to/AGENTS.md` to force-include it as repo-wide. |
 | `--target` fails ("not a branch") | Pass an explicit ref: `--target origin/main` or `--target main`. Auto-detection assumes `origin/HEAD` is set. |
 | Conventional Commits flagged but the type is valid | Set `CC_TYPES` to your repo's accepted types (see above) or extend the script. |
 | Helper not executable on Linux | `chmod +x skills/standards-check/scripts/check-conventional-commits.sh` (the file ships executable in git but local copy/extract may strip the bit). |

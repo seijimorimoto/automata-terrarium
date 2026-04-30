@@ -47,7 +47,7 @@ When this skill is invoked:
 
 - **Target branch.** Use `--target` if provided; else `git symbolic-ref refs/remotes/origin/HEAD --short` (strip `origin/`). Fall back to `main`.
 - **Changed files.** `git diff <target>...HEAD --name-only` (also includes adds, deletes, renames). If empty, return `[]` and stop.
-- **Diff content.** `git diff <target>...HEAD` for unified diff; `git log <target>..HEAD --format=%H %s` for commit identification.
+- **Diff content.** `git diff <target>...HEAD` for unified diff; `git log <target>..HEAD --no-merges --format=%H %s` for commit identification (merge commits are excluded — they are auto-generated and exempt from commit-message rules).
 
 ### 2. Discover standards files (diff-scoped)
 
@@ -84,7 +84,7 @@ Every rule **inherits the scope of the standards file it came from** — that's 
 
 Pre-baked recognizers for common patterns (apply automatically when the source mentions them):
 
-- **Conventional Commits.** If the source explicitly mentions Conventional Commits or the `<type>(<scope>): <summary>` pattern, run the helper script `scripts/check-conventional-commits.sh` (or `.ps1`) against `git log <target>..HEAD --format=%H %s` to validate every commit subject. Each non-conforming commit is one finding.
+- **Conventional Commits.** If the source explicitly mentions Conventional Commits or the `<type>(<scope>): <summary>` pattern, run the helper script `scripts/check-conventional-commits.sh` (or `.ps1`) against `git log <target>..HEAD --no-merges --format=%H %s` to validate every commit subject. Each non-conforming commit is one finding. Merge commits are excluded via `--no-merges`.
 - **Branch-naming pattern.** If the source specifies a regex or template (e.g., `u/{username}/{feature}`), extract the pattern and check the current branch name (`git rev-parse --abbrev-ref HEAD`) against it. Non-conforming → one finding.
 - **Permission-list sort.** If the source says permission entries must be sorted alphabetically and any permission JSON file is in the diff, parse the file and verify the order. Out-of-order → one finding per array.
 

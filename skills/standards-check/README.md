@@ -111,7 +111,7 @@ The skill ships with deterministic checks for common patterns it detects in the 
 
 | Pattern in source | Recognizer |
 |-------------------|------------|
-| "Conventional Commits" mentioned | Run `scripts/check-conventional-commits` against `git log <target>..HEAD --format='%H %s'` |
+| "Conventional Commits" mentioned | Run `scripts/check-conventional-commits` against `git log <target>..HEAD --no-merges --format='%H %s'` (merge commits are exempt) |
 | Branch-naming regex/template like `u/{username}/{feature}` | Match the current branch (`git rev-parse --abbrev-ref HEAD`) |
 | "Permission entries must be sorted alphabetically" | Validate sort order of every `permissions.allow|deny|ask` array in changed JSON files |
 

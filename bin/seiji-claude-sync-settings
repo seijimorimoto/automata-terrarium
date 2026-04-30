@@ -1,0 +1,157 @@
+#!/usr/bin/env bash
+# seiji-claude-sync-settings — merge each <repo>/settings/*.json into ~/.claude/settings.json
+# Use --dry-run to print the merged result and warnings without writing.
+# Use --no-backup to skip writing the timestamped backup file.
+#
+# Merge rules (locked in plan):
+#   - arrays of strings: union + dedupe + sort alphabetically
+#   - arrays of objects: union + dedupe by deep equality, preserve order
+#   - objects: recursive merge
+#   - scalars: preserve user's value if set; only write preset's value if missing.
+#     Print a warning naming the key, the preset, and what value would have been set.
+# Backs up settings.json to settings.backup-<ISO timestamp>.json before writing
+# (skip with --no-backup).
+# Validates merged JSON parses cleanly before writing.
+# Targets ~/.claude/settings.json only — never settings.local.json or project-level files.
+#
+# Requires: jq (>= 1.6).
+set -euo pipefail
+
+DRY_RUN=0
+NO_BACKUP=0
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=1 ;;
+    --no-backup) NO_BACKUP=1 ;;
+    -h|--help)
+      cat <<'EOF'
+Usage: seiji-claude-sync-settings [--dry-run] [--no-backup]
+
+Merges every <repo>/settings/*.json into ~/.claude/settings.json per the
+locked merge rules (string-arrays union+dedupe+sort; object-arrays
+union+dedupe by deep equality preserving order; objects recurse;
+scalars preserve user value with warning).
+
+By default, backs up the existing settings file to
+~/.claude/settings.backup-<ISO timestamp>.json before writing. Use
+--no-backup to skip that step.
+
+With --dry-run, prints the merged content and any warnings without
+writing.
+
+Requires: jq.
+EOF
+      exit 0
+      ;;
+    *)
+      echo "seiji-claude-sync-settings: unknown argument: $arg" >&2
+      exit 2
+      ;;
+  esac
+done
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo "seiji-claude-sync-settings: requires 'jq' on PATH (install: https://jqlang.github.io/jq/)" >&2
+  exit 1
+fi
+
+SCRIPT_PATH="$(readlink -f "$0")"
+SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+PRESETS_DIR="$REPO_ROOT/settings"
+LIB_DIR="$SCRIPT_DIR/lib"
+USER_CONF_DIR="$HOME/.claude"
+USER_CONFIG="$USER_CONF_DIR/settings.json"
+MERGE_JQ="$LIB_DIR/merge-settings.jq"
+WARN_JQ="$LIB_DIR/find-settings-conflicts.jq"
+
+if [ ! -d "$PRESETS_DIR" ]; then
+  echo "seiji-claude-sync-settings: presets directory not found: $PRESETS_DIR" >&2
+  exit 1
+fi
+if [ ! -f "$MERGE_JQ" ] || [ ! -f "$WARN_JQ" ]; then
+  echo "seiji-claude-sync-settings: missing jq filters in $LIB_DIR" >&2
+  exit 1
+fi
+
+# Start from user's existing settings, or {} if none/empty
+if [ -f "$USER_CONFIG" ] && [ -s "$USER_CONFIG" ]; then
+  if ! ACCUMULATOR="$(jq -c . "$USER_CONFIG" 2>/dev/null)"; then
+    echo "seiji-claude-sync-settings: existing $USER_CONFIG is not valid JSON" >&2
+    exit 1
+  fi
+else
+  ACCUMULATOR='{}'
+fi
+
+# Iterate presets in alphabetical order for determinism
+shopt -s nullglob
+preset_files=( "$PRESETS_DIR"/*.json )
+shopt -u nullglob
+
+if [ "${#preset_files[@]}" -eq 0 ]; then
+  echo "seiji-claude-sync-settings: no presets found in $PRESETS_DIR; nothing to merge"
+  exit 0
+fi
+
+ALL_WARNINGS=""
+for preset in "${preset_files[@]}"; do
+  preset_name="$(basename "$preset")"
+  if ! preset_json="$(jq -c . "$preset" 2>/dev/null)"; then
+    echo "seiji-claude-sync-settings: preset $preset_name is not valid JSON" >&2
+    exit 1
+  fi
+
+  # Collect warnings for this preset
+  warnings_block="$(
+    jq -n -r \
+      --argjson u "$ACCUMULATOR" \
+      --argjson p "$preset_json" \
+      --arg name "$preset_name" \
+      -f "$WARN_JQ"
+  )"
+  if [ -n "$warnings_block" ]; then
+    ALL_WARNINGS="${ALL_WARNINGS}${warnings_block}
+"
+  fi
+
+  # Compute merged accumulator
+  ACCUMULATOR="$(
+    jq -n -c \
+      --argjson u "$ACCUMULATOR" \
+      --argjson p "$preset_json" \
+      -f "$MERGE_JQ"
+  )"
+done
+
+# Validate the merged result parses cleanly
+if ! echo "$ACCUMULATOR" | jq -e . >/dev/null 2>&1; then
+  echo "seiji-claude-sync-settings: merged result is not valid JSON" >&2
+  exit 1
+fi
+
+# Print warnings to stderr (always — even on dry-run)
+if [ -n "$ALL_WARNINGS" ]; then
+  printf '%s' "$ALL_WARNINGS" >&2
+fi
+
+PRETTY="$(echo "$ACCUMULATOR" | jq .)"
+
+if [ "$DRY_RUN" -eq 1 ]; then
+  echo "[dry-run] would write merged settings to $USER_CONFIG"
+  echo "[dry-run] merged content:"
+  echo "$PRETTY"
+  exit 0
+fi
+
+mkdir -p "$USER_CONF_DIR"
+
+if [ -f "$USER_CONFIG" ] && [ "$NO_BACKUP" -eq 0 ]; then
+  stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+  backup="$USER_CONF_DIR/settings.backup-$stamp.json"
+  cp "$USER_CONFIG" "$backup"
+  echo "backed up existing settings to $backup"
+fi
+
+printf '%s\n' "$PRETTY" > "$USER_CONFIG"
+echo "wrote merged settings to $USER_CONFIG"

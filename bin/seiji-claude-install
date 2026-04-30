@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+# seiji-claude-install — add this repo's bin/ to the user's shell PATH.
+#
+# Idempotent: a marker block (`# >>> seiji-claude bin >>> ... # <<< seiji-claude bin <<<`)
+# is appended to ~/.bashrc and ~/.zshrc (whichever exist). Re-running detects
+# the marker and does nothing.
+#
+# Use --dry-run to preview the change without writing.
+# Use --uninstall to remove the marker block.
+#
+# Manual fallback (for users who prefer not to have a script edit their
+# profile): add the printed PATH line yourself to your shell's startup file.
+set -euo pipefail
+
+DRY_RUN=0
+UNINSTALL=0
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=1 ;;
+    --uninstall) UNINSTALL=1 ;;
+    -h|--help)
+      cat <<'EOF'
+Usage: seiji-claude-install [--dry-run] [--uninstall]
+
+Adds the repo's bin/ directory to the user's shell PATH by appending a
+marker block to ~/.bashrc and ~/.zshrc (whichever exist). Idempotent —
+the block is keyed off a marker so re-running does nothing.
+
+  --dry-run     show what would change without writing
+  --uninstall   remove the marker block from each profile
+EOF
+      exit 0
+      ;;
+    *)
+      echo "seiji-claude-install: unknown argument: $arg" >&2
+      exit 2
+      ;;
+  esac
+done
+
+SCRIPT_PATH="$(readlink -f "$0")"
+SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+BIN_DIR="$SCRIPT_DIR"
+
+START_MARKER='# >>> seiji-claude bin >>>'
+END_MARKER='# <<< seiji-claude bin <<<'
+PATH_LINE="export PATH=\"\$PATH:$BIN_DIR\""
+
+CANDIDATES=()
+[ -f "$HOME/.bashrc" ] && CANDIDATES+=("$HOME/.bashrc")
+[ -f "$HOME/.zshrc" ]  && CANDIDATES+=("$HOME/.zshrc")
+# If neither file exists, default to creating ~/.bashrc (interactive POSIX shells)
+if [ "${#CANDIDATES[@]}" -eq 0 ]; then
+  CANDIDATES+=("$HOME/.bashrc")
+fi
+
+for profile in "${CANDIDATES[@]}"; do
+  if [ "$UNINSTALL" -eq 1 ]; then
+    if [ -f "$profile" ] && grep -qF "$START_MARKER" "$profile"; then
+      if [ "$DRY_RUN" -eq 1 ]; then
+        echo "[dry-run] would remove marker block from $profile"
+      else
+        # Remove between start and end markers (inclusive)
+        tmp="$profile.seiji-claude-install.tmp"
+        awk -v start="$START_MARKER" -v end="$END_MARKER" '
+          $0 == start { skip = 1; next }
+          $0 == end { skip = 0; next }
+          !skip { print }
+        ' "$profile" > "$tmp"
+        mv "$tmp" "$profile"
+        echo "removed marker block from $profile"
+      fi
+    else
+      echo "no marker block found in $profile (nothing to uninstall)"
+    fi
+    continue
+  fi
+
+  if [ -f "$profile" ] && grep -qF "$START_MARKER" "$profile"; then
+    echo "$profile already configured (marker present); skipping"
+    continue
+  fi
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    echo "[dry-run] would append the following block to $profile:"
+    printf '%s\n' "$START_MARKER" "$PATH_LINE" "$END_MARKER"
+    continue
+  fi
+
+  {
+    printf '\n%s\n' "$START_MARKER"
+    printf '%s\n' "$PATH_LINE"
+    printf '%s\n' "$END_MARKER"
+  } >> "$profile"
+  echo "appended marker block to $profile"
+done
+
+if [ "$UNINSTALL" -eq 0 ] && [ "$DRY_RUN" -eq 0 ]; then
+  echo
+  echo "Open a new shell, or run:  source ~/.bashrc   (or your shell's profile)"
+  echo "to pick up the updated PATH. Then:  seiji-claude-sync"
+fi

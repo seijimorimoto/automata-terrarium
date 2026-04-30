@@ -43,6 +43,7 @@ ln -sf "$(pwd)/skills" .claude/skills
 skills/    - Custom slash-command skills (.md files)
 hooks/     - Event-driven hook scripts
 settings/  - Reusable settings snippets and configurations
+bin/       - Sync executables that install skills/hooks/settings to ~\.claude\
 ```
 
 ## Usage
@@ -69,8 +70,11 @@ Each directory contains its own README with setup instructions. To use any item,
 | `/ado-task` | Create, update, complete, and list Azure DevOps work items | [README](skills/ado-task/README.md) |
 | `/cleanup-worktree` | Remove a git worktree and its local branch after PR merge | [README](skills/cleanup-worktree/README.md) |
 | `/coverage-check` | Run diff coverage, classify each uncovered chunk (`pure_logic` / `trivial` / `untestable` / `generated`); emits JSON findings | [README](skills/coverage-check/README.md) |
+| `/doc-review` | Inspect the diff for missing/stale documentation; report-only JSON findings | [README](skills/doc-review/README.md) |
+| `/implement` | Carry out an approved plan: branch, per-step commits, draft PR | [README](skills/implement/README.md) |
 | `/log` | Append timestamped work entries to a weekly log | [SKILL.md](skills/log/SKILL.md) |
 | `/quick-pr` | Create a branch, commit, push, open a GitHub PR, merge, and clean up | [README](skills/quick-pr/README.md) |
+| `/standards-check` | Discover repo standards files, extract rules, check the diff against them; emits tiered JSON findings | [README](skills/standards-check/README.md) |
 | `/weekly-status` | Generate weekly status from ADO + Todoist + local log | [README](skills/weekly-status/README.md) |
 
 ### Available settings
@@ -88,3 +92,33 @@ Each directory contains its own README with setup instructions. To use any item,
 | Hook | Description | Platform | Docs |
 |------|-------------|----------|------|
 | `notify-windows` | Windows toast notifications for Claude Code events | Windows | [README](hooks/notify-windows/README.md) |
+
+### Sync infrastructure (`bin/`)
+
+The `bin/` folder contains executables that install everything in this repo into your user-level Claude config (`~\.claude\`). Each script has both a PowerShell variant (`.ps1`) and a POSIX variant (no extension).
+
+| Script | Purpose |
+|--------|---------|
+| `seiji-claude-install` | One-time PATH setup. Idempotent — re-running is safe. |
+| `seiji-claude-sync` | Wrapper. Runs every per-category sync in order: skills → hooks → settings. |
+| `seiji-claude-sync-skills` | Copies each subfolder of `skills/` to `~\.claude\skills\<name>\`. |
+| `seiji-claude-sync-hooks` | Copies each subfolder of `hooks/` to `~\.claude\hooks\<name>\`. |
+| `seiji-claude-sync-settings` | Merges every `settings\*.json` into `~\.claude\settings.json` per the documented merge rules. |
+
+Quick start:
+
+```powershell
+# Windows (PowerShell)
+.\bin\seiji-claude-install.ps1
+# Open a new PowerShell window so PATH refreshes
+seiji-claude-sync
+```
+
+```sh
+# Linux / macOS / Git Bash
+./bin/seiji-claude-install
+# Open a new shell so PATH refreshes
+seiji-claude-sync
+```
+
+See [bin/README.md](bin/README.md) for prereqs (notably `jq` for the POSIX settings merge), the manual PATH-fallback, the symlink alternative, and the full settings merge rules (string-arrays union+dedupe+sort; object-arrays union+dedupe by deep equality; objects recurse; scalars preserve user value with a warning).

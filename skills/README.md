@@ -49,6 +49,14 @@ See the [Quick PR README](quick-pr/README.md) for full documentation, installati
 
 See the [Cleanup Worktree README](cleanup-worktree/README.md) for full documentation.
 
+### Documentation Review
+
+| Skill | Description |
+|-------|-------------|
+| [`/doc-review`](doc-review/) | Inspect the diff for missing/stale documentation and emit report-only JSON findings (doc accuracy, stale references, missing doc-comments, suggest-new-docs, index linkage) |
+
+See the [Doc Review README](doc-review/README.md) for what it checks, the per-language doc-comment recognizers, and the output schema.
+
 ## Installation
 
 Skills must live inside a `.claude\skills\` directory for Claude Code to find them. Copy or symlink skill folders to either location:

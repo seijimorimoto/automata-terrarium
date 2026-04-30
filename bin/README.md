@@ -82,14 +82,16 @@ Caveat for Windows: symbolic links typically need either Developer Mode enabled 
 ```powershell
 seiji-claude-sync.ps1               # run skills -> hooks -> settings
 seiji-claude-sync.ps1 -DryRun       # preview every step without writing
+seiji-claude-sync.ps1 -NoBackup     # skip the settings-file backup
 ```
 
 ```sh
 seiji-claude-sync               # run skills -> hooks -> settings
 seiji-claude-sync --dry-run     # preview every step without writing
+seiji-claude-sync --no-backup   # skip the settings-file backup
 ```
 
-`settings` runs last so any hook registrations land after their script files are in place.
+`settings` runs last so any hook registrations land after their script files are in place. `--no-backup` / `-NoBackup` is forwarded only to `seiji-claude-sync-settings` — the other steps don't produce backups.
 
 ### Per-category
 
@@ -97,12 +99,14 @@ seiji-claude-sync --dry-run     # preview every step without writing
 seiji-claude-sync-skills.ps1
 seiji-claude-sync-hooks.ps1
 seiji-claude-sync-settings.ps1 -DryRun
+seiji-claude-sync-settings.ps1 -NoBackup   # write merged file but skip the backup
 ```
 
 ```sh
 seiji-claude-sync-skills
 seiji-claude-sync-hooks
 seiji-claude-sync-settings --dry-run
+seiji-claude-sync-settings --no-backup     # write merged file but skip the backup
 ```
 
 Every per-category script is independent — you can run just the one(s) you need.
@@ -116,7 +120,9 @@ Every per-category script is independent — you can run just the one(s) you nee
 - **Objects** — recursive merge.
 - **Scalars** (strings, numbers, booleans) — **preserve the user's existing value if set**. The preset's value is only written when the key is missing in `~\.claude\settings.json`. A warning is printed naming the key, the preset, and the value that would have been set.
 
-The script always backs up the existing `~\.claude\settings.json` to `~\.claude\settings.json.backup-<ISO timestamp>` before writing. The merged JSON is validated before being written — if anything fails parsing, the script aborts and the original file is left untouched (the backup is still produced for `--dry-run`-equivalent inspection in that case).
+By default the script backs up the existing `~\.claude\settings.json` to `~\.claude\settings.backup-<ISO timestamp>.json` before writing — the `.json` extension is preserved at the end so editors recognize the file's type. The merged JSON is validated before being written; if anything fails parsing, the script aborts and the original file is left untouched.
+
+`-NoBackup` / `--no-backup` skips the backup step but still writes the merged settings file. Use this when you've made other arrangements for backups (e.g., your shell profile is under version control, or you're running this in CI on disposable state) and don't want timestamped copies accumulating in `~\.claude\`.
 
 `-DryRun` / `--dry-run` prints the merged result and any warnings without writing.
 

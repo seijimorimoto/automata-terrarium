@@ -1,5 +1,6 @@
 # seiji-claude-sync-settings.ps1 — merge each <repo>\settings\*.json into ~\.claude\settings.json
 # Use -DryRun to print the merged result and warnings without writing.
+# Use -NoBackup to skip writing the timestamped backup file.
 #
 # Merge rules (locked in plan):
 #   - arrays of strings (e.g., permissions.allow|deny|ask): union + dedupe + sort alphabetically
@@ -7,12 +8,14 @@
 #   - objects: recursive merge
 #   - scalars: preserve user's value if set; only write preset's value if missing.
 #     Print a warning naming the key, the preset, and what value would have been set.
-# Always backs up settings.json to settings.json.backup-<ISO timestamp> before writing.
+# Backs up settings.json to settings.backup-<ISO timestamp>.json before writing
+# (skip with -NoBackup).
 # Validates merged JSON parses cleanly before writing.
 # Targets ~\.claude\settings.json only — never settings.local.json or project-level files.
 [CmdletBinding()]
 param(
-    [switch]$DryRun
+    [switch]$DryRun,
+    [switch]$NoBackup
 )
 
 $ErrorActionPreference = 'Stop'
@@ -198,9 +201,9 @@ if (-not (Test-Path -LiteralPath $UserConfDir)) {
     New-Item -ItemType Directory -Path $UserConfDir -Force | Out-Null
 }
 
-if (Test-Path -LiteralPath $UserConfig) {
+if ((Test-Path -LiteralPath $UserConfig) -and -not $NoBackup) {
     $stamp  = (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ")
-    $backup = "$UserConfig.backup-$stamp"
+    $backup = Join-Path $UserConfDir "settings.backup-$stamp.json"
     Copy-Item -LiteralPath $UserConfig -Destination $backup -Force
     Write-Host "backed up existing settings to $backup"
 }

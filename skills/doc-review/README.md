@@ -32,7 +32,7 @@ If you're using `bin/seiji-claude-sync`, it lands at the user level along with e
 
 ## Permissions
 
-Git read commands (`git diff`, `git symbolic-ref`) are covered by [`settings/base.json`](../../settings/base.json). No additional permissions needed.
+Git read commands (`git diff`, `git symbolic-ref`) are covered by [`settings\base.json`](../../settings/base.json). No additional permissions needed.
 
 ## Usage
 
@@ -46,6 +46,16 @@ Git read commands (`git diff`, `git symbolic-ref`) are covered by [`settings/bas
 | Parameter | Required | Default | Description |
 |-----------|----------|---------|-------------|
 | `--target` | No | Auto-detected default branch (typically `main`) | Target branch for the diff |
+
+## Doc-surface discovery
+
+Before running the checks, the skill builds a **doc surface** — the set of doc files to inspect. It's the union of:
+
+- A **global net**: top-level `*.md`, `docs/**/*.md` rooted at the repo root, and `CHANGELOG*` at the repo root.
+- A **per-changed-file upward walk**: from each changed file's directory up to the repo root, picking up `README*`, a sibling `docs/**/*.md`, and `CHANGELOG*` at every ancestor. This is what catches per-package docs in monorepos (e.g., `packages\api\docs\architecture.md` when the change is under `packages\api\`).
+- **Markdown-link expansion**: from any discovered doc, follow in-repo markdown links (`[label](relative/path.md)`) up to depth 3.
+
+The doc surface is the input to checks 1 and 2 below. Discovery is symmetric to `/standards-check`'s diff-scoped walk, but doc files aren't directory-scoped, so the global net is kept in addition to the per-file walk.
 
 ## What it checks
 

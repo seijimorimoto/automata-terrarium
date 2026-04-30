@@ -47,13 +47,29 @@ When invoked:
 - Target branch as in `/standards-check`: `--target` if provided, else `git symbolic-ref refs/remotes/origin/HEAD --short` (strip `origin/`), else `main`.
 - Diff: `git diff <target>...HEAD` for code; `git diff <target>...HEAD --name-status` for renamed/deleted file detection.
 
-### 2. Run the checks
+### 2. Discover doc surface (diff-scoped)
+
+Documentation isn't directory-scoped the way standards-rule files are — a doc at the repo root can describe code anywhere — so the doc surface is the **union** of a global net and a per-changed-file walk:
+
+1. **Global net** (catches docs that live away from the code they describe):
+   - Top-level `*.md` (e.g., `README.md`, `CONTRIBUTING.md`)
+   - `docs/**/*.md` rooted at the repo root
+   - `CHANGELOG*` at the repo root
+2. **Upward walk** from each changed file's directory to the repo root (catches per-package docs in monorepos). At **every** ancestor directory, collect the same kinds of doc surfaces — not just READMEs:
+   - `README*` in that directory
+   - `docs/**/*.md` rooted at that directory (i.e., a sibling `docs/` folder and everything beneath it)
+   - `CHANGELOG*` in that directory
+3. **Markdown-link expansion.** From every doc file collected so far, parse markdown links of the form `[label](relative/path.md)` (or `.mdx`). If the link target points at another file inside the repo, add it to the doc set. Recurse to a maximum depth of 3 to avoid runaway expansion.
+
+Deduplicate by repo-relative path. The resulting set is the **doc surface** used by checks A and B below.
+
+### 3. Run the checks
 
 Run each of these inspections against the diff. Each can produce zero or more findings.
 
 #### A. Accuracy of existing docs against current code
 
-For each doc file (`README*`, `docs/**/*.md`, top-level `*.md`, `CHANGELOG*`) that mentions code that changed in this diff:
+For each doc file in the doc surface that mentions code that changed in this diff:
 
 - **Function signatures** referenced in docs match the current code.
 - **Code examples** in docs match the current API (parameter names, return types, expected output).
@@ -66,7 +82,7 @@ For each mismatch, emit a finding pointing at the doc file (and line if pinpoint
 
 For each rename or delete in the diff (`git diff --name-status`, plus identifier-level renames detected from the patch):
 
-- Search doc files for the old name. Each occurrence is a finding pointing at the doc file/line, with `message` "renamed to `<new name>`" or "removed".
+- Search the doc surface for the old name. Each occurrence is a finding pointing at the doc file/line, with `message` "renamed to `<new name>`" or "removed".
 
 #### C. Missing doc comments on new exported symbols
 
@@ -104,19 +120,19 @@ If the diff adds new files in a `docs/`-like directory (any directory where the 
 
 - Emit a finding pointing at the index, `message` "new file `<path>` not linked from this index".
 
-### 3. Confidence calibration
+### 4. Confidence calibration
 
 - **`high`** — mechanically detectable (function signature mismatch, identifier rename trail, missing doc comment on exported symbol). Use sparingly — when the gap is unambiguous.
 - **`medium`** — heuristic but clear (suggesting README on a new substantial module).
 - **`low`** — reasonable suggestion that may or may not apply (suggesting CHANGELOG when the repo's CHANGELOG style is unclear).
 
-### 4. Emit findings
+### 5. Emit findings
 
 Print one JSON array to stdout. No prose, no markdown fences. All findings have `tier: "report"`. Even when the gap looks mechanical, the skill never hard-blocks — its role is to surface, not gate.
 
 If invoked from a `verify-runner` subagent under `/implement`, the orchestrator parses this directly and may choose to post line-targeted PR comments for these findings.
 
-### 5. Exit semantics
+### 6. Exit semantics
 
 - Empty diff → `[]`, exit 0.
 - Any internal error → emit a `report`-tier finding with `message` describing the issue, exit 0.
@@ -132,5 +148,6 @@ If invoked from a `verify-runner` subagent under `/implement`, the orchestrator 
 ## Behavior notes
 
 - The skill is **read-only** — never modifies files, commits, or branches. All output is to stdout.
+- **Doc-surface discovery** combines a global net (top-level `*.md`, root `docs/**/*.md`, root `CHANGELOG*`) with an upward walk from each changed file's directory, applying the same `README* / docs/**/*.md / CHANGELOG*` patterns at every ancestor. Markdown links inside any discovered doc are followed up to depth 3. The split mirrors `/standards-check`'s diff-scoped walk, but doc files aren't directory-scoped — a root `docs/api.md` may describe code anywhere — so the global net stays in addition to, not replaced by, the per-file walk.
 - v1 has no helper scripts — the inspections are done in-prompt by the agent. Per-language doc-comment recognizers ship as natural-language rules in the per-extension table above; if a future extension warrants a deterministic check (e.g., a Go-specific exported-symbol scanner), drop a script under a `scripts/` folder and reference it here.
 - Suggestions are advisory. The orchestrator decides whether to surface them as PR comments, ignore them, or auto-apply trivial cases (e.g., adding a placeholder docstring).

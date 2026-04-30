@@ -75,4 +75,4 @@ If you don't need any of those, a skill is simpler and more discoverable (no `Ag
 4. Test with `Agent(subagent_type: "<name>", prompt: "...")` from a parent session.
 5. Sync to user-level via `seiji-claude-sync-agents` (or the wrapper).
 
-For agents that need **best-effort** runtime restrictions beyond the static `tools:` list (e.g., "can run Bash, but only read-only Bash commands"), pair the agent definition with a `PreToolUse` hook that inspects each Bash call and denies anything outside an allowlist. The `verify-runner` agent uses this pattern with the [`verify-runner-bash-guard`](../hooks/verify-runner-bash-guard/) hook (see PR5.3 of the import-and-improve-/implement effort).
+For agents that need **best-effort** runtime restrictions beyond the static `tools:` list (e.g., "can run Bash, but only read-only Bash commands"), pair the agent definition with a `PreToolUse` hook that inspects each Bash call and denies anything outside an allowlist. The `verify-runner` agent uses this pattern with the [`verify-runner-bash-guard`](../hooks/verify-runner-bash-guard/) hook.

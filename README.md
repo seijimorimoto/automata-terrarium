@@ -70,6 +70,7 @@ Each directory contains its own README with setup instructions. To use any item,
 | `/cleanup-worktree` | Remove a git worktree and its local branch after PR merge | [README](skills/cleanup-worktree/README.md) |
 | `/log` | Append timestamped work entries to a weekly log | [SKILL.md](skills/log/SKILL.md) |
 | `/quick-pr` | Create a branch, commit, push, open a GitHub PR, merge, and clean up | [README](skills/quick-pr/README.md) |
+| `/standards-check` | Discover repo standards files, extract rules, check the diff against them; emits tiered JSON findings | [README](skills/standards-check/README.md) |
 | `/weekly-status` | Generate weekly status from ADO + Todoist + local log | [README](skills/weekly-status/README.md) |
 
 ### Available settings

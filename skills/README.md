@@ -49,6 +49,14 @@ See the [Quick PR README](quick-pr/README.md) for full documentation, installati
 
 See the [Cleanup Worktree README](cleanup-worktree/README.md) for full documentation.
 
+### Standards Verification
+
+| Skill | Description |
+|-------|-------------|
+| [`/standards-check`](standards-check/) | Discover a repo's standards files, extract rules, check the diff against them; emits tiered JSON findings (`hard_block` / `soft_block` / `report`) |
+
+See the [Standards Check README](standards-check/README.md) for prereqs, output schema, the diff-scoped discovery model, and how to extend the pre-baked recognizers.
+
 ## Installation
 
 Skills must live inside a `.claude\skills\` directory for Claude Code to find them. Copy or symlink skill folders to either location:

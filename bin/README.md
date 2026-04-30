@@ -2,7 +2,7 @@
 
 Sync executables that install the contents of this repo into the user-level Claude Code config (`~\.claude\`).
 
-The four per-category scripts cover skills, hooks, and settings (and, in PR5, agents). The `seiji-claude-sync` wrapper runs them in the right order. `seiji-claude-install` is a one-time setup that puts `bin/` on your shell PATH.
+Per-category scripts cover skills, hooks, and settings. The `seiji-claude-sync` wrapper runs them in the right order. `seiji-claude-install` is a one-time setup that puts `bin/` on your shell PATH.
 
 ## Available scripts
 
@@ -80,8 +80,8 @@ Caveat for Windows: symbolic links typically need either Developer Mode enabled 
 ### Wrapper
 
 ```powershell
-seiji-claude-sync               # run skills -> hooks -> settings
-seiji-claude-sync -DryRun       # preview every step without writing
+seiji-claude-sync.ps1               # run skills -> hooks -> settings
+seiji-claude-sync.ps1 -DryRun       # preview every step without writing
 ```
 
 ```sh

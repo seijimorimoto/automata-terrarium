@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # seiji-claude-sync — run every per-category sync in order.
 #
-# Order: skills -> hooks -> settings. Settings runs last so that any hook
-# registrations referencing scripts have the script files in place first.
-# Pass --dry-run to preview without writing.
+# Order: skills -> agents -> hooks -> settings. Settings runs last so that
+# any hook registrations referencing scripts have the script files in
+# place first. Pass --dry-run to preview without writing.
 # Pass --no-backup to skip the settings-file backup (forwarded to
 # seiji-claude-sync-settings only — the other steps don't make backups).
 set -euo pipefail
@@ -20,8 +20,9 @@ Usage: seiji-claude-sync [--dry-run] [--no-backup]
 
 Runs every per-category sync in order:
   1. seiji-claude-sync-skills
-  2. seiji-claude-sync-hooks
-  3. seiji-claude-sync-settings
+  2. seiji-claude-sync-agents
+  3. seiji-claude-sync-hooks
+  4. seiji-claude-sync-settings
 
 Pass --dry-run to preview without writing. Settings runs last so any hook
 registrations land after their script files are in place.
@@ -57,6 +58,7 @@ run_step() {
 }
 
 run_step "seiji-claude-sync-skills"   "${COMMON_ARGS[@]}"
+run_step "seiji-claude-sync-agents"   "${COMMON_ARGS[@]}"
 run_step "seiji-claude-sync-hooks"    "${COMMON_ARGS[@]}"
 run_step "seiji-claude-sync-settings" "${COMMON_ARGS[@]}" "${NO_BACKUP[@]}"
 

@@ -54,8 +54,10 @@ chore: update .gitignore
 
 ```
 skills/      - Claude Code skills (each skill in its own subdirectory)
-hooks/       - Claude Code event-driven hook scripts
+agents/      - Claude Code subagents (each agent in its own subdirectory; co-locate any frontmatter-registered hook scripts here)
+hooks/       - Claude Code event-driven hook scripts (session-wide hooks; agent-scoped hooks live with the agent under agents/)
 settings/    - Reusable settings snippets
+bin/         - Sync executables (seiji-claude-install, seiji-claude-sync*)
 git-hooks/   - Git hooks for repo workflow (not Claude hooks)
 ```
 
@@ -74,12 +76,15 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
 
 ### Installation instructions
 
-- Each skill and hook README must include:
+- Each skill, agent, and hook README must include:
   1. **Prerequisites** with install commands (not just names).
   2. **Copy-to-`.claude`** step showing how to install at user or project level.
-  3. **Registration** step (for hooks: settings.json config; for skills: just the copy is enough).
-- Parent-level READMEs (`skills/README.md`, `hooks/README.md`) must include an **Available [Skills/Hooks]** table listing all items.
-- The repo-level `README.md` must mirror those tables for discoverability.
+  3. **Registration** step. Pick the case that applies:
+     - **Skills and agents that don't ship a hook** — just the copy is enough.
+     - **Skills or agents that DO ship a hook** (declared in the SKILL.md / agent's `<name>.md` frontmatter `hooks:` block) — no `settings.json` edit; the harness picks up the frontmatter hook automatically once the skill/agent is in place. Explain this in the README so users don't go looking for a settings change.
+     - **Session-wide hooks** under `hooks/` — register in `~\.claude\settings.json` (or the project-level equivalent) per the snippet in the hook's README.
+- Parent-level READMEs (`skills/README.md`, `agents/README.md`, `hooks/README.md`) must include an **Available [Skills/Agents/Hooks]** table listing every item in that directory. `settings/README.md` and `bin/README.md` follow the same pattern for their own contents (presets and sync scripts respectively).
+- The repo-level `README.md` must mirror those tables (and the `bin/` script table) for discoverability.
 
 ### Naming
 
@@ -88,6 +93,7 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
 ## Guidelines
 
 - Each skill must live in its own folder under `skills/`.
-- Every **discoverable entry-point directory** should have a `README.md` explaining its contents and usage. This means each skill, hook, and settings-preset directory, plus any directory linked from a parent `README.md`. Implementation-detail subdirectories (e.g., `scripts/`, `assets/`) don't need their own README if the parent already documents them.
+- Each agent must live in its own folder under `agents/`. The agent's `.md` file and its `README.md` sit at the top of that folder. Co-located implementation files (hook scripts the agent registers via its frontmatter, helper scripts, fixtures) go under `agents/<name>/scripts/`, mirroring the skills convention (`skills/<name>/scripts/`). This gives every agent a stable home for current and future resources, regardless of whether it ships with hooks today.
+- Every **discoverable entry-point directory** should have a `README.md` explaining its contents and usage. This means each skill, agent, hook, and settings-preset directory, plus any directory linked from a parent `README.md`. Implementation-detail subdirectories (e.g., `scripts/`, `assets/`) don't need their own README if the parent already documents them.
 - Do not commit secrets, credentials, or `.env` files.
 - Permission entries in settings preset files (`settings\*.json`) must be sorted alphabetically.

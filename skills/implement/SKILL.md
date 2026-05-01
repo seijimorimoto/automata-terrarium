@@ -1,17 +1,20 @@
 ---
 name: implement
-description: Implement a plan from the current session — creates a branch, codes with auto-edits, commits each step, and opens a draft PR
-argument-hint: "[--branch NAME] [--target BRANCH] [--no-worktree] [--pr-tool NAME]"
+description: Implement a plan from the current session — creates a branch, codes with auto-edits, commits each step, runs a parallel verify phase (standards, review, security, doc-review, simplify, coverage), and opens a draft PR
+argument-hint: "[--branch NAME] [--target BRANCH] [--no-worktree] [--pr-tool NAME] [--skip-verify] [--skip-standards|--skip-coverage|--skip-review|--skip-security|--skip-doc-review|--skip-simplify]"
 ---
 
 # Implement Plan
 
-Implements a plan that was created earlier in the current Claude Code session. Enters "Edit automatically" mode, creates a feature branch (or uses a worktree by default), makes logical commits at each step, and finishes by opening a draft PR via the selected PR-creation skill.
+Implements a plan that was created earlier in the current Claude Code session. Enters "Edit automatically" mode, creates a feature branch (or uses a worktree by default), makes logical commits at each step, runs a **verify phase** that spawns parallel `verify-runner` subagents for `/standards-check`, `/review`, `/security-review`, `/doc-review`, `/simplify`, and (when applicable) `/coverage-check`, iterates on the findings, and finishes by opening a draft PR via the selected PR-creation skill — with the unaddressed findings posted as PR review comments.
 
 ## Usage
 
 ```
 /implement [--branch NAME] [--target BRANCH] [--no-worktree] [--pr-tool NAME]
+           [--skip-verify]
+           [--skip-standards] [--skip-coverage] [--skip-review]
+           [--skip-security] [--skip-doc-review] [--skip-simplify]
 ```
 
 ## Parameters
@@ -20,6 +23,8 @@ Implements a plan that was created earlier in the current Claude Code session. E
 - `--target`: Target branch for the eventual PR. Default: auto-detected from `git symbolic-ref refs/remotes/origin/HEAD` (typically `main` or `master`). Falls back to `main` if the symbolic ref isn't set.
 - `--no-worktree`: Skip worktree creation and work directly in the current working tree (default behavior is to use a git worktree for isolation).
 - `--pr-tool`: PR-creation skill to dispatch to (e.g., `/quick-pr`, `/ado-pr`). Default: auto-detected from `git remote get-url origin` — GitHub → `/quick-pr`, Azure DevOps → `/ado-pr`. The mapping is extensible; new PR-creation skills can be added by extending the auto-detection table in this file.
+- `--skip-verify`: Skip the entire verify phase. The default behavior is to run it.
+- `--skip-standards`, `--skip-coverage`, `--skip-review`, `--skip-security`, `--skip-doc-review`, `--skip-simplify`: Skip a specific verify check. Multiple may be combined.
 
 ## Instructions
 
@@ -92,9 +97,95 @@ When this skill is invoked:
     - Use single quotes around commit messages to avoid shell expansion issues.
   - If the branch has merge conflicts with `<target-branch>`, **stop and inform the user** — do not force-push or auto-resolve.
 
+  ## Verify phase
+
+  [If `--skip-verify` was provided, omit this whole section.]
+
+  After the last per-step commit and before pushing, run the verify phase: spawn parallel `verify-runner` subagents to run quality checks against the diff, classify their findings, auto-fix confident ones, prompt for soft-blocks, and queue report-only findings for posting as PR comments after the PR is opened.
+
+  **Active checks for this run:** <comma-separated list of enabled skills, e.g., `/standards-check`, `/review`, `/security-review`, `/doc-review`, `/simplify`, `/coverage-check` — omit any disabled by `--skip-<check>` flags. `/coverage-check` is included only when a coverage tool is detectable for the project.>
+
+  ### Per-iteration flow
+
+  1. **Spawn subagents in parallel.** In a single message, issue one `Agent` call per active check. Each:
+     - `subagent_type: "verify-runner"`
+     - `description`: short, e.g., `"Run /standards-check on the diff"`
+     - `prompt`: a self-contained instruction along these lines:
+       ```
+       Run /<skill-name> against the current diff. The target branch is
+       <target-branch>. Pass --target <target-branch> to the skill.
+
+       Return the skill's stdout verbatim — no prose, no markdown fences,
+       no rewriting of its schema. Most skills emit a JSON array of
+       findings; /coverage-check emits { "summary": {...}, "findings":
+       [...] }. If there are no findings, forward whatever empty form
+       the skill produced ([] or { "summary": null, "findings": [] }).
+       ```
+
+  2. **Collect findings.** From each subagent's response, extract the findings list. For skills emitting a JSON array (`/standards-check`, `/review`, `/security-review`, `/doc-review`, `/simplify`), the response *is* the list. For `/coverage-check`, read `findings` out of the `{summary, findings}` object and stash `summary` separately (used in step 4 for the coverage sub-loop and in the verify-summary). Each finding carries an implicit "source" tag — the skill it came from — by virtue of which subagent returned it.
+
+  3. **Classify by tier.**
+     - `hard_block` → must fix before push.
+     - `soft_block` → fix or override per finding via `AskUserQuestion`.
+     - `report` → set aside for PR comments.
+
+  4. **Resolve.**
+     - **Hard blocks.** Fix in-place. Stage the fix.
+     - **Soft blocks.** For each, call `AskUserQuestion` with a short version of the finding's `message` (plus file/line if present). Options: `Fix` (auto-fix), `Override` (proceed without fixing — the finding moves to the PR-comment queue), `Abort` (stop /implement).
+       - For coverage `soft_block` findings, the auto-fix path branches on `chunk_kind`:
+         - `pure_logic` and `trivial` → write tests.
+         - `untestable` → propose adding an exclusion comment with rationale; user confirms.
+         - `generated` → add the project's coverage-tool exclusion marker (`# pragma: no cover`, `// istanbul ignore next`, `[ExcludeFromCodeCoverage]`, etc.).
+       - The coverage sub-loop is capped at **2 iterations** independent of the outer cap.
+     - **Report findings.** Queue for PR comments. Do not modify code.
+
+  5. **Commit auto-fixes.** Stage all changes from this iteration and commit:
+     ```
+     git add <specific files>
+     git commit -m 'fix(review): address verify findings'
+     ```
+     Use single quotes per the repo's CLAUDE.md.
+
+  6. **Re-run only addressed checks.** Spawn a new parallel batch of verify-runner subagents — but only for the checks whose findings produced fixes in this iteration. Skip checks whose findings were unchanged (still pending PR comments) or whose findings were `Override`d.
+
+  7. **Iteration cap.** Stop after **3 outer iterations**. If hard-blocks remain at the cap, surface them via `AskUserQuestion` (`Continue Anyway` / `Abort`). If the user picks Continue, those hard-blocks demote to `report` and ride along as PR comments.
+
   ## After coding
   - Push the branch: `git push -u origin <branch-name>`
   - Create a **draft** PR via `<pr-tool> --draft --target <target-branch>` (or the equivalent flag set for the chosen PR-creation skill).
+  - **Post verify outputs as PR comments** directly via `gh` / `az` / MCP. Do **not** dispatch this to the PR-creation skill — keep that skill focused on PR creation.
+
+    **(a) Verify-summary as a PR-level (overall) comment.** One comment containing:
+
+    ```
+    ## Verify summary
+    Ran <N> checks in parallel: <comma-separated list of skills run>.
+    - Hard-blocks fixed: <count>
+    - Soft-blocks fixed:  <count>
+    - Soft-blocks overridden: <count>
+    - Report-only findings posted as comments: <count>
+    - Findings posted as text (line-targeting failed): <count>
+    - Findings written to file (posting failed): <count>
+    ```
+
+    If a check was skipped (e.g., `--skip-coverage`), say so explicitly: `Coverage skipped (--skip-coverage)`.
+
+    Posting commands:
+    - GitHub: `gh pr comment <pr> --body '<body>'` (the issue/conversation comment, not a review comment)
+    - Azure DevOps: `az repos pr comment add` or `mcp__ado__repo_create_pr_thread` (PR-level thread)
+
+    **(b) Each unresolved report-only finding as a line-targeted review comment**, with this fallback chain:
+
+    1. **Line-targeted comment.** Requires valid `file` + `line` AND that line being inside the PR's diff.
+       - GitHub: `gh api repos/:owner/:repo/pulls/:pr/comments` with `path`, `line`, `commit_id`, `body`. GitHub MCP if installed.
+       - Azure DevOps: `az repos pr comment add --thread-context file:line` or ADO MCP `mcp__ado__repo_create_pr_thread` equivalent.
+    2. **PR-level overall comment** for the same finding, using the same posting command as the verify-summary. In the body, prefix with the `<file>:<line>` so the original target isn't lost.
+    3. **File fallback.** Append the finding to `~/.claude/verify-findings/<owner>-<repo>-pr-<n>-<ISO timestamp>.md` (create the directory if needed). One file per /implement run; one section per finding with file/line, source skill, message.
+
+    The verify-summary itself follows the same chain starting at step 2 (it's not line-scoped): PR-level → file.
+
+    After all postings finish, if any findings ended up in the file fallback, print the file's full path so the user can find them.
+
   - Display a summary: branch name, number of commits, and PR URL.
   - Print a copiable command for the user to rename the session: `/rename PR #<number>: <title>` (use the PR number and title from the PR you just created). Note: `/rename` is a built-in CLI command that only the user can execute — Claude cannot run it programmatically.
 
@@ -104,11 +195,26 @@ When this skill is invoked:
 
   **Important:** All placeholders (`<branch-name>`, `<target-branch>`, `<pr-tool>`, `<sanitized-worktree-name>`) must be replaced with concrete values **before** writing to the plan file. The bracketed worktree-mode/no-worktree paragraph picks one and only one based on whether the user passed `--no-worktree`. The plan content follows after the `---` separator.
 
+## Verify checks reference
+
+| Check | Skill | Default tier of findings |
+|-------|-------|--------------------------|
+| Standards | `/standards-check` | `hard_block` for mechanical+high-conf; else `soft_block` or `report` |
+| Review | `/review` | `report` |
+| Security | `/security-review` | `soft_block` |
+| Doc review | `/doc-review` | `report` |
+| Simplify | `/simplify` | `report` |
+| Coverage | `/coverage-check` | `soft_block` if threshold below; else `report` |
+
+The verify phase's full per-iteration flow and PR-comment posting fallback chain (line-targeted → PR-level → file) are inlined in the workflow template above so the plan-file reader has everything it needs without consulting this file.
+
 ## Error Handling
 
 - **No plan found**: Exit early with a clear message (see step 1).
 - **Auto-detection of `--target` fails** (no `origin/HEAD`, no remote configured): fall back to `main` and print a notice. The user can override with `--target`.
 - **Auto-detection of `--pr-tool` fails** (remote URL doesn't match any known host): ask the user which PR-creation skill to use rather than silently defaulting.
+- **A verify-runner subagent fails or returns non-JSON.** Treat as a single `report`-tier finding with `message: "verify-runner: <skill> returned no JSON or errored: <reason>"`. Continue with the remaining checks.
+- **Verify cap reached with hard-blocks remaining.** Surface via `AskUserQuestion` (`Continue Anyway` / `Abort`). On Continue, demote remaining hard-blocks to PR comments.
 - All other error handling (build failures, merge conflicts) is covered in the workflow instructions written to the plan file.
 
 ## Examples
@@ -141,4 +247,14 @@ Implement on a GitHub repo but force a different PR-creation skill:
 Combine flags:
 ```
 /implement --branch johndoe/add-digest-email --target develop --no-worktree
+```
+
+Skip the verify phase entirely (e.g., for a one-line typo fix):
+```
+/implement --skip-verify
+```
+
+Skip individual verify checks:
+```
+/implement --skip-coverage --skip-doc-review
 ```

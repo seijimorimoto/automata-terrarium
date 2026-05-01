@@ -8,6 +8,8 @@ Event-driven scripts that run in response to Claude Code tool calls.
 |------|-------------|----------|
 | [`notify-windows`](notify-windows/) | Windows toast notifications for Claude Code events (permission prompts, questions, task completion) | Windows |
 
+> **Note:** Skill- and agent-scoped hooks live alongside their owning skill/agent under `skills/<name>/scripts/` or `agents/<name>/scripts/` and are registered via that skill's `SKILL.md` or that agent's `<name>.md` frontmatter — not via `settings.json`. They don't appear in this directory. Canonical examples: [`skills/ado-pr/`](../skills/ado-pr/) (a `PostToolUse` hook that captures PR output) and [`agents/verify-runner/`](../agents/verify-runner/) (a `PreToolUse` hook enforcing a read-only Bash allowlist). Only **session-wide hooks**, registered via `settings.json`, live here in `hooks/`.
+
 ## Installation
 
 ### 1. Copy hook files into your `.claude` folder

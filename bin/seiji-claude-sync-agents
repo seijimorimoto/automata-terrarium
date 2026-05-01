@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# seiji-claude-sync-agents — copy <repo>/agents/ entries to ~/.claude/agents/.
+# Use --dry-run to preview without writing.
+#
+# Two layouts are supported:
+#   - Flat:    agents/<name>.md            -> ~/.claude/agents/<name>.md
+#   - Folder:  agents/<name>/<files...>    -> ~/.claude/agents/<name>/<files...>
+#
+# The folder layout co-locates an agent's resources (e.g., hook scripts the
+# agent registers via its frontmatter) with the agent definition itself.
+# README.md at the top of agents/ is repo documentation and is skipped.
+set -euo pipefail
+
+DRY_RUN=0
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=1 ;;
+    -h|--help)
+      cat <<'EOF'
+Usage: seiji-claude-sync-agents [--dry-run]
+
+Copies each entry under <repo>/agents/ to ~/.claude/agents/:
+  - agents/<name>.md       -> ~/.claude/agents/<name>.md
+  - agents/<name>/         -> ~/.claude/agents/<name>/  (folder-style; whole tree)
+
+With --dry-run, prints planned actions without writing. The repo-level
+agents/README.md is skipped.
+EOF
+      exit 0
+      ;;
+    *)
+      echo "seiji-claude-sync-agents: unknown argument: $arg" >&2
+      exit 2
+      ;;
+  esac
+done
+
+SCRIPT_PATH="$(readlink -f "$0")"
+SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SRC_DIR="$REPO_ROOT/agents"
+DST_DIR="$HOME/.claude/agents"
+
+if [ ! -d "$SRC_DIR" ]; then
+  echo "seiji-claude-sync-agents: source not found: $SRC_DIR" >&2
+  exit 1
+fi
+
+if [ "$DRY_RUN" -eq 0 ]; then
+  mkdir -p "$DST_DIR"
+fi
+
+count=0
+
+# Flat .md agent files at the top of agents/
+shopt -s nullglob
+for src in "$SRC_DIR"/*.md; do
+  name="$(basename "$src")"
+  case "$name" in
+    README.md|readme.md) continue ;;
+  esac
+  dst="$DST_DIR/$name"
+  if [ "$DRY_RUN" -eq 1 ]; then
+    echo "[dry-run] sync agent '$name' (flat): $src -> $dst"
+  else
+    cp -f "$src" "$dst"
+    echo "synced agent '$name' (flat)"
+  fi
+  count=$((count + 1))
+done
+shopt -u nullglob
+
+# Folder-style agents (each subfolder under agents/ becomes one user-level agent dir)
+shopt -s nullglob
+for src in "$SRC_DIR"/*/; do
+  [ -d "$src" ] || continue
+  name="$(basename "$src")"
+  dst="$DST_DIR/$name"
+  if [ "$DRY_RUN" -eq 1 ]; then
+    echo "[dry-run] sync agent '$name' (folder): $src -> $dst"
+  else
+    rm -rf "$dst"
+    cp -R "$src" "$dst"
+    echo "synced agent '$name' (folder)"
+  fi
+  count=$((count + 1))
+done
+shopt -u nullglob
+
+if [ "$DRY_RUN" -eq 1 ]; then
+  echo "[dry-run] would sync $count agent(s) to $DST_DIR"
+else
+  echo "synced $count agent(s) to $DST_DIR"
+fi

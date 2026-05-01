@@ -1,8 +1,8 @@
 # seiji-claude-sync.ps1 — run every per-category sync in order.
 #
-# Order: skills -> hooks -> settings. Settings runs last so that any hook
-# registrations referencing scripts have the script files in place first.
-# Pass -DryRun to preview without writing.
+# Order: skills -> agents -> hooks -> settings. Settings runs last so
+# that any hook registrations referencing scripts have the script files
+# in place first. Pass -DryRun to preview without writing.
 # Pass -NoBackup to skip the settings-file backup (forwarded to
 # seiji-claude-sync-settings.ps1 only — the other steps don't make backups).
 [CmdletBinding()]
@@ -45,6 +45,7 @@ function Invoke-Step {
 }
 
 Invoke-Step 'seiji-claude-sync-skills.ps1'   -ChildDryRun:$DryRun
+Invoke-Step 'seiji-claude-sync-agents.ps1'   -ChildDryRun:$DryRun
 Invoke-Step 'seiji-claude-sync-hooks.ps1'    -ChildDryRun:$DryRun
 Invoke-Step 'seiji-claude-sync-settings.ps1' -ChildDryRun:$DryRun -ChildNoBackup:$NoBackup
 

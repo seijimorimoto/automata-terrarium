@@ -1,6 +1,6 @@
 # Implement Plan
 
-After a plan has been approved (e.g., via plan mode), `/implement` carries it out: creates a feature branch (or worktree), implements each step with auto-edits, makes one logical commit per step, and opens a draft PR via the appropriate PR-creation skill.
+After a plan has been approved (e.g., via plan mode), `/implement` carries it out: creates a feature branch (or worktree), implements each step with auto-edits, makes one logical commit per step, runs a parallel **verify phase** (standards / review / security / doc-review / simplify / coverage), iterates on the findings, and opens a draft PR with the unresolved findings posted as review comments.
 
 ## Prerequisites
 
@@ -10,6 +10,10 @@ After a plan has been approved (e.g., via plan mode), `/implement` carries it ou
   - GitHub repos: `/quick-pr` (default)
   - Azure DevOps repos: `/ado-pr` (default)
   - Override the default with `--pr-tool`.
+- **The verify-runner agent** at `~\.claude\agents\verify-runner\verify-runner.md` (synced from this repo's `agents/verify-runner/` folder). Required unless you run with `--skip-verify`. The folder also contains the co-located `verify-runner-bash-guard` PreToolUse hook (under `scripts/`); it's registered automatically via the agent's frontmatter `hooks:` block, so syncing the agent folder also installs the hook.
+- **The verify checks the verify phase calls.** Required unless skipped:
+  - `/standards-check`, `/doc-review`, `/coverage-check` (in this repo's `skills/`)
+  - `/review`, `/security-review`, `/simplify` (Anthropic-shipped Claude Code skills, available by default)
 
 ## Installation
 
@@ -67,19 +71,35 @@ This skill orchestrates `git`, `gh`/`az`, and your PR-creation skill of choice; 
 | `--target` | No | `git symbolic-ref refs/remotes/origin/HEAD` (typically `main`); falls back to `main` | Target branch for the PR |
 | `--no-worktree` | No | `false` (worktrees on by default) | Skip worktree isolation; work directly in the current tree |
 | `--pr-tool` | No | Auto-detected from origin URL: GitHub → `/quick-pr`, ADO → `/ado-pr` | PR-creation skill to dispatch to |
+| `--skip-verify` | No | `false` (verify runs by default) | Skip the entire verify phase |
+| `--skip-standards`, `--skip-coverage`, `--skip-review`, `--skip-security`, `--skip-doc-review`, `--skip-simplify` | No | none | Skip individual verify checks; combinable |
 
 ## Workflow
 
 ```
 1. Find plan      →  Look back through the conversation for a plan
-2. Resolve args   →  Decide branch, target, worktree, PR tool up front
+2. Resolve args   →  Decide branch, target, worktree, PR tool, skips up front
 3. Plan file      →  Prepend a concrete instruction block (no templates)
 4. ExitPlanMode   →  Hand off to a fresh implementation context
 5. Branch / WT    →  Create worktree (default) or branch (--no-worktree)
 6. Code + commit  →  One logical commit per step, no `git add -A`
-7. Push           →  git push -u origin <branch>
-8. Draft PR       →  Dispatch to <pr-tool> --draft --target <target>
-9. Summary        →  Print branch, commit count, PR URL, /rename hint
+7. Verify         →  Spawn verify-runner subagents in parallel (skipped on --skip-verify):
+                     /standards-check, /review, /security-review,
+                     /doc-review, /simplify, /coverage-check.
+                     Classify findings (hard_block / soft_block / report),
+                     auto-fix or AskUserQuestion, re-run addressed checks.
+                     Cap: 3 outer iterations, 2 for the coverage sub-loop.
+                     Auto-fixes commit as 'fix(review): address verify findings'.
+8. Push           →  git push -u origin <branch>
+9. Draft PR       →  Dispatch to <pr-tool> --draft --target <target>
+10. Verify summary →  Post a PR-level (overall) comment with finding counts.
+11. PR comments   →  Post unresolved report-only findings as review comments
+                     with the fallback chain: line-targeted (via gh/az/MCP)
+                     → PR-level overall comment → file at
+                     ~\.claude\verify-findings\<owner>-<repo>-pr-<n>-<ts>.md.
+12. Summary       →  Print branch, commit count, PR URL, /rename hint
+                     (and the verify-findings file path if anything
+                     landed in the file fallback).
 ```
 
 ## Customization
@@ -95,7 +115,7 @@ The auto-detection table in `SKILL.md` maps remote URL patterns to PR-creation s
 1. Add a row to the table in `SKILL.md` with the URL pattern and the new skill's slash name.
 2. Confirm the new skill accepts a `--draft` flag and a `--target`/`--base` flag for the target branch (or document the exact flag set in the table).
 
-`/implement` does not modify the dispatched skills' behavior — they're invoked unchanged. Comment-posting on the resulting PR is done directly from `/implement` (see the verify phase docs once that lands), so PR-creation skills don't need to know anything about line-level review comments.
+`/implement` does not modify the dispatched skills' behavior — they're invoked unchanged. Comment-posting on the resulting PR is done directly from `/implement` (see the "After coding" section of `SKILL.md`'s workflow template for the line-targeted → PR-level → file fallback chain), so PR-creation skills don't need to know anything about line-level review comments.
 
 ## Troubleshooting
 

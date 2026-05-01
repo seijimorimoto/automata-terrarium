@@ -8,7 +8,7 @@ hooks:
     - matcher: Bash
       hooks:
         - type: command
-          command: 'pwsh -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/agents/verify-runner/verify-runner-bash-guard.ps1"'
+          command: 'pwsh -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/agents/verify-runner/scripts/verify-runner-bash-guard.ps1"'
 ---
 
 You are an expert verification specialist. Your sole job is to run one verification

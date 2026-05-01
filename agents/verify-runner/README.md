@@ -9,8 +9,10 @@ This folder contains the agent definition plus the co-located PreToolUse hook (`
 | File | Purpose |
 |------|---------|
 | [`verify-runner.md`](verify-runner.md) | The agent definition (frontmatter + system prompt). Registers the bash-guard hook in its `hooks:` block. |
-| [`verify-runner-bash-guard.ps1`](verify-runner-bash-guard.ps1) | PreToolUse hook (Windows). Validates Bash commands against a read-only allowlist. |
-| [`verify-runner-bash-guard.sh`](verify-runner-bash-guard.sh) | PreToolUse hook (POSIX, requires `jq`). Same validator, bash variant. |
+| [`scripts/verify-runner-bash-guard.ps1`](scripts/verify-runner-bash-guard.ps1) | PreToolUse hook (Windows). Validates Bash commands against a read-only allowlist. |
+| [`scripts/verify-runner-bash-guard.sh`](scripts/verify-runner-bash-guard.sh) | PreToolUse hook (POSIX, requires `jq`). Same validator, bash variant. |
+
+Implementation scripts live under `scripts/` per the repo's convention (mirrors `skills/<name>/scripts/`).
 
 ## Why the hook exists
 
@@ -27,13 +29,13 @@ The hook is registered via the `hooks:` block in [`verify-runner.md`](verify-run
 The frontmatter `command:` value is:
 
 ```text
-pwsh -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/agents/verify-runner/verify-runner-bash-guard.ps1"
+pwsh -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/agents/verify-runner/scripts/verify-runner-bash-guard.ps1"
 ```
 
 PowerShell expands `$HOME` to the user's home regardless of OS, and the `~/.claude/agents/verify-runner/` path is where `seiji-claude-sync-agents` installs this folder. POSIX users who prefer the bash variant: edit the `command:` line in `verify-runner.md` to:
 
 ```text
-bash "$HOME/.claude/agents/verify-runner/verify-runner-bash-guard.sh"
+bash "$HOME/.claude/agents/verify-runner/scripts/verify-runner-bash-guard.sh"
 ```
 
 ## What the hook allows
@@ -80,4 +82,4 @@ Remove or rename the `hooks:` block in `~/.claude/agents/verify-runner/verify-ru
 
 - **POSIX requires `jq`.** The bash variant uses jq for safe JSON parsing. If jq isn't on PATH, the hook logs a notice on stderr and allows.
 - **PowerShell-default `command:`.** The frontmatter ships with the `.ps1` invocation. POSIX users who don't have PowerShell installed should swap to the `.sh` variant per the snippet above.
-- **Path is hardcoded to `$HOME/.claude/agents/verify-runner/`.** The hook script is found via that path, so the agent must be installed at user level. Project-level installation (`<project>/.claude/agents/verify-runner/`) would require editing the `command:` to use `"$CLAUDE_PROJECT_DIR/.claude/agents/verify-runner/..."`.
+- **Path is hardcoded to `$HOME/.claude/agents/verify-runner/scripts/`.** The hook script is found via that path, so the agent must be installed at user level. Project-level installation (`<project>/.claude/agents/verify-runner/`) would require editing the `command:` to use `"$CLAUDE_PROJECT_DIR/.claude/agents/verify-runner/scripts/..."`.

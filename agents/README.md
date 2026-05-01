@@ -6,10 +6,13 @@ Custom Claude Code subagent definitions.
 
 ```
 agents/<name>/
-├── <name>.md   ← the agent definition (YAML frontmatter + system prompt)
-├── README.md   ← what the agent does, how it's installed, any caveats
-└── ...         ← optional: hook scripts, helpers, sample inputs, etc.
+├── <name>.md     ← the agent definition (YAML frontmatter + system prompt)
+├── README.md     ← what the agent does, how it's installed, any caveats
+└── scripts/      ← optional: hook scripts, helpers, fixtures
+    └── ...
 ```
+
+Implementation files (hook scripts, helpers, anything the agent's frontmatter references) go under `scripts/` — same convention as skills (`skills/<name>/scripts/`). Anything that is not the agent's "API surface" (the `.md` and the `README.md`) belongs there. Other implementation-detail subdirectories (e.g., `fixtures/`, `assets/`) follow the same pattern.
 
 Synced to user-level, that becomes `~\.claude\agents\<name>\<name>.md` (or `<project>\.claude\agents\<name>\...` at project level). Claude Code discovers nested agent files in addition to flat ones, so the folder layout has no downside vs. flat. See [`verify-runner/`](verify-runner/) for the canonical example.
 
@@ -92,4 +95,4 @@ If you don't need any of those, a skill is simpler and more discoverable (no `Ag
 6. Test with `Agent(subagent_type: "<name>", prompt: "...")` from a parent session.
 7. Sync to user-level via `seiji-claude-sync-agents` (or the wrapper).
 
-For agents that need runtime restrictions beyond the static `tools:` list (e.g., "can run Bash, but only read-only Bash commands"), register a `PreToolUse` hook in the agent's frontmatter `hooks:` block and ship the script next to the agent file (e.g., `agents/<name>/<name>-bash-guard.ps1`). Per the [Claude Code subagent docs](https://code.claude.com/docs/en/sub-agents#conditional-rules-with-hooks), frontmatter hooks **only run while that specific subagent is active** — the harness scopes them deterministically, no detection logic needed in the script. The [`verify-runner`](verify-runner/) agent uses this pattern with its co-located `verify-runner-bash-guard` script.
+For agents that need runtime restrictions beyond the static `tools:` list (e.g., "can run Bash, but only read-only Bash commands"), register a `PreToolUse` hook in the agent's frontmatter `hooks:` block and ship the script under `agents/<name>/scripts/` (e.g., `agents/<name>/scripts/<name>-bash-guard.ps1`). Per the [Claude Code subagent docs](https://code.claude.com/docs/en/sub-agents#conditional-rules-with-hooks), frontmatter hooks **only run while that specific subagent is active** — the harness scopes them deterministically, no detection logic needed in the script. The [`verify-runner`](verify-runner/) agent uses this pattern with its co-located [`scripts/verify-runner-bash-guard`](verify-runner/scripts/) script.

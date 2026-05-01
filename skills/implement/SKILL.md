@@ -101,27 +101,91 @@ When this skill is invoked:
 
   [If `--skip-verify` was provided, omit this whole section.]
 
-  After the last per-step commit and before pushing, run the verify phase. See "Verify-phase orchestration" below `SKILL.md` for the exact orchestration. In short:
+  After the last per-step commit and before pushing, run the verify phase: spawn parallel `verify-runner` subagents to run quality checks against the diff, classify their findings, auto-fix confident ones, prompt for soft-blocks, and queue report-only findings for posting as PR comments after the PR is opened.
 
-  1. Spawn `verify-runner` subagents in parallel for each enabled check (`/standards-check`, `/review`, `/security-review`, `/doc-review`, `/simplify`, `/coverage-check`).
-  2. Collect findings, classify by tier, auto-fix the confident ones, prompt for soft-blocks, queue report-only findings for PR comments.
-  3. Re-run only the checks whose findings were addressed. Cap at 3 iterations (2 for the coverage sub-loop nested inside).
-  4. Commit auto-fixes as a single `fix(review): address verify findings` commit (single quotes per CLAUDE.md).
+  **Active checks for this run:** <comma-separated list of enabled skills, e.g., `/standards-check`, `/review`, `/security-review`, `/doc-review`, `/simplify`, `/coverage-check` — omit any disabled by `--skip-<check>` flags. `/coverage-check` is included only when a coverage tool is detectable for the project.>
 
-  Active checks for this run: <list, with skipped checks omitted>
+  ### Per-iteration flow
+
+  1. **Spawn subagents in parallel.** In a single message, issue one `Agent` call per active check. Each:
+     - `subagent_type: "verify-runner"`
+     - `description`: short, e.g., `"Run /standards-check on the diff"`
+     - `prompt`: a self-contained instruction along these lines:
+       ```
+       Run /<skill-name> against the current diff. The target branch is
+       <target-branch>. Pass --target <target-branch> to the skill.
+
+       Return the skill's stdout verbatim — no prose, no markdown fences,
+       no rewriting of its schema. Most skills emit a JSON array of
+       findings; /coverage-check emits { "summary": {...}, "findings":
+       [...] }. If there are no findings, forward whatever empty form
+       the skill produced ([] or { "summary": null, "findings": [] }).
+       ```
+
+  2. **Collect findings.** From each subagent's response, extract the findings list. For skills emitting a JSON array (`/standards-check`, `/review`, `/security-review`, `/doc-review`, `/simplify`), the response *is* the list. For `/coverage-check`, read `findings` out of the `{summary, findings}` object and stash `summary` separately (used in step 4 for the coverage sub-loop and in the verify-summary). Each finding carries an implicit "source" tag — the skill it came from — by virtue of which subagent returned it.
+
+  3. **Classify by tier.**
+     - `hard_block` → must fix before push.
+     - `soft_block` → fix or override per finding via `AskUserQuestion`.
+     - `report` → set aside for PR comments.
+
+  4. **Resolve.**
+     - **Hard blocks.** Fix in-place. Stage the fix.
+     - **Soft blocks.** For each, call `AskUserQuestion` with a short version of the finding's `message` (plus file/line if present). Options: `Fix` (auto-fix), `Override` (proceed without fixing — the finding moves to the PR-comment queue), `Abort` (stop /implement).
+       - For coverage `soft_block` findings, the auto-fix path branches on `chunk_kind`:
+         - `pure_logic` and `trivial` → write tests.
+         - `untestable` → propose adding an exclusion comment with rationale; user confirms.
+         - `generated` → add the project's coverage-tool exclusion marker (`# pragma: no cover`, `// istanbul ignore next`, `[ExcludeFromCodeCoverage]`, etc.).
+       - The coverage sub-loop is capped at **2 iterations** independent of the outer cap.
+     - **Report findings.** Queue for PR comments. Do not modify code.
+
+  5. **Commit auto-fixes.** Stage all changes from this iteration and commit:
+     ```
+     git add <specific files>
+     git commit -m 'fix(review): address verify findings'
+     ```
+     Use single quotes per the repo's CLAUDE.md.
+
+  6. **Re-run only addressed checks.** Spawn a new parallel batch of verify-runner subagents — but only for the checks whose findings produced fixes in this iteration. Skip checks whose findings were unchanged (still pending PR comments) or whose findings were `Override`d.
+
+  7. **Iteration cap.** Stop after **3 outer iterations**. If hard-blocks remain at the cap, surface them via `AskUserQuestion` (`Continue Anyway` / `Abort`). If the user picks Continue, those hard-blocks demote to `report` and ride along as PR comments.
 
   ## After coding
   - Push the branch: `git push -u origin <branch-name>`
   - Create a **draft** PR via `<pr-tool> --draft --target <target-branch>` (or the equivalent flag set for the chosen PR-creation skill).
-  - **Update the PR description** with a verify-summary block:
+  - **Post verify outputs as PR comments** directly via `gh` / `az` / MCP. Do **not** dispatch this to the PR-creation skill — keep that skill focused on PR creation.
+
+    **(a) Verify-summary as a PR-level (overall) comment.** One comment containing:
+
     ```
     ## Verify summary
-    Ran <N> checks in parallel.
-    - Auto-fixed: <count>
-    - Surfaced (soft-block, addressed by user): <count>
-    - Unresolved (report-only, see review comments): <count>
+    Ran <N> checks in parallel: <comma-separated list of skills run>.
+    - Hard-blocks fixed: <count>
+    - Soft-blocks fixed:  <count>
+    - Soft-blocks overridden: <count>
+    - Report-only findings posted as comments: <count>
+    - Findings posted as text (line-targeting failed): <count>
+    - Findings written to file (posting failed): <count>
     ```
-  - **Post unresolved report-only findings as review comments** directly from `/implement` (don't dispatch this to the PR-creation skill — see "Posting PR comments" below).
+
+    If a check was skipped (e.g., `--skip-coverage`), say so explicitly: `Coverage skipped (--skip-coverage)`.
+
+    Posting commands:
+    - GitHub: `gh pr comment <pr> --body '<body>'` (the issue/conversation comment, not a review comment)
+    - Azure DevOps: `az repos pr comment add` or `mcp__ado__repo_create_pr_thread` (PR-level thread)
+
+    **(b) Each unresolved report-only finding as a line-targeted review comment**, with this fallback chain:
+
+    1. **Line-targeted comment.** Requires valid `file` + `line` AND that line being inside the PR's diff.
+       - GitHub: `gh api repos/:owner/:repo/pulls/:pr/comments` with `path`, `line`, `commit_id`, `body`. GitHub MCP if installed.
+       - Azure DevOps: `az repos pr comment add --thread-context file:line` or ADO MCP `mcp__ado__repo_create_pr_thread` equivalent.
+    2. **PR-level overall comment** for the same finding, using the same posting command as the verify-summary. In the body, prefix with the `<file>:<line>` so the original target isn't lost.
+    3. **File fallback.** Append the finding to `~/.claude/verify-findings/<owner>-<repo>-pr-<n>-<ISO timestamp>.md` (create the directory if needed). One file per /implement run; one section per finding with file/line, source skill, message.
+
+    The verify-summary itself follows the same chain starting at step 2 (it's not line-scoped): PR-level → file.
+
+    After all postings finish, if any findings ended up in the file fallback, print the file's full path so the user can find them.
+
   - Display a summary: branch name, number of commits, and PR URL.
   - Print a copiable command for the user to rename the session: `/rename PR #<number>: <title>` (use the PR number and title from the PR you just created). Note: `/rename` is a built-in CLI command that only the user can execute — Claude cannot run it programmatically.
 
@@ -131,11 +195,7 @@ When this skill is invoked:
 
   **Important:** All placeholders (`<branch-name>`, `<target-branch>`, `<pr-tool>`, `<sanitized-worktree-name>`) must be replaced with concrete values **before** writing to the plan file. The bracketed worktree-mode/no-worktree paragraph picks one and only one based on whether the user passed `--no-worktree`. The plan content follows after the `---` separator.
 
-## Verify-phase orchestration
-
-The verify phase is the heart of `/implement`'s quality gate. It runs after the last per-step commit and before `git push`. Skip the whole phase with `--skip-verify`; skip individual checks with `--skip-<check>`.
-
-### Default checks
+## Verify checks reference
 
 | Check | Skill | Default tier of findings |
 |-------|-------|--------------------------|
@@ -146,87 +206,7 @@ The verify phase is the heart of `/implement`'s quality gate. It runs after the 
 | Simplify | `/simplify` | `report` |
 | Coverage | `/coverage-check` | `soft_block` if threshold below; else `report` |
 
-`/coverage-check` is only spawned when its preconditions are met (a coverage tool can be detected for the project). The other five run unconditionally unless their `--skip-<check>` flag is passed.
-
-### Per-iteration flow
-
-1. **Spawn subagents in parallel.** In a single message, issue one `Agent` call per enabled check. Each:
-   - `subagent_type: "verify-runner"`
-   - `description`: short, e.g. `"Run /standards-check on the diff"`
-   - `prompt`: a self-contained instruction like:
-     ```
-     Run /<skill-name> against the current diff. The target branch is
-     `<target-branch>`. Pass --target <target-branch> to the skill.
-
-     Return the skill's stdout verbatim — no prose, no markdown fences,
-     no rewriting of its schema. Most skills emit a JSON array of
-     findings; `/coverage-check` emits `{ "summary": {...}, "findings":
-     [...] }`. If there are no findings, forward whatever empty form
-     the skill produced (`[]` or `{ "summary": null, "findings": [] }`).
-     ```
-
-2. **Collect.** From each subagent's response, extract the findings list — for skills that emit a JSON array (`/standards-check`, `/review`, `/security-review`, `/doc-review`, `/simplify`), the response *is* the list; for `/coverage-check`, read `findings` out of the `{summary, findings}` object and stash `summary` separately (used in step 4 for the coverage sub-loop and in the verify-summary PR block). Each finding carries an implicit "source" tag — the skill it came from — by virtue of which subagent returned it. Track this so iteration 2+ knows which subagents to re-spawn.
-
-3. **Classify.** Bucket findings by tier:
-   - `hard_block` — must fix before push.
-   - `soft_block` — fix or override per finding via `AskUserQuestion`.
-   - `report` — set aside for PR comments.
-
-4. **Resolve.**
-
-   **Hard blocks.** Fix in-place. Stage the fix.
-
-   **Soft blocks.** For each, call `AskUserQuestion`:
-   - Question text: a short version of the finding's `message`, plus the file/line if present.
-   - Options: `Fix` (auto-fix the finding), `Override` (proceed without fixing — the finding moves to PR-comment queue), `Abort` (stop `/implement` entirely).
-   - For coverage `soft_block` findings, the auto-fix path branches on `chunk_kind`:
-     - `pure_logic` and `trivial` → write tests.
-     - `untestable` → propose adding an exclusion comment with rationale; user confirms.
-     - `generated` → add the project's coverage-tool exclusion marker (e.g., `# pragma: no cover`, `// istanbul ignore next`, `[ExcludeFromCodeCoverage]`).
-     The coverage sub-loop is capped at **2 iterations** independent of the outer cap.
-
-   **Report findings.** Queue for PR comments. Do not modify code.
-
-5. **Commit auto-fixes.** Stage all changes from this iteration and commit:
-   ```
-   git add <specific files>
-   git commit -m 'fix(review): address verify findings'
-   ```
-   Use single quotes per the repo's CLAUDE.md.
-
-6. **Re-run only addressed checks.** Spawn a new parallel batch of verify-runner subagents — but only for the checks whose findings produced fixes in this iteration. Skip checks whose findings were unchanged (still pending PR comments) or whose findings were `Override`d.
-
-7. **Iteration cap.** Stop after **3 outer iterations**. If hard-blocks remain at the cap, surface them via `AskUserQuestion` (with options `Continue Anyway` / `Abort`) and let the user decide. If the user picks Continue, those hard-blocks demote to `report` and ride along as PR comments.
-
-### Posting PR comments
-
-After the draft PR is created (by the chosen PR-creation skill), `/implement` posts the unresolved report-only findings directly. Don't ask the PR-creation skill to do this — keep that skill focused on PR creation.
-
-| Provider | Body-level comment | Line-targeted comment |
-|----------|--------------------|------------------------|
-| GitHub | `gh pr review <pr> --comment --body '...'` | `gh api repos/:owner/:repo/pulls/:pr/comments` (with `path`, `line`, `commit_id`, `body`) — or GitHub MCP if installed |
-| Azure DevOps | `az repos pr comment add` (PR-level) | `az repos pr comment add` with `--thread-context file:line` — or ADO MCP `mcp__ado__repo_create_pr_thread`/equivalent |
-
-A line-targeted comment requires a valid `file` + `line` AND that line being inside the PR's diff. If targeting fails:
-1. Retry as a body-level comment for the same finding.
-2. If body-level also fails (e.g., transient API error), append the unposted findings to the PR description's "Unresolved" section so they're not lost.
-
-### Verify-summary block (PR description)
-
-Insert this near the top of the PR description, after the auto-generated content from the PR-creation skill:
-
-```
-## Verify summary
-Ran <N> checks in parallel: <comma-separated list of skills run>.
-
-- Hard-blocks fixed: <count>
-- Soft-blocks fixed:  <count>
-- Soft-blocks overridden: <count>
-- Report-only findings posted as comments: <count>
-- Findings posted as text (line-targeting failed): <count>
-```
-
-If a check was skipped (e.g., `--skip-coverage`), say so explicitly: `Coverage skipped (--skip-coverage)`.
+The verify phase's full per-iteration flow and PR-comment posting fallback chain (line-targeted → PR-level → file) are inlined in the workflow template above so the plan-file reader has everything it needs without consulting this file.
 
 ## Error Handling
 

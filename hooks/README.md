@@ -7,7 +7,8 @@ Event-driven scripts that run in response to Claude Code tool calls.
 | Hook | Description | Platform |
 |------|-------------|----------|
 | [`notify-windows`](notify-windows/) | Windows toast notifications for Claude Code events (permission prompts, questions, task completion) | Windows |
-| [`verify-runner-bash-guard`](verify-runner-bash-guard/) | PreToolUse hook that restricts Bash commands inside the `verify-runner` subagent to a read-only allowlist; falls back to no-op (allow) when subagent context can't be detected so the parent and other agents are never blocked | Cross-platform (PS + bash) |
+
+> **Note:** Agent-scoped PreToolUse hooks (e.g., `verify-runner-bash-guard`) live inside the agent's folder under `agents/<name>/` and are registered via the agent's frontmatter — not via `settings.json`. They do not appear in this directory. See [`agents/verify-runner/`](../agents/verify-runner/) for the canonical example.
 
 ## Installation
 

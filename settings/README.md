@@ -11,7 +11,6 @@ Reusable Claude Code settings snippets and configurations.
 | GitHub | `github.json` | GitHub CLI (`gh`) permissions — PR creation, merging, and status |
 | .NET | `dotnet.json` | C#/.NET permissions and the C# LSP plugin |
 | Work Status | `work-status.json` | MCP tool permissions for weekly status tracking (ADO + Todoist) |
-| verify-runner-bash-guard | `verify-runner-bash-guard.json` | Registers the [`verify-runner-bash-guard`](../hooks/verify-runner-bash-guard/) PreToolUse hook (Windows path) |
 
 ## Installation
 

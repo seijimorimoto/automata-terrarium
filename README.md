@@ -41,7 +41,7 @@ ln -sf "$(pwd)/skills" .claude/skills
 
 ```
 skills/    - Custom slash-command skills (.md files)
-agents/    - Custom subagent definitions (tool-restricted markdown files)
+agents/    - Custom subagent definitions; flat .md files or per-agent folders for agents with co-located resources (e.g., hook scripts)
 hooks/     - Event-driven hook scripts
 settings/  - Reusable settings snippets and configurations
 bin/       - Sync executables that install skills/agents/hooks/settings to ~\.claude\
@@ -94,13 +94,14 @@ Each directory contains its own README with setup instructions. To use any item,
 | Hook | Description | Platform | Docs |
 |------|-------------|----------|------|
 | `notify-windows` | Windows toast notifications for Claude Code events | Windows | [README](hooks/notify-windows/README.md) |
-| `verify-runner-bash-guard` | PreToolUse hook restricting `verify-runner` subagent Bash to a read-only allowlist; falls back to no-op when context can't be detected | Cross-platform | [README](hooks/verify-runner-bash-guard/README.md) |
+
+> Agent-scoped PreToolUse hooks (e.g., the `verify-runner-bash-guard` that ships with the `verify-runner` agent) are registered via their owning agent's frontmatter — not via `settings.json` — and live alongside the agent's `.md` file. See `agents/<name>/` folders for the canonical pattern.
 
 ### Available agents
 
 | Agent | Description | Tools | Docs |
 |-------|-------------|-------|------|
-| `verify-runner` | Read-only verification subagent. Runs one verification skill (e.g., `/standards-check`, `/doc-review`, `/coverage-check`, `/review`, `/security-review`, `/simplify`) against the diff and returns findings as JSON. Cannot modify files. | `Skill, Read, Grep, Glob, Bash` | [agents/verify-runner.md](agents/verify-runner.md) · [agents/README.md](agents/README.md) |
+| `verify-runner` | Read-only verification subagent. Runs one verification skill (e.g., `/standards-check`, `/doc-review`, `/coverage-check`, `/review`, `/security-review`, `/simplify`) against the diff and returns findings as JSON. Cannot modify files; Bash restricted to a read-only allowlist by a co-located PreToolUse hook. | `Skill, Read, Grep, Glob, Bash` | [agents/verify-runner/](agents/verify-runner/) |
 
 ### Sync infrastructure (`bin/`)
 
@@ -111,7 +112,7 @@ The `bin/` folder contains executables that install everything in this repo into
 | `seiji-claude-install` | One-time PATH setup. Idempotent — re-running is safe. |
 | `seiji-claude-sync` | Wrapper. Runs every per-category sync in order: skills → agents → hooks → settings. |
 | `seiji-claude-sync-skills` | Copies each subfolder of `skills/` to `~\.claude\skills\<name>\`. |
-| `seiji-claude-sync-agents` | Copies each `agents/*.md` (skipping README) to `~\.claude\agents\<name>.md`. |
+| `seiji-claude-sync-agents` | Copies each `agents/<name>.md` (flat) or `agents/<name>/` (folder, e.g. for an agent that ships with co-located hook scripts) to `~\.claude\agents\`. Skips `agents/README.md`. |
 | `seiji-claude-sync-hooks` | Copies each subfolder of `hooks/` to `~\.claude\hooks\<name>\`. |
 | `seiji-claude-sync-settings` | Merges every `settings\*.json` into `~\.claude\settings.json` per the documented merge rules. |
 

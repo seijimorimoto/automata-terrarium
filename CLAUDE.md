@@ -54,8 +54,10 @@ chore: update .gitignore
 
 ```
 skills/      - Claude Code skills (each skill in its own subdirectory)
-hooks/       - Claude Code event-driven hook scripts
+agents/      - Claude Code subagents (each agent in its own subdirectory; co-locate any frontmatter-registered hook scripts here)
+hooks/       - Claude Code event-driven hook scripts (session-wide hooks; agent-scoped hooks live with the agent under agents/)
 settings/    - Reusable settings snippets
+bin/         - Sync executables (seiji-claude-install, seiji-claude-sync*)
 git-hooks/   - Git hooks for repo workflow (not Claude hooks)
 ```
 
@@ -88,6 +90,7 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
 ## Guidelines
 
 - Each skill must live in its own folder under `skills/`.
-- Every **discoverable entry-point directory** should have a `README.md` explaining its contents and usage. This means each skill, hook, and settings-preset directory, plus any directory linked from a parent `README.md`. Implementation-detail subdirectories (e.g., `scripts/`, `assets/`) don't need their own README if the parent already documents them.
+- Each agent must live in its own folder under `agents/`. The agent's `.md` file, its `README.md`, and any co-located resources (hook scripts the agent registers via its frontmatter, helper scripts) all sit alongside each other inside that folder. This mirrors the skills convention and gives every agent a stable home for current and future resources, regardless of whether it ships with hooks today.
+- Every **discoverable entry-point directory** should have a `README.md` explaining its contents and usage. This means each skill, agent, hook, and settings-preset directory, plus any directory linked from a parent `README.md`. Implementation-detail subdirectories (e.g., `scripts/`, `assets/`) don't need their own README if the parent already documents them.
 - Do not commit secrets, credentials, or `.env` files.
 - Permission entries in settings preset files (`settings\*.json`) must be sorted alphabetically.

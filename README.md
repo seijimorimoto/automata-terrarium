@@ -41,7 +41,7 @@ ln -sf "$(pwd)/skills" .claude/skills
 
 ```
 skills/    - Custom slash-command skills (.md files)
-agents/    - Custom subagent definitions; flat .md files or per-agent folders for agents with co-located resources (e.g., hook scripts)
+agents/    - Custom subagent definitions; one folder per agent, holding the .md, README, and any co-located resources (e.g., hook scripts)
 hooks/     - Event-driven hook scripts
 settings/  - Reusable settings snippets and configurations
 bin/       - Sync executables that install skills/agents/hooks/settings to ~\.claude\
@@ -112,7 +112,7 @@ The `bin/` folder contains executables that install everything in this repo into
 | `seiji-claude-install` | One-time PATH setup. Idempotent — re-running is safe. |
 | `seiji-claude-sync` | Wrapper. Runs every per-category sync in order: skills → agents → hooks → settings. |
 | `seiji-claude-sync-skills` | Copies each subfolder of `skills/` to `~\.claude\skills\<name>\`. |
-| `seiji-claude-sync-agents` | Copies each `agents/<name>.md` (flat) or `agents/<name>/` (folder, e.g. for an agent that ships with co-located hook scripts) to `~\.claude\agents\`. Skips `agents/README.md`. |
+| `seiji-claude-sync-agents` | Copies each `agents/<name>/` folder to `~\.claude\agents\<name>\` (whole tree). Also accepts flat `agents/<name>.md` for compatibility with externally-authored agents. Skips `agents/README.md`. |
 | `seiji-claude-sync-hooks` | Copies each subfolder of `hooks/` to `~\.claude\hooks\<name>\`. |
 | `seiji-claude-sync-settings` | Merges every `settings\*.json` into `~\.claude\settings.json` per the documented merge rules. |
 

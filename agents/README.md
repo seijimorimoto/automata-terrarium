@@ -2,13 +2,18 @@
 
 Custom Claude Code subagent definitions.
 
-Agents live at one of:
+**Convention in this repo: every agent lives in its own folder.** The agent's markdown file, its README, and any co-located resources (hook scripts, helpers, fixtures) sit alongside each other. This mirrors the `skills/<name>/SKILL.md` shape and keeps agents that are flat today ready to gain a hook tomorrow without any migration.
 
-- `~\.claude\agents\<name>.md` — flat layout (user-level)
-- `~\.claude\agents\<name>\<name>.md` — folder layout (user-level), used when the agent ships with co-located resources such as a PreToolUse hook script
-- `<project>\.claude\agents\<...>` — same two layouts, project-level
+```
+agents/<name>/
+├── <name>.md   ← the agent definition (YAML frontmatter + system prompt)
+├── README.md   ← what the agent does, how it's installed, any caveats
+└── ...         ← optional: hook scripts, helpers, sample inputs, etc.
+```
 
-Both layouts are discovered by Claude Code at session start. Use the folder layout when an agent registers hooks in its frontmatter and the hook scripts should ship alongside the agent (so a single sync places everything in one place — see [`verify-runner/`](verify-runner/) for the canonical example).
+Synced to user-level, that becomes `~\.claude\agents\<name>\<name>.md` (or `<project>\.claude\agents\<name>\...` at project level). Claude Code discovers nested agent files in addition to flat ones, so the folder layout has no downside vs. flat. See [`verify-runner/`](verify-runner/) for the canonical example.
+
+Flat-layout agents (`agents/<name>.md`) are still supported by the sync script for compatibility with hand-authored or third-party agents that ship that way, but new agents in this repo should follow the folder convention.
 
 Agents differ from skills in two important ways:
 
@@ -17,28 +22,25 @@ Agents differ from skills in two important ways:
 
 ## Available agents
 
-| Agent | Purpose | Tools | Layout |
-|-------|---------|-------|--------|
-| [`verify-runner`](verify-runner/) | Run one verification skill (e.g., `/standards-check`, `/doc-review`, `/coverage-check`, `/review`, `/security-review`, `/simplify`) against the diff and return findings as JSON. Bash restricted to a read-only allowlist by a frontmatter-registered hook. | `Skill, Read, Grep, Glob, Bash` | folder (co-located bash-guard hook) |
+| Agent | Purpose | Tools |
+|-------|---------|-------|
+| [`verify-runner`](verify-runner/) | Run one verification skill (e.g., `/standards-check`, `/doc-review`, `/coverage-check`, `/review`, `/security-review`, `/simplify`) against the diff and return findings as JSON. Bash restricted to a read-only allowlist by a co-located, frontmatter-registered hook. | `Skill, Read, Grep, Glob, Bash` |
 
 ## Installation
 
-Agents are synced to user-level via [`bin/seiji-claude-sync-agents`](../bin/README.md), which copies each entry in `agents/` to `~\.claude\agents\`:
+Agents are synced to user-level via [`bin/seiji-claude-sync-agents`](../bin/README.md), which copies each `agents/<name>/` folder to `~\.claude\agents\<name>\` (whole tree). The wrapper `seiji-claude-sync` calls it as part of the four-step sync (skills → agents → hooks → settings).
 
-- `agents/<name>.md` (flat) → `~\.claude\agents\<name>.md`
-- `agents/<name>/` (folder, e.g. `verify-runner/`) → `~\.claude\agents\<name>\` (whole tree)
-
-The wrapper `seiji-claude-sync` calls `seiji-claude-sync-agents` as part of the four-step sync (skills → agents → hooks → settings).
+The script also accepts flat `agents/<name>.md` entries for compatibility with externally-authored agents, but everything in this repo follows the folder convention.
 
 Manual install (if you're not using the sync infrastructure):
 
 ```powershell
-# Windows (PowerShell) — folder-layout agent
+# Windows (PowerShell)
 Copy-Item -Recurse agents\verify-runner ~\.claude\agents\
 ```
 
 ```sh
-# Linux / macOS / Git Bash — folder-layout agent
+# Linux / macOS / Git Bash
 cp -r agents/verify-runner ~/.claude/agents/
 ```
 
@@ -82,13 +84,12 @@ If you don't need any of those, a skill is simpler and more discoverable (no `Ag
 
 ## Defining a new agent
 
-1. Pick a layout:
-   - **Flat** (`agents/<name>.md`) for agents that don't need any co-located scripts.
-   - **Folder** (`agents/<name>/<name>.md`) when the agent registers a hook in its frontmatter and you want the hook scripts to ship alongside the agent definition.
-2. Create the `.md` file at the chosen path with the frontmatter template above.
-3. Choose `tools:` carefully — list **only** what the agent legitimately needs. Anything not listed cannot be invoked by the agent.
-4. Write the system prompt. State the agent's mission, its boundaries (what it must NOT do), and the expected output format.
-5. Test with `Agent(subagent_type: "<name>", prompt: "...")` from a parent session.
-6. Sync to user-level via `seiji-claude-sync-agents` (or the wrapper).
+1. Create the agent folder: `agents/<name>/`.
+2. Inside, create `agents/<name>/<name>.md` with the frontmatter template above.
+3. Add `agents/<name>/README.md` describing what the agent does, install steps, and any caveats.
+4. Choose `tools:` carefully — list **only** what the agent legitimately needs. Anything not listed cannot be invoked by the agent.
+5. Write the system prompt. State the agent's mission, its boundaries (what it must NOT do), and the expected output format.
+6. Test with `Agent(subagent_type: "<name>", prompt: "...")` from a parent session.
+7. Sync to user-level via `seiji-claude-sync-agents` (or the wrapper).
 
-For agents that need runtime restrictions beyond the static `tools:` list (e.g., "can run Bash, but only read-only Bash commands"), register a `PreToolUse` hook in the agent's frontmatter `hooks:` block. Per the [Claude Code subagent docs](https://code.claude.com/docs/en/sub-agents#conditional-rules-with-hooks), frontmatter hooks **only run while that specific subagent is active** — the harness scopes them deterministically, no detection logic needed in the script. The [`verify-runner`](verify-runner/) agent uses this pattern with its co-located `verify-runner-bash-guard` script.
+For agents that need runtime restrictions beyond the static `tools:` list (e.g., "can run Bash, but only read-only Bash commands"), register a `PreToolUse` hook in the agent's frontmatter `hooks:` block and ship the script next to the agent file (e.g., `agents/<name>/<name>-bash-guard.ps1`). Per the [Claude Code subagent docs](https://code.claude.com/docs/en/sub-agents#conditional-rules-with-hooks), frontmatter hooks **only run while that specific subagent is active** — the harness scopes them deterministically, no detection logic needed in the script. The [`verify-runner`](verify-runner/) agent uses this pattern with its co-located `verify-runner-bash-guard` script.

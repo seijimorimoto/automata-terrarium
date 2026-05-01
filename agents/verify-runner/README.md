@@ -20,11 +20,11 @@ The agent's `tools:` list already excludes `Edit`, `Write`, and `NotebookEdit` �
 
 ## Hook scope and registration
 
-The hook is registered via the `hooks:` block in [`verify-runner.md`](verify-runner.md)'s frontmatter, not via `~/.claude/settings.json`. Per the [Claude Code subagent docs](https://code.claude.com/docs/en/sub-agents#conditional-rules-with-hooks), frontmatter hooks **only run while that specific subagent is active** and are cleaned up when it finishes. That means:
+The hook is registered via the `hooks:` block in [`verify-runner.md`](verify-runner.md)'s frontmatter, not via `~\.claude\settings.json`. Per the [Claude Code subagent docs](https://code.claude.com/docs/en/sub-agents#conditional-rules-with-hooks), frontmatter hooks **only run while that specific subagent is active** and are cleaned up when it finishes. That means:
 
 - The hook only runs inside `verify-runner` — never in the parent `/implement` session, never in other agents.
 - No payload-field probing, no detection heuristics, no fallback. The harness does the scoping.
-- No entry in `~/.claude/settings.json`.
+- No entry in `~\.claude\settings.json`.
 
 The frontmatter `command:` value is:
 
@@ -32,7 +32,7 @@ The frontmatter `command:` value is:
 pwsh -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/agents/verify-runner/scripts/verify-runner-bash-guard.ps1"
 ```
 
-PowerShell expands `$HOME` to the user's home regardless of OS, and the `~/.claude/agents/verify-runner/` path is where `seiji-claude-sync-agents` installs this folder. POSIX users who prefer the bash variant: edit the `command:` line in `verify-runner.md` to:
+PowerShell expands `$HOME` to the user's home regardless of OS, and the `~\.claude\agents\verify-runner\` path is where `seiji-claude-sync-agents` installs this folder. POSIX users who prefer the bash variant: edit the `command:` line in `verify-runner.md` to:
 
 ```text
 bash "$HOME/.claude/agents/verify-runner/scripts/verify-runner-bash-guard.sh"
@@ -60,7 +60,7 @@ The script writes nothing to stdout in either case.
 
 ## Installation
 
-Run `seiji-claude-sync` from the repo root (or `seiji-claude-sync-agents` alone if you only want agents). That copies this whole folder to `~/.claude/agents/verify-runner/`. Once the agent file is in place, the harness picks up the frontmatter hook automatically — no settings merge needed.
+Run `seiji-claude-sync` from the repo root (or `seiji-claude-sync-agents` alone if you only want agents). That copies this whole folder to `~\.claude\agents\verify-runner\`. Once the agent file is in place, the harness picks up the frontmatter hook automatically — no settings merge needed.
 
 ```powershell
 # Windows (PowerShell)
@@ -76,10 +76,10 @@ seiji-claude-sync
 
 ## How to disable
 
-Remove or rename the `hooks:` block in `~/.claude/agents/verify-runner/verify-runner.md`. The agent will still work — it just won't enforce the read-only Bash allowlist anymore. The verify-runner system prompt's defense-in-depth language tells the agent to self-restrict, so removing the hook isn't catastrophic for already-trusted models, but you lose the harness-enforced backstop.
+Remove or rename the `hooks:` block in `~\.claude\agents\verify-runner\verify-runner.md`. The agent will still work — it just won't enforce the read-only Bash allowlist anymore. The verify-runner system prompt's defense-in-depth language tells the agent to self-restrict, so removing the hook isn't catastrophic for already-trusted models, but you lose the harness-enforced backstop.
 
 ## Limitations
 
 - **POSIX requires `jq`.** The bash variant uses jq for safe JSON parsing. If jq isn't on PATH, the hook logs a notice on stderr and allows.
 - **PowerShell-default `command:`.** The frontmatter ships with the `.ps1` invocation. POSIX users who don't have PowerShell installed should swap to the `.sh` variant per the snippet above.
-- **Path is hardcoded to `$HOME/.claude/agents/verify-runner/scripts/`.** The hook script is found via that path, so the agent must be installed at user level. Project-level installation (`<project>/.claude/agents/verify-runner/`) would require editing the `command:` to use `"$CLAUDE_PROJECT_DIR/.claude/agents/verify-runner/scripts/..."`.
+- **Path is hardcoded to `~\.claude\agents\verify-runner\scripts\`** (rendered by PowerShell from `$HOME` in the frontmatter command). The hook script is found via that path, so the agent must be installed at user level. Project-level installation (`<project>\.claude\agents\verify-runner\`) would require editing the `command:` to use the literal shell expression `"$CLAUDE_PROJECT_DIR/.claude/agents/verify-runner/scripts/..."` (forward slashes are kept inside the YAML string, matching the rest of the frontmatter command).

@@ -10,7 +10,7 @@ After a plan has been approved (e.g., via plan mode), `/implement` carries it ou
   - GitHub repos: `/quick-pr` (default)
   - Azure DevOps repos: `/ado-pr` (default)
   - Override the default with `--pr-tool`.
-- **The verify-runner agent** at `~/.claude/agents/verify-runner/verify-runner.md` (synced from this repo's `agents/verify-runner/` folder). Required unless you run with `--skip-verify`. The folder also contains the co-located `verify-runner-bash-guard` PreToolUse hook (under `scripts/`); it's registered automatically via the agent's frontmatter `hooks:` block, so syncing the agent folder also installs the hook.
+- **The verify-runner agent** at `~\.claude\agents\verify-runner\verify-runner.md` (synced from this repo's `agents/verify-runner/` folder). Required unless you run with `--skip-verify`. The folder also contains the co-located `verify-runner-bash-guard` PreToolUse hook (under `scripts/`); it's registered automatically via the agent's frontmatter `hooks:` block, so syncing the agent folder also installs the hook.
 - **The verify checks the verify phase calls.** Required unless skipped:
   - `/standards-check`, `/doc-review`, `/coverage-check` (in this repo's `skills/`)
   - `/review`, `/security-review`, `/simplify` (Anthropic-shipped Claude Code skills, available by default)
@@ -96,7 +96,7 @@ This skill orchestrates `git`, `gh`/`az`, and your PR-creation skill of choice; 
 11. PR comments   →  Post unresolved report-only findings as review comments
                      with the fallback chain: line-targeted (via gh/az/MCP)
                      → PR-level overall comment → file at
-                     ~/.claude/verify-findings/<owner>-<repo>-pr-<n>-<ts>.md.
+                     ~\.claude\verify-findings\<owner>-<repo>-pr-<n>-<ts>.md.
 12. Summary       →  Print branch, commit count, PR URL, /rename hint
                      (and the verify-findings file path if anything
                      landed in the file fallback).

@@ -115,7 +115,7 @@ The auto-detection table in `SKILL.md` maps remote URL patterns to PR-creation s
 1. Add a row to the table in `SKILL.md` with the URL pattern and the new skill's slash name.
 2. Confirm the new skill accepts a `--draft` flag and a `--target`/`--base` flag for the target branch (or document the exact flag set in the table).
 
-`/implement` does not modify the dispatched skills' behavior — they're invoked unchanged. Comment-posting on the resulting PR is done directly from `/implement` (see the verify phase docs once that lands), so PR-creation skills don't need to know anything about line-level review comments.
+`/implement` does not modify the dispatched skills' behavior — they're invoked unchanged. Comment-posting on the resulting PR is done directly from `/implement` (see the "After coding" section of `SKILL.md`'s workflow template for the line-targeted → PR-level → file fallback chain), so PR-creation skills don't need to know anything about line-level review comments.
 
 ## Troubleshooting
 

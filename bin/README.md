@@ -11,7 +11,7 @@ Per-category scripts cover skills, hooks, and settings. The `seiji-claude-sync` 
 | `seiji-claude-install` (`.ps1`) | One-time PATH setup. Appends a keyed marker block to your shell profile pointing at this repo's `bin/`. Idempotent. |
 | `seiji-claude-sync` (`.ps1`) | Wrapper. Runs every per-category sync in order. |
 | `seiji-claude-sync-skills` (`.ps1`) | Copies each subfolder of `skills/` to `~\.claude\skills\<name>\`. |
-| `seiji-claude-sync-agents` (`.ps1`) | Copies each `agents/*.md` (skipping README) to `~\.claude\agents\<name>.md`. |
+| `seiji-claude-sync-agents` (`.ps1`) | Copies each `agents/<name>/` folder to `~\.claude\agents\<name>\` (whole tree). Also accepts flat `agents/<name>.md` for compatibility with externally-authored agents. Skips `agents/README.md`. |
 | `seiji-claude-sync-hooks` (`.ps1`) | Copies each subfolder of `hooks/` to `~\.claude\hooks\<name>\`. Script-files only — does not register hooks in `settings.json`. |
 | `seiji-claude-sync-settings` (`.ps1`) | Merges every `settings\*.json` into `~\.claude\settings.json` per the rules below. |
 

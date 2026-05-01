@@ -76,12 +76,15 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
 
 ### Installation instructions
 
-- Each skill and hook README must include:
+- Each skill, agent, and hook README must include:
   1. **Prerequisites** with install commands (not just names).
   2. **Copy-to-`.claude`** step showing how to install at user or project level.
-  3. **Registration** step (for hooks: settings.json config; for skills: just the copy is enough).
-- Parent-level READMEs (`skills/README.md`, `hooks/README.md`) must include an **Available [Skills/Hooks]** table listing all items.
-- The repo-level `README.md` must mirror those tables for discoverability.
+  3. **Registration** step. Pick the case that applies:
+     - **Skills and agents that don't ship a hook** — just the copy is enough.
+     - **Skills or agents that DO ship a hook** (declared in the SKILL.md / agent's `<name>.md` frontmatter `hooks:` block) — no `settings.json` edit; the harness picks up the frontmatter hook automatically once the skill/agent is in place. Explain this in the README so users don't go looking for a settings change.
+     - **Session-wide hooks** under `hooks/` — register in `~\.claude\settings.json` (or the project-level equivalent) per the snippet in the hook's README.
+- Parent-level READMEs (`skills/README.md`, `agents/README.md`, `hooks/README.md`) must include an **Available [Skills/Agents/Hooks]** table listing every item in that directory. `settings/README.md` and `bin/README.md` follow the same pattern for their own contents (presets and sync scripts respectively).
+- The repo-level `README.md` must mirror those tables (and the `bin/` script table) for discoverability.
 
 ### Naming
 

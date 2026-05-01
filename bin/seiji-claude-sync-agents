@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# seiji-claude-sync-agents — copy each <repo>/agents/*.md to ~/.claude/agents/.
+# seiji-claude-sync-agents — copy <repo>/agents/ entries to ~/.claude/agents/.
 # Use --dry-run to preview without writing.
 #
-# Agents are single markdown files (with YAML frontmatter); they don't
-# live in subfolders. This sync mirrors that file-level shape: each
-# agents/<name>.md becomes ~/.claude/agents/<name>.md.
+# Two layouts are supported:
+#   - Flat:    agents/<name>.md            -> ~/.claude/agents/<name>.md
+#   - Folder:  agents/<name>/<files...>    -> ~/.claude/agents/<name>/<files...>
+#
+# The folder layout co-locates an agent's resources (e.g., hook scripts the
+# agent registers via its frontmatter) with the agent definition itself.
+# README.md at the top of agents/ is repo documentation and is skipped.
 set -euo pipefail
 
 DRY_RUN=0
@@ -15,8 +19,12 @@ for arg in "$@"; do
       cat <<'EOF'
 Usage: seiji-claude-sync-agents [--dry-run]
 
-Copies each agents/*.md from this repo to ~/.claude/agents/<name>.md.
-With --dry-run, prints planned actions without writing.
+Copies each entry under <repo>/agents/ to ~/.claude/agents/:
+  - agents/<name>.md       -> ~/.claude/agents/<name>.md
+  - agents/<name>/         -> ~/.claude/agents/<name>/  (folder-style; whole tree)
+
+With --dry-run, prints planned actions without writing. The repo-level
+agents/README.md is skipped.
 EOF
       exit 0
       ;;
@@ -43,19 +51,37 @@ if [ "$DRY_RUN" -eq 0 ]; then
 fi
 
 count=0
+
+# Flat .md agent files at the top of agents/
 shopt -s nullglob
 for src in "$SRC_DIR"/*.md; do
   name="$(basename "$src")"
-  # Skip the README — it's repo documentation, not an agent definition.
   case "$name" in
     README.md|readme.md) continue ;;
   esac
   dst="$DST_DIR/$name"
   if [ "$DRY_RUN" -eq 1 ]; then
-    echo "[dry-run] sync agent '$name': $src -> $dst"
+    echo "[dry-run] sync agent '$name' (flat): $src -> $dst"
   else
     cp -f "$src" "$dst"
-    echo "synced agent '$name'"
+    echo "synced agent '$name' (flat)"
+  fi
+  count=$((count + 1))
+done
+shopt -u nullglob
+
+# Folder-style agents (each subfolder under agents/ becomes one user-level agent dir)
+shopt -s nullglob
+for src in "$SRC_DIR"/*/; do
+  [ -d "$src" ] || continue
+  name="$(basename "$src")"
+  dst="$DST_DIR/$name"
+  if [ "$DRY_RUN" -eq 1 ]; then
+    echo "[dry-run] sync agent '$name' (folder): $src -> $dst"
+  else
+    rm -rf "$dst"
+    cp -R "$src" "$dst"
+    echo "synced agent '$name' (folder)"
   fi
   count=$((count + 1))
 done

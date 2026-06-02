@@ -127,7 +127,8 @@ The `bin/` folder contains executables that install artifacts into user-level ag
 | `seiji-claude-sync-agents` | ✅ | ❌ | Copies Claude agents to `~\.claude\agents\`. |
 | `seiji-claude-sync-hooks` | ✅ | ❌ | Copies Claude hook scripts to `~\.claude\hooks\<name>\`. |
 | `seiji-claude-sync-settings` | ✅ | ❌ | Merges Claude settings into `~\.claude\settings.json`. |
-| `seiji-copilot-sync` | ❌ | ⚠️ | Planned Copilot wrapper for user-level sync. |
+| `seiji-copilot-sync` | ❌ | ⚠️ | Copilot wrapper for implemented per-category sync scripts; skips categories not implemented yet. |
+| `seiji-copilot-sync-skills` | ❌ | ✅ | Copies Copilot-compatible skills to `~\.copilot\skills\<name>\`. |
 
 Quick start:
 

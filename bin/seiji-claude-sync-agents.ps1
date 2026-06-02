@@ -4,6 +4,7 @@
 # Two layouts are supported:
 #   - Flat:    agents\<name>.md            -> ~\.claude\agents\<name>.md
 #   - Folder:  agents\<name>\<files...>    -> ~\.claude\agents\<name>\<files...>
+# Copilot custom agent profiles (*.agent.md) are excluded from Claude installs.
 #
 # The folder layout co-locates an agent's resources (e.g., hook scripts the
 # agent registers via its frontmatter) with the agent definition itself.
@@ -29,11 +30,29 @@ if (-not $DryRun -and -not (Test-Path -LiteralPath $DstDir)) {
     New-Item -ItemType Directory -Path $DstDir -Force | Out-Null
 }
 
+function Copy-AgentForClaude {
+    param(
+        [string]$Source,
+        [string]$Destination
+    )
+
+    if (Test-Path -LiteralPath $Destination) {
+        Remove-Item -LiteralPath $Destination -Recurse -Force
+    }
+    New-Item -ItemType Directory -Path $Destination -Force | Out-Null
+
+    Get-ChildItem -LiteralPath $Source -Force | ForEach-Object {
+        if (-not $_.PSIsContainer -and $_.Name -like '*.agent.md') { return }
+        Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $Destination $_.Name) -Recurse -Force
+    }
+}
+
 $count = 0
 
 # Flat .md agent files at the top of agents\
 Get-ChildItem -LiteralPath $SrcDir -Filter '*.md' -File | Sort-Object Name | ForEach-Object {
     if ($_.Name -ieq 'README.md') { return }
+    if ($_.Name -like '*.agent.md') { return }
     $src  = $_.FullName
     $name = $_.Name
     $dst  = Join-Path $DstDir $name
@@ -56,10 +75,7 @@ Get-ChildItem -LiteralPath $SrcDir -Directory | Sort-Object Name | ForEach-Objec
         Write-Host "[dry-run] sync agent '$name' (folder): $src -> $dst"
     }
     else {
-        if (Test-Path -LiteralPath $dst) {
-            Remove-Item -LiteralPath $dst -Recurse -Force
-        }
-        Copy-Item -LiteralPath $src -Destination $dst -Recurse -Force
+        Copy-AgentForClaude -Source $src -Destination $dst
         Write-Host "synced agent '$name' (folder)"
     }
     $count++

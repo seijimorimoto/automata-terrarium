@@ -1,4 +1,4 @@
-# seiji-claude-sync-settings.ps1 — merge each <repo>\settings\*.json into ~\.claude\settings.json
+# seiji-claude-sync-settings.ps1 — merge Claude settings presets into ~\.claude\settings.json
 # Use -DryRun to print the merged result and warnings without writing.
 # Use -NoBackup to skip writing the timestamped backup file.
 #
@@ -22,7 +22,9 @@ $ErrorActionPreference = 'Stop'
 
 $ScriptDir   = Split-Path -Parent $PSCommandPath
 $RepoRoot    = Split-Path -Parent $ScriptDir
-$PresetsDir  = Join-Path $RepoRoot 'settings'
+$LegacyPresetsDir = Join-Path $RepoRoot 'settings'
+$TargetPresetsDir = Join-Path $RepoRoot 'settings\claude'
+$PresetsDir = if (Test-Path -LiteralPath $TargetPresetsDir) { $TargetPresetsDir } else { $LegacyPresetsDir }
 $UserConfDir = Join-Path $HOME '.claude'
 $UserConfig  = Join-Path $UserConfDir 'settings.json'
 
@@ -157,7 +159,7 @@ if (Test-Path -LiteralPath $UserConfig) {
 
 $warnings = New-Object System.Collections.ArrayList
 
-# Merge each preset alphabetically for deterministic output
+# Merge each Claude preset alphabetically for deterministic output
 $presetFiles = Get-ChildItem -LiteralPath $PresetsDir -Filter '*.json' -File | Sort-Object Name
 if ($presetFiles.Count -eq 0) {
     Write-Host "seiji-claude-sync-settings: no presets found in $PresetsDir; nothing to merge"

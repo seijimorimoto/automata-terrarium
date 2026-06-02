@@ -128,6 +128,26 @@ seiji-claude-sync-settings --no-backup     # write merged file but skip the back
 
 Every per-category script is independent — you can run just the one(s) you need.
 
+### Copilot wrapper
+
+```powershell
+.\bin\seiji-copilot-sync.ps1
+.\bin\seiji-copilot-sync.ps1 -DryRun
+```
+
+The Copilot wrapper currently runs implemented PowerShell sync scripts for skills, agents, hooks, and settings. It skips missing categories so partial rollouts remain usable.
+
+Per-category Copilot scripts:
+
+```powershell
+.\bin\seiji-copilot-sync-skills.ps1 -DryRun
+.\bin\seiji-copilot-sync-agents.ps1 -DryRun
+.\bin\seiji-copilot-sync-hooks.ps1 -DryRun
+.\bin\seiji-copilot-sync-settings.ps1 -DryRun
+```
+
+POSIX Copilot sync scripts are planned as follow-up work.
+
 ## Settings merge rules
 
 `seiji-claude-sync-settings` merges every `settings\*.json` preset into `~\.claude\settings.json`. Presets are processed alphabetically (deterministic order). For each key:

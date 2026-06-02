@@ -150,3 +150,38 @@ seiji-claude-sync
 ```
 
 See [bin/README.md](bin/README.md) for prereqs (notably `jq` for the POSIX settings merge), the manual PATH-fallback, the symlink alternative, and the full settings merge rules (string-arrays union+dedupe+sort; object-arrays union+dedupe by deep equality; objects recurse; scalars preserve user value with a warning).
+
+## Copilot CLI quick start
+
+The Copilot sync path currently supports skills, agents, hooks, and settings on PowerShell:
+
+```powershell
+# Windows (PowerShell)
+.\bin\seiji-copilot-sync.ps1 -DryRun
+.\bin\seiji-copilot-sync.ps1
+```
+
+POSIX Copilot sync scripts are planned after the PowerShell workflow settles.
+
+## Migration guide
+
+1. Keep using Claude Code with the existing `seiji-claude-sync` workflow while Copilot support is added incrementally.
+2. Use `AGENTS.md` as the canonical instruction file. `CLAUDE.md` is a symlink for Claude Code compatibility.
+3. Use `SKILL.claude.md` and `SKILL.copilot.md` when a skill needs different frontmatter, paths, hook behavior, MCP tool names, or permission guidance.
+4. Run both dry-runs before installing:
+
+```powershell
+.\bin\seiji-claude-sync.ps1 -DryRun
+.\bin\seiji-copilot-sync.ps1 -DryRun
+```
+
+5. Check the availability tables before assuming a workflow is fully ported. `⚠️` means the item is partial, requires manual setup, or is planned.
+
+### Symlink fallback
+
+On Windows, creating symlinks may require Developer Mode or an elevated shell. If `CLAUDE.md` cannot be a symlink to `AGENTS.md`, copy `AGENTS.md` to `CLAUDE.md` and rerun validation:
+
+```powershell
+Copy-Item AGENTS.md CLAUDE.md -Force
+.\bin\seiji-validate.ps1
+```

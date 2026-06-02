@@ -113,7 +113,7 @@ Each directory contains its own README with setup instructions. To use any item,
 
 | Agent | Claude Code | Copilot CLI | Description | Tools | Docs |
 |-------|-------------|-------------|-------------|-------|------|
-| `verify-runner` | ✅ | ⚠️ | Read-only verification subagent/custom agent that runs one verification check against the diff and returns JSON findings. | Claude: `Skill, Read, Grep, Glob, Bash`; Copilot: planned custom agent tools | [agents/verify-runner/](agents/verify-runner/) |
+| `verify-runner` | ✅ | ✅ | Read-only verification subagent/custom agent that runs one verification check against the diff and returns JSON findings. | Claude: `Skill, Read, Grep, Glob, Bash`; Copilot: `read, search, execute` | [agents/verify-runner/](agents/verify-runner/) |
 
 ### Sync infrastructure (`bin/`)
 
@@ -129,6 +129,7 @@ The `bin/` folder contains executables that install artifacts into user-level ag
 | `seiji-claude-sync-settings` | ✅ | ❌ | Merges Claude settings into `~\.claude\settings.json`. |
 | `seiji-copilot-sync` | ❌ | ⚠️ | Copilot wrapper for implemented per-category sync scripts; skips categories not implemented yet. |
 | `seiji-copilot-sync-skills` | ❌ | ✅ | Copies Copilot-compatible skills to `~\.copilot\skills\<name>\`. |
+| `seiji-copilot-sync-agents` | ❌ | ✅ | Copies Copilot custom agent profiles to `~\.copilot\agents\`. |
 
 Quick start:
 

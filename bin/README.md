@@ -18,7 +18,7 @@ Support markers: `✅` supported, `❌` not supported, `⚠️` partial/manual/p
 | `seiji-claude-sync-settings` (`.ps1`) | ✅ | ❌ | Merges every `settings\*.json` into `~\.claude\settings.json` per the rules below. |
 | `seiji-copilot-sync` (`.ps1`) | ❌ | ⚠️ | Wrapper for implemented Copilot per-category sync scripts; skips categories not implemented yet. |
 | `seiji-copilot-sync-skills` (`.ps1`) | ❌ | ✅ | Copy/rename sync for `SKILL.copilot.md` or shared `SKILL.md` to `~\.copilot\skills\<name>\SKILL.md`. |
-| `seiji-copilot-sync-agents` (`.ps1`) | ❌ | ⚠️ | Planned sync for Copilot `.agent.md` profiles to `~\.copilot\agents\`. |
+| `seiji-copilot-sync-agents` (`.ps1`) | ❌ | ✅ | Syncs Copilot `.agent.md` profiles to `~\.copilot\agents\`. |
 | `seiji-copilot-sync-hooks` (`.ps1`) | ❌ | ⚠️ | Planned sync for Copilot hook JSON to `~\.copilot\hooks\`. |
 | `seiji-copilot-sync-settings` (`.ps1`) | ❌ | ⚠️ | Planned install/merge for Copilot settings or launch helpers. |
 

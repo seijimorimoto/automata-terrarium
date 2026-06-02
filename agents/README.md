@@ -30,11 +30,11 @@ Agents differ from skills in two important ways:
 
 | Agent | Claude Code | Copilot CLI | Purpose | Tools |
 |-------|-------------|-------------|---------|-------|
-| [`verify-runner`](verify-runner/) | ✅ | ⚠️ | Run one verification check against the diff and return findings as JSON. | Claude: `Skill, Read, Grep, Glob, Bash`; Copilot: planned custom agent tools |
+| [`verify-runner`](verify-runner/) | ✅ | ✅ | Run one verification check against the diff and return findings as JSON. | Claude: `Skill, Read, Grep, Glob, Bash`; Copilot: `read, search, execute` |
 
 ## Installation
 
-Claude agents are synced to user-level via [`bin\seiji-claude-sync-agents`](..\bin\README.md), which copies each `agents\<name>\` folder to `~\.claude\agents\<name>\` (whole tree). Copilot agent sync is planned and will copy `.agent.md` profiles to `~\.copilot\agents\`.
+Claude agents are synced to user-level via [`bin\seiji-claude-sync-agents`](..\bin\README.md), which copies each `agents\<name>\` folder to `~\.claude\agents\<name>\` (whole tree). Copilot agents are synced via `bin\seiji-copilot-sync-agents.ps1`, which copies `.agent.md` profiles to `~\.copilot\agents\`.
 
 The script also accepts flat `agents/<name>.md` entries for compatibility with externally-authored agents, but everything in this repo follows the folder convention.
 

@@ -105,7 +105,7 @@ Each directory contains its own README with setup instructions. To use any item,
 
 | Hook | Claude Code | Copilot CLI | Description | Platform | Docs |
 |------|-------------|-------------|-------------|----------|------|
-| `notify-windows` | ✅ | ⚠️ | Windows toast notifications for agent events | Windows | [README](hooks/notify-windows/README.md) |
+| `notify-windows` | ✅ | ✅ | Windows toast notifications for agent events | Windows | [README](hooks/notify-windows/README.md) |
 
 > Agent-scoped PreToolUse hooks (e.g., the `verify-runner-bash-guard` that ships with the `verify-runner` agent) are registered via their owning agent's frontmatter — not via `settings.json` — and live alongside the agent's `.md` file. See `agents/<name>/` folders for the canonical pattern.
 
@@ -130,6 +130,7 @@ The `bin/` folder contains executables that install artifacts into user-level ag
 | `seiji-copilot-sync` | ❌ | ⚠️ | Copilot wrapper for implemented per-category sync scripts; skips categories not implemented yet. |
 | `seiji-copilot-sync-skills` | ❌ | ✅ | Copies Copilot-compatible skills to `~\.copilot\skills\<name>\`. |
 | `seiji-copilot-sync-agents` | ❌ | ✅ | Copies Copilot custom agent profiles to `~\.copilot\agents\`. |
+| `seiji-copilot-sync-hooks` | ❌ | ✅ | Copies Copilot hook scripts and JSON configs to `~\.copilot\hooks\`. |
 
 Quick start:
 

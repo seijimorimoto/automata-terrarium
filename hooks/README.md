@@ -8,7 +8,7 @@ Support markers: `✅` supported, `❌` not supported, `⚠️` partial/manual/p
 
 | Hook | Claude Code | Copilot CLI | Description | Platform |
 |------|-------------|-------------|-------------|----------|
-| [`notify-windows`](notify-windows/) | ✅ | ⚠️ | Windows toast notifications for agent events (permission prompts, questions, task completion) | Windows |
+| [`notify-windows`](notify-windows/) | ✅ | ✅ | Windows toast notifications for agent events (permission prompts, questions, task completion) | Windows |
 
 > **Note:** Claude skill- and agent-scoped hooks live alongside their owning skill/agent under `skills\<name>\scripts\` or `agents\<name>\scripts\` and are registered via that skill's `SKILL.md` or that agent's `<name>.md` frontmatter — not via `settings.json`. Copilot hooks use JSON hook configuration under `~\.copilot\hooks\`, `<project-root>\.github\hooks\`, or Copilot settings. Canonical Claude examples: [`skills\ado-pr\`](../skills/ado-pr/) and [`agents\verify-runner\`](../agents/verify-runner/).
 

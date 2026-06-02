@@ -8,15 +8,15 @@ Support markers: `✅` supported, `❌` not supported, `⚠️` partial/manual/p
 
 | Preset | Claude Code | Copilot CLI | File | Description |
 |--------|-------------|-------------|------|-------------|
-| Base | ✅ | ⚠️ | `base.json` | General-purpose permissions — file ops, git, grep |
+| Base | ✅ | ✅ | `base.json` | General-purpose permissions/preferences — file ops, git, grep |
 | ADO | ✅ | ⚠️ | `ado.json` | Azure DevOps MCP tool permissions — PRs, work items, iterations, repos |
-| GitHub | ✅ | ⚠️ | `github.json` | GitHub CLI (`gh`) permissions — PR creation, merging, and status |
+| GitHub | ✅ | ✅ | `github.json` | GitHub CLI (`gh`) permissions and GitHub URL access |
 | .NET | ✅ | ⚠️ | `dotnet.json` | C#/.NET permissions and the C# LSP plugin |
 | Work Status | ✅ | ⚠️ | `work-status.json` | MCP tool permissions for weekly status tracking (ADO + Todoist) |
 
 ## Installation
 
-Each current preset is a Claude Code JSON fragment. Copilot equivalents are planned under `settings\copilot\` because Copilot permissions use different surfaces: CLI flags, `~\.copilot\settings.json`, `allowedUrls`, `deniedUrls`, `trustedFolders`, custom agent `tools`, skill `allowed-tools`, MCP config, and hooks.
+Each top-level preset is currently a Claude Code JSON fragment. Copilot equivalents live under `settings\copilot\` where JSON config applies. Some Copilot permissions still require CLI flags, custom agent `tools`, skill `allowed-tools`, MCP config, or hooks.
 
 ### User-level (applies to all projects)
 
@@ -47,6 +47,8 @@ Then manually merge the chosen entries from the desired preset into your setting
 ### Copilot settings
 
 Copilot user-level settings live in `~\.copilot\settings.json`. Project-level settings can live in `<project-root>\.github\copilot\settings.json` or `<project-root>\.github\copilot\settings.local.json`.
+
+Use `bin\seiji-copilot-sync-settings.ps1` to merge `settings\copilot\*.json` into `~\.copilot\settings.json`.
 
 Copilot permission flags such as `--allow-tool`, `--deny-tool`, `--allow-url`, and `--allow-all-paths` may need launch helpers rather than JSON fragments. Planned Copilot presets should document the exact command or config surface they use.
 

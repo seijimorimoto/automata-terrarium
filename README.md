@@ -96,9 +96,9 @@ Each directory contains its own README with setup instructions. To use any item,
 | Preset | Claude Code | Copilot CLI | Description | Docs |
 |--------|-------------|-------------|-------------|------|
 | `ado` | ✅ | ⚠️ | Azure DevOps MCP tool permissions — PRs, work items, iterations, repos | [ado.json](settings/ado.json) |
-| `base` | ✅ | ⚠️ | General-purpose permissions — file ops, git, grep | [base.json](settings/base.json) |
+| `base` | ✅ | ✅ | General-purpose permissions/preferences — file ops, git, grep | [base.json](settings/base.json) |
 | `dotnet` | ✅ | ⚠️ | C#/.NET permissions and the C# LSP plugin | [dotnet.json](settings/dotnet.json) |
-| `github` | ✅ | ⚠️ | GitHub CLI (`gh`) permissions — PR creation, merging, and status | [github.json](settings/github.json) |
+| `github` | ✅ | ✅ | GitHub CLI (`gh`) permissions and GitHub URL access | [github.json](settings/github.json) |
 | `work-status` | ✅ | ⚠️ | MCP tool permissions for weekly status tracking (ADO + Todoist) | [work-status.json](settings/work-status.json) |
 
 ### Available hooks
@@ -131,6 +131,7 @@ The `bin/` folder contains executables that install artifacts into user-level ag
 | `seiji-copilot-sync-skills` | ❌ | ✅ | Copies Copilot-compatible skills to `~\.copilot\skills\<name>\`. |
 | `seiji-copilot-sync-agents` | ❌ | ✅ | Copies Copilot custom agent profiles to `~\.copilot\agents\`. |
 | `seiji-copilot-sync-hooks` | ❌ | ✅ | Copies Copilot hook scripts and JSON configs to `~\.copilot\hooks\`. |
+| `seiji-copilot-sync-settings` | ❌ | ✅ | Merges Copilot settings presets into `~\.copilot\settings.json`. |
 
 Quick start:
 

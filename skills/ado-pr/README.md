@@ -1,6 +1,6 @@
 # Azure DevOps PR Integration Skills
 
-These skills bring GitHub-like PR session linking to Azure DevOps. When you create a PR using `/ado-pr`, Claude automatically links it to your current session, allowing you to resume work on that PR later.
+These skills bring GitHub-like PR session linking to Azure DevOps. When you create a PR using `/ado-pr`, Claude Code automatically links it to your current session, allowing you to resume work on that PR later. Copilot CLI can create PRs with the Copilot skill variant; automatic session linking requires a Copilot hook port and is not complete yet.
 
 ## Prerequisites
 
@@ -11,18 +11,20 @@ These skills bring GitHub-like PR session linking to Azure DevOps. When you crea
 
 ## Available Skills
 
-| Skill | Description |
-|-------|-------------|
-| `/ado-pr` | Create a pull request in Azure DevOps with standardized formatting |
-| `/ado-resume-pr [NUMBER]` | Resume the Claude session that created a specific PR |
-| `/ado-pr-status [--all]` | List all tracked PRs (current repo or all repos) |
+| Skill | Claude Code | Copilot CLI | Description |
+|-------|-------------|-------------|-------------|
+| `/ado-pr` | ✅ | ⚠️ | Create a pull request in Azure DevOps with standardized formatting; Copilot session-capture hook pending |
+| `/ado-resume-pr [NUMBER]` | ✅ | ⚠️ | Resume the Claude session that created a specific PR |
+| `/ado-pr-status [--all]` | ✅ | ⚠️ | List all tracked PRs (current repo or all repos) |
 
 ## Installation
 
-Copy all three skill folders to either location:
+Copy all three skill folders to a supported runtime location:
 
-- **Project-level** (one project): `<project-root>\.claude\skills\`
-- **User-level** (all projects): `~\.claude\skills\`
+- **Claude project-level** (one project): `<project-root>\.claude\skills\`
+- **Claude user-level** (all projects): `~\.claude\skills\`
+- **Copilot project-level** (one project): `<project-root>\.github\skills\`
+- **Copilot user-level** (all projects): `~\.copilot\skills\`
 
 ```powershell
 # Windows (PowerShell)
@@ -32,6 +34,9 @@ Copy-Item -Recurse skills\ado-pr, skills\ado-resume-pr, skills\ado-pr-status <yo
 
 # All ADO skills (user-level)
 Copy-Item -Recurse skills\ado-pr, skills\ado-resume-pr, skills\ado-pr-status ~\.claude\skills\
+
+# Copilot user-level for ado-pr
+Copy-Item -Recurse skills\ado-pr ~\.copilot\skills\
 
 # Or symlink them (project-level)
 New-Item -ItemType SymbolicLink -Path <your-project>\.claude\skills\ado-pr -Target (Resolve-Path skills\ado-pr)
@@ -47,6 +52,9 @@ cp -r skills/ado-pr skills/ado-resume-pr skills/ado-pr-status <your-project>/.cl
 
 # All ADO skills (user-level)
 cp -r skills/ado-pr skills/ado-resume-pr skills/ado-pr-status ~/.claude/skills/
+
+# Copilot user-level for ado-pr
+cp -r skills/ado-pr ~/.copilot/skills/
 
 # Or symlink them (project-level)
 ln -s "$(pwd)/skills/ado-pr" <your-project>/.claude/skills/ado-pr
@@ -70,7 +78,7 @@ Creates a PR with standardized formatting (title format: `[ProjectName] Descript
 /ado-pr --title "[ServiceName] Custom"     # Custom title
 ```
 
-[Full documentation](SKILL.md)
+[Full documentation](SKILL.claude.md) and [Copilot variant](SKILL.copilot.md)
 
 ### `/ado-resume-pr` - Resume Session by PR Number
 

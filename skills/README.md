@@ -14,7 +14,7 @@ A suite of skills that bring GitHub-like PR session linking to Azure DevOps.
 
 | Skill | Claude Code | Copilot CLI | Description |
 |-------|-------------|-------------|-------------|
-| [`/ado-pr`](ado-pr/) | ✅ | ⚠️ | Create a pull request in Azure DevOps with standardized formatting |
+| [`/ado-pr`](ado-pr/) | ✅ | ⚠️ | Create a pull request in Azure DevOps with standardized formatting; Copilot session-capture hook pending |
 | [`/ado-resume-pr`](ado-resume-pr/) | ✅ | ⚠️ | Resume the agent session that created a specific PR |
 | [`/ado-pr-status`](ado-pr-status/) | ✅ | ⚠️ | List all tracked PRs (current repo or all repos) |
 
@@ -24,7 +24,7 @@ See the [ADO PR Integration README](ado-pr/README.md) for full documentation, in
 
 | Skill | Claude Code | Copilot CLI | Description |
 |-------|-------------|-------------|-------------|
-| [`/ado-task`](ado-task/) | ✅ | ⚠️ | Create, update, complete, and list Azure DevOps work items |
+| [`/ado-task`](ado-task/) | ✅ | ✅ | Create, update, complete, and list Azure DevOps work items |
 
 See the [ADO Task README](ado-task/README.md) for full documentation, installation, and configuration.
 
@@ -49,7 +49,7 @@ See the [Quick PR README](quick-pr/README.md) for full documentation, installati
 
 | Skill | Claude Code | Copilot CLI | Description |
 |-------|-------------|-------------|-------------|
-| [`/cleanup-worktree`](cleanup-worktree/) | ✅ | ⚠️ | Remove a git worktree and its associated local branch after PR merge |
+| [`/cleanup-worktree`](cleanup-worktree/) | ✅ | ✅ | Remove a git worktree and its associated local branch after PR merge |
 
 See the [Cleanup Worktree README](cleanup-worktree/README.md) for full documentation.
 

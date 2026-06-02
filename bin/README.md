@@ -1,19 +1,26 @@
 # bin/
 
-Sync executables that install the contents of this repo into the user-level Claude Code config (`~\.claude\`).
+Sync executables that install the contents of this repo into user-level AI agent config directories.
 
-Per-category scripts cover skills, hooks, and settings. The `seiji-claude-sync` wrapper runs them in the right order. `seiji-claude-install` is a one-time setup that puts `bin/` on your shell PATH.
+Per-category Claude scripts cover skills, agents, hooks, and settings under `~\.claude\`. Copilot scripts are planned and will target `~\.copilot\`. The wrapper scripts run per-category sync in the right order. `seiji-claude-install` is a one-time setup that puts `bin\` on your shell PATH.
+
+Support markers: `✅` supported, `❌` not supported, `⚠️` partial/manual/planned.
 
 ## Available scripts
 
-| Script | Purpose |
-| --- | --- |
-| `seiji-claude-install` (`.ps1`) | One-time PATH setup. Appends a keyed marker block to your shell profile pointing at this repo's `bin/`. Idempotent. |
-| `seiji-claude-sync` (`.ps1`) | Wrapper. Runs every per-category sync in order. |
-| `seiji-claude-sync-skills` (`.ps1`) | Copies each subfolder of `skills/` to `~\.claude\skills\<name>\`. |
-| `seiji-claude-sync-agents` (`.ps1`) | Copies each `agents/<name>/` folder to `~\.claude\agents\<name>\` (whole tree). Also accepts flat `agents/<name>.md` for compatibility with externally-authored agents. Skips `agents/README.md`. |
-| `seiji-claude-sync-hooks` (`.ps1`) | Copies each subfolder of `hooks/` to `~\.claude\hooks\<name>\`. Script-files only — does not register hooks in `settings.json`. |
-| `seiji-claude-sync-settings` (`.ps1`) | Merges every `settings\*.json` into `~\.claude\settings.json` per the rules below. |
+| Script | Claude Code | Copilot CLI | Purpose |
+| --- | --- | --- | --- |
+| `seiji-claude-install` (`.ps1`) | ✅ | ❌ | One-time PATH setup. Appends a keyed marker block to your shell profile pointing at this repo's `bin\`. Idempotent. |
+| `seiji-claude-sync` (`.ps1`) | ✅ | ❌ | Wrapper. Runs every Claude per-category sync in order. |
+| `seiji-claude-sync-skills` (`.ps1`) | ✅ | ❌ | Copies each skill to `~\.claude\skills\<name>\`. Target-specific support for `SKILL.claude.md` is planned. |
+| `seiji-claude-sync-agents` (`.ps1`) | ✅ | ❌ | Copies Claude agents to `~\.claude\agents\<name>\`. Filtering Copilot `.agent.md` files is planned. |
+| `seiji-claude-sync-hooks` (`.ps1`) | ✅ | ❌ | Copies Claude hook folders to `~\.claude\hooks\<name>\`. Script-files only — does not register hooks in `settings.json`. |
+| `seiji-claude-sync-settings` (`.ps1`) | ✅ | ❌ | Merges every `settings\*.json` into `~\.claude\settings.json` per the rules below. |
+| `seiji-copilot-sync` (`.ps1`) | ❌ | ⚠️ | Planned wrapper for Copilot per-category sync. |
+| `seiji-copilot-sync-skills` (`.ps1`) | ❌ | ⚠️ | Planned copy/rename sync for `SKILL.copilot.md` to `~\.copilot\skills\<name>\SKILL.md`. |
+| `seiji-copilot-sync-agents` (`.ps1`) | ❌ | ⚠️ | Planned sync for Copilot `.agent.md` profiles to `~\.copilot\agents\`. |
+| `seiji-copilot-sync-hooks` (`.ps1`) | ❌ | ⚠️ | Planned sync for Copilot hook JSON to `~\.copilot\hooks\`. |
+| `seiji-copilot-sync-settings` (`.ps1`) | ❌ | ⚠️ | Planned install/merge for Copilot settings or launch helpers. |
 
 Both PowerShell (`.ps1`) and POSIX (no extension) variants are provided. Use whichever matches your shell.
 
@@ -93,6 +100,13 @@ seiji-claude-sync --no-backup   # skip the settings-file backup
 ```
 
 `settings` runs last so any hook registrations land after their script files are in place. `--no-backup` / `-NoBackup` is forwarded only to `seiji-claude-sync-settings` — the other steps don't produce backups.
+
+Future Copilot sync scripts should mirror the Claude script shape but copy runtime-specific artifacts:
+
+- `SKILL.copilot.md` becomes `SKILL.md` in `~\.copilot\skills\<name>\`.
+- `<name>.agent.md` is copied to `~\.copilot\agents\`.
+- Copilot hook JSON is copied to `~\.copilot\hooks\`.
+- Copilot settings fragments or launch helpers are installed from `settings\copilot\`.
 
 ### Per-category
 

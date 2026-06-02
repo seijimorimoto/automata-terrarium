@@ -1,20 +1,23 @@
 # Agents
 
-Custom Claude Code subagent definitions.
+Custom Claude Code subagent definitions and GitHub Copilot CLI custom agent profiles.
+
+Support markers: `✅` supported, `❌` not supported, `⚠️` partial/manual/planned.
 
 **Convention in this repo: every agent lives in its own folder.** The agent's markdown file, its README, and any co-located resources (hook scripts, helpers, fixtures) sit alongside each other. This mirrors the `skills/<name>/SKILL.md` shape and keeps agents that are flat today ready to gain a hook tomorrow without any migration.
 
 ```
 agents/<name>/
-├── <name>.md     ← the agent definition (YAML frontmatter + system prompt)
-├── README.md     ← what the agent does, how it's installed, any caveats
-└── scripts/      ← optional: hook scripts, helpers, fixtures
+├── <name>.md        ← Claude Code agent definition (YAML frontmatter + system prompt)
+├── <name>.agent.md  ← Copilot custom agent profile when supported
+├── README.md        ← what the agent does, how it's installed, any caveats
+└── scripts/         ← optional: hook scripts, helpers, fixtures
     └── ...
 ```
 
 Implementation files (hook scripts, helpers, anything the agent's frontmatter references) go under `scripts/` — same convention as skills (`skills/<name>/scripts/`). Anything that is not the agent's "API surface" (the `.md` and the `README.md`) belongs there. Other implementation-detail subdirectories (e.g., `fixtures/`, `assets/`) follow the same pattern.
 
-Synced to user-level, that becomes `~\.claude\agents\<name>\<name>.md` (or `<project>\.claude\agents\<name>\...` at project level). Claude Code discovers nested agent files in addition to flat ones, so the folder layout has no downside vs. flat. See [`verify-runner/`](verify-runner/) for the canonical example.
+Synced to Claude user-level, that becomes `~\.claude\agents\<name>\<name>.md` (or `<project>\.claude\agents\<name>\...` at project level). Copilot variants sync to `~\.copilot\agents\` or can be copied to `<project>\.github\agents\`.
 
 Flat-layout agents (`agents/<name>.md`) are still supported by the sync script for compatibility with hand-authored or third-party agents that ship that way, but new agents in this repo should follow the folder convention.
 
@@ -25,13 +28,13 @@ Agents differ from skills in two important ways:
 
 ## Available agents
 
-| Agent | Purpose | Tools |
-|-------|---------|-------|
-| [`verify-runner`](verify-runner/) | Run one verification skill (e.g., `/standards-check`, `/doc-review`, `/coverage-check`, `/review`, `/security-review`, `/simplify`) against the diff and return findings as JSON. Bash restricted to a read-only allowlist by a co-located, frontmatter-registered hook. | `Skill, Read, Grep, Glob, Bash` |
+| Agent | Claude Code | Copilot CLI | Purpose | Tools |
+|-------|-------------|-------------|---------|-------|
+| [`verify-runner`](verify-runner/) | ✅ | ⚠️ | Run one verification check against the diff and return findings as JSON. | Claude: `Skill, Read, Grep, Glob, Bash`; Copilot: planned custom agent tools |
 
 ## Installation
 
-Agents are synced to user-level via [`bin/seiji-claude-sync-agents`](../bin/README.md), which copies each `agents/<name>/` folder to `~\.claude\agents\<name>\` (whole tree). The wrapper `seiji-claude-sync` calls it as part of the four-step sync (skills → agents → hooks → settings).
+Claude agents are synced to user-level via [`bin\seiji-claude-sync-agents`](..\bin\README.md), which copies each `agents\<name>\` folder to `~\.claude\agents\<name>\` (whole tree). Copilot agent sync is planned and will copy `.agent.md` profiles to `~\.copilot\agents\`.
 
 The script also accepts flat `agents/<name>.md` entries for compatibility with externally-authored agents, but everything in this repo follows the folder convention.
 
@@ -40,16 +43,22 @@ Manual install (if you're not using the sync infrastructure):
 ```powershell
 # Windows (PowerShell)
 Copy-Item -Recurse agents\verify-runner ~\.claude\agents\
+
+# Copilot user-level (once Copilot variants exist)
+Copy-Item agents\verify-runner\verify-runner.agent.md ~\.copilot\agents\
 ```
 
 ```sh
 # Linux / macOS / Git Bash
 cp -r agents/verify-runner ~/.claude/agents/
+
+# Copilot user-level (once Copilot variants exist)
+cp agents/verify-runner/verify-runner.agent.md ~/.copilot/agents/
 ```
 
 ## Agent file format
 
-Each agent is a single markdown file with YAML frontmatter:
+Each Claude agent is a single markdown file with YAML frontmatter:
 
 ```markdown
 ---
@@ -88,7 +97,7 @@ If you don't need any of those, a skill is simpler and more discoverable (no `Ag
 ## Defining a new agent
 
 1. Create the agent folder: `agents/<name>/`.
-2. Inside, create `agents/<name>/<name>.md` with the frontmatter template above.
+2. Inside, create `agents/<name>/<name>.md` for Claude Code and `agents/<name>/<name>.agent.md` for Copilot CLI when supported.
 3. Add `agents/<name>/README.md` describing what the agent does, install steps, and any caveats.
 4. Choose `tools:` carefully — list **only** what the agent legitimately needs. Anything not listed cannot be invoked by the agent.
 5. Write the system prompt. State the agent's mission, its boundaries (what it must NOT do), and the expected output format.

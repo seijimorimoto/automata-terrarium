@@ -9,7 +9,7 @@ This folder contains Claude Code and Copilot CLI source variants. The Claude Cod
 | Runtime | Support | Notes |
 |---------|---------|-------|
 | Claude Code | ✅ | Uses `verify-runner.claude.md` and the frontmatter-scoped Bash guard. |
-| Copilot CLI | ⚠️ | Uses `verify-runner.copilot.md` with restricted tools and self-restriction instructions, but does not yet have an equivalent per-agent Bash guard. |
+| Copilot CLI | ⚠️ | Uses `verify-runner.copilot.md` with restricted tools and self-restriction instructions. Copilot does not support the Claude-style agent-frontmatter-scoped Bash guard used here. |
 
 ## Files
 
@@ -60,7 +60,7 @@ cp agents/verify-runner/verify-runner.copilot.md ~/.copilot/agents/verify-runner
 
 ## Claude Code hook guard
 
-The sections below are specific to Claude Code. Copilot CLI supports hooks, but not this repo's current agent-frontmatter-scoped Bash guard pattern for `verify-runner`.
+The sections below are specific to Claude Code. Copilot CLI supports hooks, but its documented hook model is JSON/settings-based lifecycle hooks, not hooks declared in an agent's frontmatter. That means it cannot use this repo's Claude-style agent-scoped Bash guard pattern for `verify-runner`.
 
 ### Why the hook exists
 
@@ -115,4 +115,4 @@ Remove or rename the `hooks:` block in `~\.claude\agents\verify-runner\verify-ru
 - **POSIX requires `jq`.** The bash variant uses jq for safe JSON parsing. If jq isn't on PATH, the hook logs a notice on stderr and allows.
 - **PowerShell-default `command:`.** The frontmatter ships with the `.ps1` invocation. POSIX users who don't have PowerShell installed should swap to the `.sh` variant per the snippet above.
 - **Path is hardcoded to `~\.claude\agents\verify-runner\scripts\`** (rendered by PowerShell from `$HOME` in the frontmatter command). The hook script is found via that path, so the agent must be installed at user level. Project-level installation (`<project>\.claude\agents\verify-runner\`) would require editing the `command:` to use the literal shell expression `"$CLAUDE_PROJECT_DIR/.claude/agents/verify-runner/scripts/..."` (forward slashes are kept inside the YAML string, matching the rest of the frontmatter command).
-- **Copilot guard parity is not complete.** Copilot CLI supports hooks, but this repo has not yet implemented a Copilot hook that is scoped equivalently to this agent and enforces the same Bash allowlist. The Copilot profile relies on tool restriction plus prompt-level self-restriction.
+- **Copilot guard parity is not available through the same mechanism.** Copilot CLI supports hooks, but not Claude-style agent-frontmatter-scoped hooks. The Copilot profile relies on tool restriction plus prompt-level self-restriction; a global or repository-level Copilot hook could provide broader command policy, but it would not be the same per-agent frontmatter guard.

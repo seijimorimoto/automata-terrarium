@@ -10,7 +10,7 @@ Support markers: `✅` supported, `❌` not supported, `⚠️` partial/manual/p
 |------|-------------|-------------|-------------|----------|
 | [`notify-windows`](notify-windows/) | ✅ | ✅ | Windows toast notifications for agent events (permission prompts, questions, task completion) | Windows |
 
-> **Note:** Claude skill- and agent-scoped hooks live alongside their owning skill/agent under `skills\<name>\scripts\` or `agents\<name>\scripts\` and are registered via that skill's `SKILL.md` or that agent's `<name>.md` frontmatter — not via `settings.json`. Copilot hooks use JSON hook configuration under `~\.copilot\hooks\`, `<project-root>\.github\hooks\`, or Copilot settings. Canonical Claude examples: [`skills\ado-pr\`](../skills/ado-pr/) and [`agents\verify-runner\`](../agents/verify-runner/).
+> **Note:** Claude skill- and agent-scoped hooks live alongside their owning skill/agent under `skills\<name>\scripts\` or `agents\<name>\scripts\` and are registered via that skill's `SKILL.md` or that agent's `<name>.md` frontmatter — not via `settings.json`. Copilot CLI supports hooks, but the documented configuration is global/user/repository/plugin JSON or settings-based lifecycle hooks; it does **not** support Claude-style skill- or agent-frontmatter-scoped hooks. Canonical Claude examples: [`skills\ado-pr\`](../skills/ado-pr/) and [`agents\verify-runner\`](../agents/verify-runner/).
 
 ## Installation
 
@@ -57,7 +57,7 @@ Add hook entries to the matching `settings.json` under the `"hooks"` key:
 
 > **Note:** Hook paths in settings are relative to the `.claude` directory they live in.
 
-Copilot hook entries use Copilot's JSON hook schema. Prefer a checked-in template such as `hooks\<name>\copilot.hooks.json` and install it to `~\.copilot\hooks\<name>.json` or `<project-root>\.github\hooks\<name>.json`.
+Copilot hook entries use Copilot's JSON hook schema. Prefer a checked-in template such as `hooks\<name>\copilot.hooks.json` and install it to `~\.copilot\hooks\<name>.json` or `<project-root>\.github\hooks\<name>.json`. These hooks are not scoped by placing them in a skill or agent folder; use matchers and hook event payloads for any filtering Copilot supports.
 
 ## Hook Events Examples
 

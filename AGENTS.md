@@ -89,7 +89,7 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
      - **Claude skills and agents that don't ship a hook** — just the copy is enough.
      - **Claude skills or agents that DO ship a hook** (declared in the `SKILL.md` / agent's `<name>.md` frontmatter `hooks:` block) — no `settings.json` edit; the harness picks up the frontmatter hook automatically once the skill/agent is in place. Explain this in the README so users don't go looking for a settings change.
      - **Claude session-wide hooks** under `hooks\` — register in `~\.claude\settings.json` (or the project-level equivalent) per the snippet in the hook's README.
-     - **Copilot hooks** — register through `~\.copilot\hooks\*.json`, `<project-root>\.github\hooks\*.json`, or the documented Copilot settings `hooks` block. Do not describe Claude frontmatter hooks as Copilot-compatible.
+     - **Copilot hooks** — register through `~\.copilot\hooks\*.json`, `<project-root>\.github\hooks\*.json`, or the documented Copilot settings `hooks` block. Copilot hooks are lifecycle/tool hooks, not skill- or agent-frontmatter-scoped hooks. Do not describe Claude frontmatter hooks as Copilot-compatible or as something this repo simply has not added yet.
 - Parent-level READMEs (`skills/README.md`, `agents/README.md`, `hooks/README.md`) must include an **Available [Skills/Agents/Hooks]** table listing every item in that directory. `settings/README.md` and `bin/README.md` follow the same pattern for their own contents (presets and sync scripts respectively).
 - The repo-level `README.md` must mirror those tables (and the `bin/` script table) for discoverability.
 - Availability tables must include Claude Code and Copilot CLI columns using:

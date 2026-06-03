@@ -30,13 +30,13 @@ Agents differ from skills in three important ways:
 
 1. **They run in a separate agent context** — useful when you need to fan out independent work in parallel without polluting the parent context.
 2. **Their tool list is restricted by the runtime** — both Claude Code and Copilot custom agents support tool lists, but tool names and enforcement details differ.
-3. **Runtime-specific hooks differ** — Claude Code supports frontmatter-scoped hooks for an agent. Copilot CLI supports hooks too, but they are configured as hook JSON/settings and are not currently scoped through the same agent frontmatter mechanism.
+3. **Runtime-specific hooks differ** — Claude Code supports frontmatter-scoped hooks for an agent. Copilot CLI supports hooks too, but its documented hooks are configured as JSON/settings lifecycle hooks and are not skill- or agent-frontmatter-scoped.
 
 ## Available agents
 
 | Agent | Claude Code | Copilot CLI | Purpose | Tools | Notes / limitations |
 |-------|-------------|-------------|---------|-------|---------------------|
-| [`verify-runner`](verify-runner/) | ✅ | ⚠️ | Run one verification check against the diff and return findings as JSON. | Claude: `Skill, Read, Grep, Glob, Bash`; Copilot: `read, search, execute` | Copilot profile self-restricts shell usage, but does not yet have the Claude frontmatter-scoped Bash guard backstop. |
+| [`verify-runner`](verify-runner/) | ✅ | ⚠️ | Run one verification check against the diff and return findings as JSON. | Claude: `Skill, Read, Grep, Glob, Bash`; Copilot: `read, search, execute` | Copilot profile self-restricts shell usage; Copilot does not support the Claude-style agent-frontmatter-scoped Bash guard used by this repo. |
 
 ## Installation
 
@@ -144,6 +144,6 @@ If you don't need any of those, a skill is simpler and more discoverable (no `Ag
 For agents that need runtime restrictions beyond the static `tools:` list (e.g., "can run shell commands, but only read-only commands"), use the strongest runtime-supported guard:
 
 - Claude Code: register a `PreToolUse` hook in the agent frontmatter `hooks:` block and ship the script under `agents\<name>\scripts\`. Frontmatter hooks are scoped to that specific agent.
-- Copilot CLI: use the custom agent `tools` list and, when needed, separate Copilot hook JSON/settings. Copilot hooks are supported, but this repo does not yet have an equivalent per-agent Bash guard for `verify-runner`.
+- Copilot CLI: use the custom agent `tools` list and, when needed, separate Copilot hook JSON/settings. Copilot hooks are supported, but they are not skill- or agent-frontmatter-scoped, so they are not a direct replacement for the Claude `verify-runner` Bash guard.
 
-The [`verify-runner`](verify-runner/) agent uses the Claude frontmatter hook pattern with its co-located [`scripts\verify-runner-bash-guard`](verify-runner/scripts/) script. The Copilot variant is therefore marked `⚠️` until an equivalent guard is implemented.
+The [`verify-runner`](verify-runner/) agent uses the Claude frontmatter hook pattern with its co-located [`scripts\verify-runner-bash-guard`](verify-runner/scripts/) script. The Copilot variant is therefore marked `⚠️` because Copilot cannot use that per-agent frontmatter hook pattern.

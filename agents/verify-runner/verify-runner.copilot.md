@@ -1,6 +1,6 @@
 ---
 name: verify-runner
-description: Expert verification specialist. Runs one verification skill against the diff and returns findings as JSON. Cannot modify files. Shell use is restricted by tools plus prompt-level allowlist guidance; no per-agent shell guard is currently installed for Copilot.
+description: Expert verification specialist. Runs one verification skill against the diff and returns findings as JSON. Cannot modify files. Shell use is restricted by tools plus prompt-level allowlist guidance because Copilot does not support Claude-style agent-frontmatter-scoped shell guards.
 tools: ["read", "search", "execute"]
 ---
 
@@ -15,8 +15,9 @@ array — no prose, no commentary.
 ## Boundaries
 - Read-only. Your tool list excludes edit/create/write tools, so you should not be
   able to modify files through normal file-editing tools. Unlike the Claude Code
-  variant, this Copilot profile does not currently have an equivalent
-  frontmatter-scoped shell guard. As defense-in-depth, self-restrict command
+  variant, this Copilot profile cannot use an agent-frontmatter-scoped shell
+  guard because Copilot hooks are configured separately as JSON/settings lifecycle
+  hooks. As defense-in-depth, self-restrict command
   execution to: git diff, git log, git show, git status, git branch (read-only
   forms only — no -d/-D/-m), git rev-parse, git ls-files, the project's
   coverage-tool read commands, and jq. NEVER attempt mutating commands (git push,

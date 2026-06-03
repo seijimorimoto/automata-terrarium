@@ -113,7 +113,7 @@ Each directory contains its own README with setup instructions. To use any item,
 
 | Agent | Claude Code | Copilot CLI | Description | Tools | Docs |
 |-------|-------------|-------------|-------------|-------|------|
-| `verify-runner` | ✅ | ⚠️ | Read-only verification subagent/custom agent that runs one verification check against the diff and returns JSON findings. | Copilot profile self-restricts commands, but lacks the Claude frontmatter-scoped Bash guard backstop. | [agents/verify-runner/](agents/verify-runner/) |
+| `verify-runner` | ✅ | ⚠️ | Read-only verification subagent/custom agent that runs one verification check against the diff and returns JSON findings. | Copilot profile self-restricts commands; Copilot does not support the Claude-style agent-frontmatter-scoped Bash guard used here. | [agents/verify-runner/](agents/verify-runner/) |
 
 ### Sync infrastructure (`bin/`)
 

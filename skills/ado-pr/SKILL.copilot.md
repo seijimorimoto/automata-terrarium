@@ -90,7 +90,7 @@ If an ADO MCP server is available and preferable in the current environment, use
 
 ## Runtime Notes
 
-- The Claude Code version uses a frontmatter `PostToolUse` hook to capture PR output. Copilot hooks use separate JSON hook configuration, so this skill does not register that hook in frontmatter.
+- The Claude Code version uses a skill-frontmatter `PostToolUse` hook to capture PR output. Copilot CLI does not support skill-frontmatter-scoped hooks; Copilot hooks use separate JSON/settings lifecycle configuration, so this skill cannot register that hook in frontmatter.
 - Do not include Claude-specific coauthor text in the PR body.
 
 ## Important Notes

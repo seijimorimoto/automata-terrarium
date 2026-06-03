@@ -6,17 +6,17 @@ Support markers: `✅` supported, `❌` not supported, `⚠️` partial/manual/p
 
 ## Available Settings
 
-| Preset | Claude Code | Copilot CLI | File | Description |
-|--------|-------------|-------------|------|-------------|
-| Base | ✅ | ✅ | `base.json` | General-purpose permissions/preferences — file ops, git, grep |
-| ADO | ✅ | ⚠️ | `ado.json` | Azure DevOps MCP tool permissions — PRs, work items, iterations, repos |
-| GitHub | ✅ | ✅ | `github.json` | GitHub CLI (`gh`) permissions and GitHub URL access |
-| .NET | ✅ | ⚠️ | `dotnet.json` | C#/.NET permissions and the C# LSP plugin |
-| Work Status | ✅ | ⚠️ | `work-status.json` | MCP tool permissions for weekly status tracking (ADO + Todoist) |
+| Preset | Claude Code | Copilot CLI | File | Description | Notes |
+|--------|-------------|-------------|------|-------------|-------|
+| Base | ✅ | ⚠️ | `base.json` | General-purpose permissions/preferences — file ops, git, grep | Claude preset includes `permissions.allow` entries. Copilot has only a minimal `settings\copilot\base.json`; shell permissions still need CLI flags such as `--allow-tool`. |
+| ADO | ✅ | ⚠️ | `ado.json` | Azure DevOps MCP tool permissions — PRs, work items, iterations, repos | Claude MCP tool allowlist exists. Copilot requires `/mcp` setup and tool permissions through Copilot's MCP/tool permission model; no equivalent preset is complete yet. |
+| GitHub | ✅ | ⚠️ | `github.json` | GitHub CLI (`gh`) permissions and GitHub URL access | Claude preset allows `gh` commands. Copilot preset currently allows GitHub URLs only; `gh` shell permissions still need `--allow-tool 'shell(gh ...)'` flags. |
+| .NET | ✅ | ⚠️ | `dotnet.json` | C#/.NET permissions and the C# LSP plugin | Claude preset enables a Claude plugin and `dotnet` shell permission. Copilot should use `/lsp`, plugins, or CLI flags; no complete equivalent preset yet. |
+| Work Status | ✅ | ⚠️ | `work-status.json` | MCP tool permissions for weekly status tracking (ADO + Todoist) | Claude MCP/path permissions exist. Copilot requires MCP setup plus path/tool permission flags and config path migration. |
 
 ## Installation
 
-Each top-level preset is currently a Claude Code JSON fragment. Copilot equivalents live under `settings\copilot\` where JSON config applies. Some Copilot permissions still require CLI flags, custom agent `tools`, skill `allowed-tools`, MCP config, or hooks.
+Each top-level preset is currently a Claude Code JSON fragment. Copilot equivalents live under `settings\copilot\` only where JSON config applies. A `⚠️` in the Copilot column means "partially represented, manual setup required, or planned" rather than parity with Claude's `permissions.allow` model.
 
 ### User-level (applies to all projects)
 
@@ -50,7 +50,25 @@ Copilot user-level settings live in `~\.copilot\settings.json`. Project-level se
 
 Use `bin\seiji-copilot-sync-settings.ps1` to merge `settings\copilot\*.json` into `~\.copilot\settings.json`.
 
-Copilot permission flags such as `--allow-tool`, `--deny-tool`, `--allow-url`, and `--allow-all-paths` may need launch helpers rather than JSON fragments. Planned Copilot presets should document the exact command or config surface they use.
+Copilot permission flags such as `--allow-tool`, `--deny-tool`, `--allow-url`, and `--allow-all-paths` are not represented by the same JSON schema as Claude Code `permissions.allow`. Use launch commands or helper scripts for those permissions rather than implying the JSON presets are equivalent.
+
+Examples:
+
+```powershell
+# Allow read-only git inspection commands for one session
+copilot --allow-tool 'shell(git status)' --allow-tool 'shell(git diff)' --allow-tool 'shell(git log)'
+
+# Allow GitHub PR inspection and GitHub URL access
+copilot --allow-tool 'shell(gh pr view)' --allow-url 'https://github.com'
+```
+
+When adding a Copilot preset, document whether it is:
+
+- a real Copilot JSON setting,
+- a launch flag recommendation,
+- an MCP setup requirement,
+- a skill `allowed-tools` / agent `tools` concern,
+- or a hook configuration.
 
 ### Work Status preset — additional path permissions
 

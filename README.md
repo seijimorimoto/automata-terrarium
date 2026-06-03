@@ -96,10 +96,12 @@ Each directory contains its own README with setup instructions. To use any item,
 | Preset | Claude Code | Copilot CLI | Description | Docs |
 |--------|-------------|-------------|-------------|------|
 | `ado` | ✅ | ⚠️ | Azure DevOps MCP tool permissions — PRs, work items, iterations, repos | [ado.json](settings/ado.json) |
-| `base` | ✅ | ✅ | General-purpose permissions/preferences — file ops, git, grep | [base.json](settings/base.json) |
+| `base` | ✅ | ⚠️ | General-purpose permissions/preferences — file ops, git, grep | [base.json](settings/base.json) |
 | `dotnet` | ✅ | ⚠️ | C#/.NET permissions and the C# LSP plugin | [dotnet.json](settings/dotnet.json) |
-| `github` | ✅ | ✅ | GitHub CLI (`gh`) permissions and GitHub URL access | [github.json](settings/github.json) |
+| `github` | ✅ | ⚠️ | GitHub CLI (`gh`) permissions and GitHub URL access | [github.json](settings/github.json) |
 | `work-status` | ✅ | ⚠️ | MCP tool permissions for weekly status tracking (ADO + Todoist) | [work-status.json](settings/work-status.json) |
+
+> Copilot settings support is marked `⚠️` because `settings\copilot\*.json` only covers Copilot JSON settings. Copilot shell/MCP/path permissions often require launch flags such as `--allow-tool`, `/mcp` setup, skill `allowed-tools`, agent `tools`, or hooks rather than Claude-style `permissions.allow` presets.
 
 ### Available hooks
 

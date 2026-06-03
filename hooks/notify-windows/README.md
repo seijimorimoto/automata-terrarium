@@ -1,8 +1,8 @@
 # Notify Hook
 
-Windows toast notifications for Claude Code events, powered by [BurntToast](https://github.com/Windos/BurntToast).
+Windows toast notifications for Claude Code and Copilot CLI events, powered by [BurntToast](https://github.com/Windos/BurntToast).
 
-Alerts you when Claude Code needs attention — permission prompts, questions, task completion, and authentication events.
+Alerts you when an agent needs attention — permission prompts, questions, task completion, background agent completion, shell completion, and authentication events.
 
 ## Prerequisites
 
@@ -14,15 +14,20 @@ Install-Module -Name BurntToast
 
 ## Installation
 
-### 1. Copy to your `.claude` folder
+### 1. Copy to your runtime folder
 
-Copy the `notify-windows` folder to either location:
+Copy the `notify-windows` folder to a supported runtime location:
 
-- **User-level** (all projects): `~\.claude\hooks\`
-- **Project-level** (one project): `<project-root>\.claude\hooks\`
+- **Claude user-level** (all projects): `~\.claude\hooks\`
+- **Claude project-level** (one project): `<project-root>\.claude\hooks\`
+- **Copilot user-level** (all projects): `~\.copilot\hooks\notify-windows\`
+- **Copilot project-level** (one project): `<project-root>\.github\hooks\`
 
 ```powershell
 Copy-Item -Recurse hooks\notify-windows ~\.claude\hooks\
+
+# Copilot user-level script files
+Copy-Item -Recurse hooks\notify-windows ~\.copilot\hooks\
 ```
 
 ### 2. Register in settings
@@ -47,6 +52,14 @@ Add the following to the matching `settings.json` (`~\.claude\settings.json` for
 }
 ```
 
+For Copilot CLI, install via the sync script:
+
+```powershell
+.\bin\seiji-copilot-sync-hooks.ps1
+```
+
+Or copy `hooks\notify-windows\copilot.hooks.json` to `~\.copilot\hooks\notify-windows.json` and replace `{{COPILOT_HOOK_DIR}}` with the full path to the installed `notify-windows` folder.
+
 ## Notification types
 
 | Event               | Title               | Sound    | Urgent | Expiry   |
@@ -55,7 +68,10 @@ Add the following to the matching `settings.json` (`~\.claude\settings.json` for
 | `elicitation_dialog`| Question for You     | Reminder | Yes    | —        |
 | `idle_prompt`       | Task Complete        | IM       | No     | 15 min   |
 | `auth_success`      | Authentication       | Silent   | No     | 5 min    |
-| *(other)*           | Claude Code          | Default  | No     | 15 min   |
+| `agent_completed`   | Agent Complete       | IM       | No     | 15 min   |
+| `agent_idle`        | Agent Waiting        | Reminder | Yes    | —        |
+| `shell_completed`   | Shell Complete       | IM       | No     | 15 min   |
+| *(other)*           | AI Agent             | Default  | No     | 15 min   |
 
 ## Customization
 

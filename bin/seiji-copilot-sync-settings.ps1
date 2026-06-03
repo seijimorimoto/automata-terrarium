@@ -1,17 +1,6 @@
-# seiji-claude-sync-settings.ps1 — merge Claude settings presets into ~\.claude\settings.json
-# Use -DryRun to print the merged result and warnings without writing.
+# seiji-copilot-sync-settings.ps1 — merge settings\copilot\*.json into ~\.copilot\settings.json
+# Use -DryRun to print the merged result without writing.
 # Use -NoBackup to skip writing the timestamped backup file.
-#
-# Merge rules (locked in plan):
-#   - arrays of strings (e.g., permissions.allow|deny|ask): union + dedupe + sort alphabetically
-#   - arrays of objects (e.g., hooks): union + dedupe by deep JSON equality, preserve order
-#   - objects: recursive merge
-#   - scalars: preserve user's value if set; only write preset's value if missing.
-#     Print a warning naming the key, the preset, and what value would have been set.
-# Backs up settings.json to settings.backup-<ISO timestamp>.json before writing
-# (skip with -NoBackup).
-# Validates merged JSON parses cleanly before writing.
-# Targets ~\.claude\settings.json only — never settings.local.json or project-level files.
 [CmdletBinding()]
 param(
     [switch]$DryRun,
@@ -22,14 +11,12 @@ $ErrorActionPreference = 'Stop'
 
 $ScriptDir   = Split-Path -Parent $PSCommandPath
 $RepoRoot    = Split-Path -Parent $ScriptDir
-$LegacyPresetsDir = Join-Path $RepoRoot 'settings'
-$TargetPresetsDir = Join-Path $RepoRoot 'settings\claude'
-$PresetsDir = if (Test-Path -LiteralPath $TargetPresetsDir) { $TargetPresetsDir } else { $LegacyPresetsDir }
-$UserConfDir = Join-Path $HOME '.claude'
+$PresetsDir  = Join-Path $RepoRoot 'settings\copilot'
+$UserConfDir = Join-Path $HOME '.copilot'
 $UserConfig  = Join-Path $UserConfDir 'settings.json'
 
 if (-not (Test-Path -LiteralPath $PresetsDir)) {
-    Write-Error "seiji-claude-sync-settings: presets directory not found: $PresetsDir"
+    Write-Error "seiji-copilot-sync-settings: presets directory not found: $PresetsDir"
     exit 1
 }
 
@@ -52,9 +39,6 @@ function Get-PropertyNames {
 }
 
 function Get-PropertyValue {
-    # The trailing comma-wrap on array returns prevents PowerShell from
-    # unwrapping single-element arrays through the function's output stream
-    # (which would mis-classify ["x"] as the bare string "x" downstream).
     param($Object, [string]$Name)
     if ($null -eq $Object) { return $null }
     if ($Object -is [hashtable]) {
@@ -130,7 +114,7 @@ function Merge-Json {
         }
         default {
             if ($User -ne $Preset) {
-                $userStr   = To-Compact-Json $User
+                $userStr = To-Compact-Json $User
                 $presetStr = To-Compact-Json $Preset
                 [void]$Warnings.Add("[$PresetName] scalar conflict at '$PathStr': user=$userStr, preset would set $presetStr; preserving user value")
             }
@@ -139,55 +123,54 @@ function Merge-Json {
     }
 }
 
-# Load user's existing settings (or empty object if absent)
 $accumulator = $null
 if (Test-Path -LiteralPath $UserConfig) {
     $userText = Get-Content -LiteralPath $UserConfig -Raw
     if ([string]::IsNullOrWhiteSpace($userText)) {
         $accumulator = [PSCustomObject]@{}
-    } else {
+    }
+    else {
         try {
             $accumulator = $userText | ConvertFrom-Json
-        } catch {
-            Write-Error "seiji-claude-sync-settings: existing $UserConfig is not valid JSON: $($_.Exception.Message)"
+        }
+        catch {
+            Write-Error "seiji-copilot-sync-settings: existing $UserConfig is not valid JSON: $($_.Exception.Message)"
             exit 1
         }
     }
-} else {
+}
+else {
     $accumulator = [PSCustomObject]@{}
 }
 
 $warnings = New-Object System.Collections.ArrayList
-
-# Merge each Claude preset alphabetically for deterministic output
 $presetFiles = Get-ChildItem -LiteralPath $PresetsDir -Filter '*.json' -File | Sort-Object Name
 if ($presetFiles.Count -eq 0) {
-    Write-Host "seiji-claude-sync-settings: no presets found in $PresetsDir; nothing to merge"
+    Write-Host "seiji-copilot-sync-settings: no presets found in $PresetsDir; nothing to merge"
     exit 0
 }
 
 foreach ($presetFile in $presetFiles) {
     $presetName = $presetFile.Name
-    $presetText = Get-Content -LiteralPath $presetFile.FullName -Raw
     try {
-        $preset = $presetText | ConvertFrom-Json
-    } catch {
-        Write-Error "seiji-claude-sync-settings: preset $presetName is not valid JSON: $($_.Exception.Message)"
+        $preset = Get-Content -LiteralPath $presetFile.FullName -Raw | ConvertFrom-Json
+    }
+    catch {
+        Write-Error "seiji-copilot-sync-settings: preset $presetName is not valid JSON: $($_.Exception.Message)"
         exit 1
     }
     $accumulator = Merge-Json -User $accumulator -Preset $preset -PathStr '' -PresetName $presetName -Warnings $warnings
 }
 
-# Round-trip the merged result through JSON to validate it parses cleanly
 $mergedJson = $accumulator | ConvertTo-Json -Depth 100
 try {
     [void]($mergedJson | ConvertFrom-Json)
-} catch {
-    Write-Error "seiji-claude-sync-settings: merged result is not valid JSON: $($_.Exception.Message)"
+}
+catch {
+    Write-Error "seiji-copilot-sync-settings: merged result is not valid JSON: $($_.Exception.Message)"
     exit 1
 }
 
-# Print warnings (always — even on dry-run)
 foreach ($w in $warnings) {
     Write-Warning $w
 }
@@ -204,7 +187,7 @@ if (-not (Test-Path -LiteralPath $UserConfDir)) {
 }
 
 if ((Test-Path -LiteralPath $UserConfig) -and -not $NoBackup) {
-    $stamp  = (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ")
+    $stamp = (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ")
     $backup = Join-Path $UserConfDir "settings.backup-$stamp.json"
     Copy-Item -LiteralPath $UserConfig -Destination $backup -Force
     Write-Host "backed up existing settings to $backup"

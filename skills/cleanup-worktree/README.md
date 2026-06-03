@@ -18,46 +18,36 @@ Removes a git worktree and its associated local branch after a PR has been merge
 
 ## Installation
 
-Copy the skill folder to either location:
+Install user-level skill variants with the sync scripts.
 
-- **Project-level** (one project): `<project-root>\.claude\skills\`
-- **User-level** (all projects): `~\.claude\skills\`
+- **Claude project-level** (one project): `<project-root>\.claude\skills\`
+- **Claude user-level** (all projects): `~\.claude\skills\`
+- **Copilot project-level** (one project): `<project-root>\.github\skills\`
+- **Copilot user-level** (all projects): `~\.copilot\skills\`
 
 ```powershell
 # Windows (PowerShell)
-
-# Project-level
-Copy-Item -Recurse skills\cleanup-worktree <your-project>\.claude\skills\
-
-# User-level
-Copy-Item -Recurse skills\cleanup-worktree ~\.claude\skills\
-
-# Or symlink (project-level)
-New-Item -ItemType SymbolicLink -Path <your-project>\.claude\skills\cleanup-worktree -Target (Resolve-Path skills\cleanup-worktree)
+.\bin\seiji-claude-sync-skills.ps1
+.\bin\seiji-copilot-sync-skills.ps1
 ```
 
 ```sh
 # Linux / macOS
-
-# Project-level
-cp -r skills/cleanup-worktree <your-project>/.claude/skills/
-
-# User-level
-cp -r skills/cleanup-worktree ~/.claude/skills/
-
-# Or symlink (project-level)
-ln -s "$(pwd)/skills/cleanup-worktree" <your-project>/.claude/skills/cleanup-worktree
+./bin/seiji-claude-sync-skills
+# POSIX Copilot sync is planned.
 ```
 
 ## Permissions
 
-This skill uses only local git commands. Add the following permission to your Claude Code settings if not already present:
+This skill uses only local git commands. For Claude Code, add the following permission to your settings if not already present:
 
 ```json
 "Bash(git worktree *)"
 ```
 
 The remaining git operations (`git branch`, `git rev-parse`, `git status`, `git symbolic-ref`, `git log`) are covered by [`settings\base.json`](../../settings/base.json).
+
+For Copilot CLI, approve the requested git shell commands interactively or launch Copilot with equivalent `--allow-tool` permissions for the git subcommands used by the skill.
 
 ## Usage
 

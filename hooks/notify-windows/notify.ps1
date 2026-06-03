@@ -3,12 +3,13 @@ Import-Module BurntToast
 $json = [Console]::In.ReadToEnd() | ConvertFrom-Json
 $type = $json.notification_type
 $logo = Join-Path $PSScriptRoot 'claude-logo.png'
-$header = New-BTHeader -Id 'claude' -Title 'Claude Code'
+$sourceTitle = if ($json.title) { $json.title } else { 'AI Agent' }
+$header = New-BTHeader -Id 'ai-agent' -Title $sourceTitle
 
 switch ($type) {
     'permission_prompt' {
         New-BurntToastNotification `
-            -Text 'Permission Required', 'Claude Code is waiting for your approval.' `
+            -Text 'Permission Required', 'An agent is waiting for your approval.' `
             -Header $header `
             -Sound Reminder `
             -AppLogo $logo `
@@ -17,7 +18,7 @@ switch ($type) {
     }
     'elicitation_dialog' {
         New-BurntToastNotification `
-            -Text 'Question for You', 'Claude Code needs your input.' `
+            -Text 'Question for You', 'An agent needs your input.' `
             -Header $header `
             -Sound Reminder `
             -AppLogo $logo `
@@ -26,7 +27,43 @@ switch ($type) {
     }
     'idle_prompt' {
         New-BurntToastNotification `
-            -Text 'Task Complete', 'Claude Code is ready for your next prompt.' `
+            -Text 'Task Complete', 'An agent is ready for your next prompt.' `
+            -Header $header `
+            -Sound IM `
+            -AppLogo $logo `
+            -SnoozeAndDismiss `
+            -ExpirationTime (Get-Date).AddMinutes(15)
+    }
+    'agent_completed' {
+        New-BurntToastNotification `
+            -Text 'Agent Complete', 'A background agent finished.' `
+            -Header $header `
+            -Sound IM `
+            -AppLogo $logo `
+            -SnoozeAndDismiss `
+            -ExpirationTime (Get-Date).AddMinutes(15)
+    }
+    'agent_idle' {
+        New-BurntToastNotification `
+            -Text 'Agent Waiting', 'A background agent is waiting for input.' `
+            -Header $header `
+            -Sound Reminder `
+            -AppLogo $logo `
+            -SnoozeAndDismiss `
+            -Urgent
+    }
+    'shell_completed' {
+        New-BurntToastNotification `
+            -Text 'Shell Complete', 'A background shell command finished.' `
+            -Header $header `
+            -Sound IM `
+            -AppLogo $logo `
+            -SnoozeAndDismiss `
+            -ExpirationTime (Get-Date).AddMinutes(15)
+    }
+    'shell_detached_completed' {
+        New-BurntToastNotification `
+            -Text 'Shell Complete', 'A detached shell command finished.' `
             -Header $header `
             -Sound IM `
             -AppLogo $logo `
@@ -43,7 +80,7 @@ switch ($type) {
     }
     default {
         New-BurntToastNotification `
-            -Text 'Claude Code', 'Claude Code needs your attention.' `
+            -Text $sourceTitle, 'An agent needs your attention.' `
             -Header $header `
             -Sound Default `
             -SnoozeAndDismiss `

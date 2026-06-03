@@ -4,8 +4,8 @@ Create, update, complete, and list Azure DevOps work items from the command line
 
 ## Prerequisites
 
-- **Azure DevOps MCP server** — configured and running in your Claude Code environment
-- **Configuration file** — `~\.claude\work-status-config.json` with your ADO project details
+- **Azure DevOps MCP server** — configured and running in your Claude Code or Copilot CLI environment
+- **Configuration file** — `~\.claude\work-status-config.json` for Claude Code or `~\.copilot\work-status-config.json` for Copilot CLI
 
 ```json
 {
@@ -27,34 +27,28 @@ Create, update, complete, and list Azure DevOps work items from the command line
 
 ## Installation
 
-Copy the skill folder to either location:
+Install user-level skill variants with the sync scripts.
 
-- **Project-level** (one project): `<project-root>\.claude\skills\`
-- **User-level** (all projects): `~\.claude\skills\`
+- **Claude project-level** (one project): `<project-root>\.claude\skills\`
+- **Claude user-level** (all projects): `~\.claude\skills\`
+- **Copilot project-level** (one project): `<project-root>\.github\skills\`
+- **Copilot user-level** (all projects): `~\.copilot\skills\`
 
 ```powershell
 # Windows (PowerShell)
-
-# Project-level
-Copy-Item -Recurse skills\ado-task <your-project>\.claude\skills\
-
-# User-level
-Copy-Item -Recurse skills\ado-task ~\.claude\skills\
+.\bin\seiji-claude-sync-skills.ps1
+.\bin\seiji-copilot-sync-skills.ps1
 ```
 
 ```sh
 # Linux / macOS
-
-# Project-level
-cp -r skills/ado-task <your-project>/.claude/skills/
-
-# User-level
-cp -r skills/ado-task ~/.claude/skills/
+./bin/seiji-claude-sync-skills
+# POSIX Copilot sync is planned.
 ```
 
 ### Permissions
 
-Merge the ADO permissions preset into your settings file to auto-allow the MCP tools this skill uses:
+For Claude Code, merge the ADO permissions preset into your settings file to auto-allow the MCP tools this skill uses:
 
 ```powershell
 # Windows (PowerShell) — view the preset
@@ -62,6 +56,8 @@ Get-Content settings\ado.json
 ```
 
 See [settings\ado.json](../../settings/ado.json) for the full list of permitted MCP tools.
+
+For Copilot CLI, configure the Azure DevOps MCP server with `/mcp` and approve or allow the equivalent ADO MCP tools exposed by that server.
 
 ## Usage Examples
 

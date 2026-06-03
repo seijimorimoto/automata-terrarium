@@ -4,6 +4,7 @@
 # This script copies hook scripts only. It does NOT register hooks in
 # ~\.claude\settings.json — that responsibility belongs to
 # seiji-claude-sync-settings.ps1, which merges settings\*.json presets.
+# Copilot hook JSON files are excluded from Claude installs.
 [CmdletBinding()]
 param(
     [switch]$DryRun
@@ -25,6 +26,23 @@ if (-not $DryRun -and -not (Test-Path -LiteralPath $DstDir)) {
     New-Item -ItemType Directory -Path $DstDir -Force | Out-Null
 }
 
+function Copy-HookForClaude {
+    param(
+        [string]$Source,
+        [string]$Destination
+    )
+
+    if (Test-Path -LiteralPath $Destination) {
+        Remove-Item -LiteralPath $Destination -Recurse -Force
+    }
+    New-Item -ItemType Directory -Path $Destination -Force | Out-Null
+
+    Get-ChildItem -LiteralPath $Source -Force | ForEach-Object {
+        if (-not $_.PSIsContainer -and $_.Name -like '*.hooks.json') { return }
+        Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $Destination $_.Name) -Recurse -Force
+    }
+}
+
 $count = 0
 Get-ChildItem -LiteralPath $SrcDir -Directory | Sort-Object Name | ForEach-Object {
     $src  = $_.FullName
@@ -34,10 +52,7 @@ Get-ChildItem -LiteralPath $SrcDir -Directory | Sort-Object Name | ForEach-Objec
         Write-Host "[dry-run] sync hook '$name': $src -> $dst"
     }
     else {
-        if (Test-Path -LiteralPath $dst) {
-            Remove-Item -LiteralPath $dst -Recurse -Force
-        }
-        Copy-Item -LiteralPath $src -Destination $dst -Recurse -Force
+        Copy-HookForClaude -Source $src -Destination $dst
         Write-Host "synced hook '$name'"
     }
     $count++

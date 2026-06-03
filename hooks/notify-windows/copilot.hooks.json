@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "hooks": {
+    "notification": [
+      {
+        "type": "command",
+        "matcher": "permission_prompt|elicitation_dialog|agent_completed|agent_idle|shell_completed|shell_detached_completed",
+        "powershell": "pwsh -NoProfile -ExecutionPolicy Bypass -File \"{{COPILOT_HOOK_DIR}}\\notify.ps1\"",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}

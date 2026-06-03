@@ -1,6 +1,8 @@
 # Azure DevOps PR Integration Skills
 
-These skills bring GitHub-like PR session linking to Azure DevOps. When you create a PR using `/ado-pr`, Claude automatically links it to your current session, allowing you to resume work on that PR later.
+These skills bring GitHub-like PR session linking to Azure DevOps for Claude Code. When you create a PR using `/ado-pr`, Claude Code automatically links it to your current session, allowing you to resume work on that PR later.
+
+Copilot CLI can create PRs with the `/ado-pr` Copilot skill variant, but the session-linking workflow depends on Claude skill-scoped hooks. Copilot CLI does not support skill-frontmatter-scoped hooks, so `/ado-resume-pr` and `/ado-pr-status` are not planned for Copilot CLI.
 
 ## Prerequisites
 
@@ -11,50 +13,41 @@ These skills bring GitHub-like PR session linking to Azure DevOps. When you crea
 
 ## Available Skills
 
-| Skill | Description |
-|-------|-------------|
-| `/ado-pr` | Create a pull request in Azure DevOps with standardized formatting |
-| `/ado-resume-pr [NUMBER]` | Resume the Claude session that created a specific PR |
-| `/ado-pr-status [--all]` | List all tracked PRs (current repo or all repos) |
+| Marker | Meaning |
+|--------|---------|
+| ✅ | Supported |
+| ❌ | Not supported |
+| ⚠️ | Partial support or manual setup required |
+| 🛠️ | Planned |
+
+| Skill | Claude Code | Copilot CLI | Description | Notes |
+|-------|-------------|-------------|-------------|-------|
+| `/ado-pr` | ✅ | ⚠️ | Create a pull request in Azure DevOps with standardized formatting | Copilot supports PR creation only; automatic session capture is Claude-only because it uses a skill-scoped hook. |
+| `/ado-resume-pr [NUMBER]` | ✅ | ❌ | Resume the Claude session that created a specific PR | Not planned for Copilot CLI because it depends on the Claude session database populated by `/ado-pr`'s skill-scoped hook. |
+| `/ado-pr-status [--all]` | ✅ | ❌ | List all tracked PRs (current repo or all repos) | Not planned for Copilot CLI because it reads the Claude session database populated by `/ado-pr`'s skill-scoped hook. |
 
 ## Installation
 
-Copy all three skill folders to either location:
+Install user-level skill variants with the sync scripts.
 
-- **Project-level** (one project): `<project-root>\.claude\skills\`
-- **User-level** (all projects): `~\.claude\skills\`
+- **Claude project-level** (one project): `<project-root>\.claude\skills\`
+- **Claude user-level** (all projects): `~\.claude\skills\`
+- **Copilot project-level** (one project): `<project-root>\.github\skills\`
+- **Copilot user-level** (all projects): `~\.copilot\skills\`
 
 ```powershell
 # Windows (PowerShell)
-
-# All ADO skills (project-level)
-Copy-Item -Recurse skills\ado-pr, skills\ado-resume-pr, skills\ado-pr-status <your-project>\.claude\skills\
-
-# All ADO skills (user-level)
-Copy-Item -Recurse skills\ado-pr, skills\ado-resume-pr, skills\ado-pr-status ~\.claude\skills\
-
-# Or symlink them (project-level)
-New-Item -ItemType SymbolicLink -Path <your-project>\.claude\skills\ado-pr -Target (Resolve-Path skills\ado-pr)
-New-Item -ItemType SymbolicLink -Path <your-project>\.claude\skills\ado-resume-pr -Target (Resolve-Path skills\ado-resume-pr)
-New-Item -ItemType SymbolicLink -Path <your-project>\.claude\skills\ado-pr-status -Target (Resolve-Path skills\ado-pr-status)
+.\bin\seiji-claude-sync-skills.ps1
+.\bin\seiji-copilot-sync-skills.ps1
 ```
 
 ```sh
 # Linux / macOS
-
-# All ADO skills (project-level)
-cp -r skills/ado-pr skills/ado-resume-pr skills/ado-pr-status <your-project>/.claude/skills/
-
-# All ADO skills (user-level)
-cp -r skills/ado-pr skills/ado-resume-pr skills/ado-pr-status ~/.claude/skills/
-
-# Or symlink them (project-level)
-ln -s "$(pwd)/skills/ado-pr" <your-project>/.claude/skills/ado-pr
-ln -s "$(pwd)/skills/ado-resume-pr" <your-project>/.claude/skills/ado-resume-pr
-ln -s "$(pwd)/skills/ado-pr-status" <your-project>/.claude/skills/ado-pr-status
+./bin/seiji-claude-sync-skills
+# POSIX Copilot sync is planned.
 ```
 
-For project-level installs, the skills are available to anyone who clones the target project — no extra setup beyond the prerequisites.
+For project-level installs, the skills are available to anyone who clones the target project. Project-level sync support is not documented here yet.
 
 ---
 
@@ -70,32 +63,32 @@ Creates a PR with standardized formatting (title format: `[ProjectName] Descript
 /ado-pr --title "[ServiceName] Custom"     # Custom title
 ```
 
-[Full documentation](SKILL.md)
+[Full documentation](SKILL.claude.md) and [Copilot variant](SKILL.copilot.md)
 
 ### `/ado-resume-pr` - Resume Session by PR Number
 
-Look up and resume the Claude session that created a specific PR.
+Look up and resume the Claude session that created a specific PR. This is Claude-only because it depends on the Claude session database populated by a skill-scoped hook.
 
 ```bash
 /ado-resume-pr 12345
 ```
 
-[Full documentation](../ado-resume-pr/SKILL.md)
+[Full documentation](../ado-resume-pr/SKILL.claude.md)
 
 ### `/ado-pr-status` - List Tracked PRs
 
-View all PRs linked to Claude sessions.
+View all PRs linked to Claude sessions. This is Claude-only because it depends on the Claude session database populated by a skill-scoped hook.
 
 ```bash
 /ado-pr-status          # Current repo
 /ado-pr-status --all    # All repos
 ```
 
-[Full documentation](../ado-pr-status/SKILL.md)
+[Full documentation](../ado-pr-status/SKILL.claude.md)
 
 ---
 
-## How PR Session Linking Works
+## Claude Code PR Session Linking
 
 ### Automatic Capture (Skill-Scoped Hook)
 
@@ -105,6 +98,8 @@ When you create a PR using `/ado-pr`, a skill-scoped hook automatically runs:
 3. Stores the mapping in `~\.claude\ado-pr-sessions.json`
 
 The hook is scoped to the `/ado-pr` skill, so it only executes during PR creation -- not on every Bash command.
+
+Copilot CLI does not support skill-frontmatter-scoped hooks. Although Copilot supports lifecycle/tool hooks through JSON/settings configuration, those hooks are not scoped by declaring them in a skill's frontmatter. This is why the Copilot `/ado-pr` variant is PR-creation-only and why `/ado-resume-pr` and `/ado-pr-status` are not planned for Copilot CLI.
 
 ### Session Database
 

@@ -65,6 +65,14 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
 
 ## Documentation Conventions
 
+### General style
+
+- Docs should be tool-neutral by default. Use generic terms such as "runtime", "agent", "source variant", or "orchestrator" unless a section is explicitly about Claude Code or Copilot CLI.
+- Put runtime-specific details under clearly labeled subsections.
+- Do not overstate support. Use `✅` only when the repo provides meaningful working support for that runtime.
+- Every **discoverable entry-point directory** should have a `README.md` explaining its contents and usage. This means each skill, agent, hook, and settings-preset directory, plus any directory linked from a parent `README.md`.
+- Implementation-detail subdirectories (e.g., `scripts\`, `assets\`) don't need their own README if the parent already documents them.
+
 ### Paths
 
 - Use **Windows-style backslashes** (`\`) as the primary path format in all inline references and examples (e.g., `~\.claude\hooks\`, `~\.copilot\skills\`, `<project-root>\.github\skills\`).
@@ -80,50 +88,89 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
 - Use `powershell` as the language tag for Windows blocks, `sh` for Linux/macOS.
 - Exception: platform-specific items (e.g., a Windows-only hook) should only show commands for their platform, without the `# Windows (PowerShell)` comment header.
 
+### Availability tables
+
+- Parent-level READMEs (`skills\README.md`, `agents\README.md`, `hooks\README.md`) must include an **Available [Skills/Agents/Hooks]** table listing every item in that directory. `settings\README.md` and `bin\README.md` follow the same pattern for their own contents (presets and sync scripts respectively).
+- The repo-level `README.md` must mirror those tables (and the `bin\` script table) for discoverability.
+- Every file with an availability table that lists Claude Code and Copilot CLI variants must include the marker legend once before the first availability table in that file.
+- Use this exact marker legend format:
+  ```markdown
+  | Marker | Meaning |
+  |--------|---------|
+  | ✅ | Supported |
+  | ❌ | Not supported |
+  | ⚠️ | Partial support or manual setup required |
+  | 🛠️ | Planned |
+  ```
+- Every availability table that lists Claude Code and Copilot CLI variants must include a **Notes** column.
+- Use `⚠️` for partial support or manual setup requirements; use `🛠️` only for planned-but-not-implemented support.
+- Items that cannot be ported to one runtime should stay in the repo as single-target artifacts and be marked with `❌` or `⚠️` in availability tables, with a short note explaining why.
+
 ### Installation instructions
 
 - Each skill, agent, and hook README must include:
   1. **Prerequisites** with install commands (not just names).
   2. **Install location** steps for supported runtimes. Include Claude Code (`~\.claude\...` and `<project-root>\.claude\...`) and/or Copilot CLI (`~\.copilot\...` and `<project-root>\.github\...`) as applicable.
-  3. **Registration** step. Pick the case that applies:
-     - **Claude skills and agents that don't ship a hook** — just the copy is enough.
-     - **Claude skills or agents that DO ship a hook** (declared in the `SKILL.md` / agent's `<name>.md` frontmatter `hooks:` block) — no `settings.json` edit; the harness picks up the frontmatter hook automatically once the skill/agent is in place. Explain this in the README so users don't go looking for a settings change.
-     - **Claude session-wide hooks** under `hooks\` — register in `~\.claude\settings.json` (or the project-level equivalent) per the snippet in the hook's README.
-     - **Copilot hooks** — register through `~\.copilot\hooks\*.json`, `<project-root>\.github\hooks\*.json`, or the documented Copilot settings `hooks` block. Copilot hooks are lifecycle/tool hooks, not skill- or agent-frontmatter-scoped hooks. Do not describe Claude frontmatter hooks as Copilot-compatible or as something this repo simply has not added yet.
-- Parent-level READMEs (`skills/README.md`, `agents/README.md`, `hooks/README.md`) must include an **Available [Skills/Agents/Hooks]** table listing every item in that directory. `settings/README.md` and `bin/README.md` follow the same pattern for their own contents (presets and sync scripts respectively).
-- The repo-level `README.md` must mirror those tables (and the `bin/` script table) for discoverability.
-- Availability tables must include Claude Code and Copilot CLI columns using:
-  - `✅` supported
-  - `❌` not supported
-  - `⚠️` partial support, manual setup required, or planned but incomplete
-- Add a **Notes** or **Limitations** column when a support marker could be ambiguous. Use it to explain partial support, manual setup, runtime limitations, or why an item is not planned for a runtime.
-- Do not overstate support. Use `✅` only when the repo provides meaningful working support for that runtime. Use `⚠️` for partial support or manual setup, and `❌` when the runtime lacks a required primitive or the item is intentionally not planned.
-- Docs should be tool-neutral by default. Use generic terms such as "runtime", "agent", "source variant", or "orchestrator" unless a section is explicitly about Claude Code or Copilot CLI. Put runtime-specific details under clearly labeled subsections.
+  3. **Registration** or activation steps for each supported runtime, when required.
+- Manual install docs must show runtime filename mapping explicitly. For example, `agents\<name>\<name>.claude.md` must be copied as `<name>.md` for Claude Code, and `agents\<name>\<name>.copilot.md` must be copied as `<name>.agent.md` for Copilot CLI.
 
 ### Naming
 
 - Use platform suffixes for platform-specific items (e.g., `notify-windows` instead of `notify`).
 
-## Guidelines
+## Runtime Hook Conventions
 
-- Each skill must live in its own folder under `skills/`.
-- Skills use one of these entrypoint layouts:
+- Claude skill- and agent-scoped hooks are declared in frontmatter (`hooks:`) and live alongside their owning skill/agent under `scripts\`.
+- Claude session-wide hooks under `hooks\` are registered in `~\.claude\settings.json` or the project-level equivalent.
+- Copilot hooks are registered through `~\.copilot\hooks\*.json`, `<project-root>\.github\hooks\*.json`, or the documented Copilot settings `hooks` block.
+- Copilot hooks are lifecycle/tool hooks, not skill- or agent-frontmatter-scoped hooks. Do not describe Claude frontmatter hooks as Copilot-compatible or as something this repo simply has not added yet.
+
+## Artifact Layout Rules
+
+### Skills
+
+- Each skill must live in its own folder under `skills\`.
+- Use one of these entrypoint layouts:
   - Shared: `skills\<name>\SKILL.md` when the same file is valid for Claude Code and Copilot CLI.
   - Split: `skills\<name>\SKILL.claude.md` and `skills\<name>\SKILL.copilot.md` when runtime-specific frontmatter, tool names, hooks, paths, or instructions are needed.
-  - Sync scripts must copy the target-specific variant as `SKILL.md` into the destination runtime directory.
-- A skill may be single-target. For example, a Claude-only skill can use `SKILL.claude.md` without `SKILL.copilot.md`; Copilot sync must skip it instead of installing a Claude-only artifact.
-- Each agent must live in its own folder under `agents/`. The agent definition files and `README.md` sit at the top of that folder. Co-located implementation files (hook scripts the agent registers via its frontmatter, helper scripts, fixtures) go under `agents/<name>/scripts/`, mirroring the skills convention (`skills/<name>/scripts/`).
-- Agents use one of these entrypoint layouts:
+  - Single-target: `skills\<name>\SKILL.claude.md` or `skills\<name>\SKILL.copilot.md` when only one runtime is supported.
+- Sync scripts must copy the target-specific variant as `SKILL.md` into the destination runtime directory.
+- Copilot sync must skip Claude-only skills instead of installing Claude-only artifacts.
+
+### Agents
+
+- Each agent must live in its own folder under `agents\`.
+- Agent definition files and `README.md` sit at the top of that folder.
+- Co-located implementation files (hook scripts the agent registers via frontmatter, helper scripts, fixtures) go under `agents\<name>\scripts\`, mirroring the skills convention (`skills\<name>\scripts\`).
+- Use one of these entrypoint layouts:
   - Shared: `agents\<name>\<name>.md` when the same file is valid for Claude Code and Copilot CLI.
   - Split: `agents\<name>\<name>.claude.md` and `agents\<name>\<name>.copilot.md` when runtime-specific frontmatter, tool names, hooks, paths, or instructions are needed.
-  - Sync scripts must copy the target-specific variant to the filename expected by the destination runtime.
-- Keep target-specific variants semantically aligned. Shared behavior/instructions should use the same wording as much as practical; diverge only for real runtime differences such as frontmatter shape, tool names, hooks, install paths, MCP naming, config paths, and permission mechanics.
-- Manual install docs must show runtime filename mapping explicitly. For example, `agents\<name>\<name>.claude.md` must be copied as `<name>.md` for Claude Code, and `agents\<name>\<name>.copilot.md` must be copied as `<name>.agent.md` for Copilot CLI.
-- Every **discoverable entry-point directory** should have a `README.md` explaining its contents and usage. This means each skill, agent, hook, and settings-preset directory, plus any directory linked from a parent `README.md`. Implementation-detail subdirectories (e.g., `scripts/`, `assets/`) don't need their own README if the parent already documents them.
-- Do not commit secrets, credentials, or `.env` files.
+  - Single-target: `agents\<name>\<name>.claude.md` or `agents\<name>\<name>.copilot.md` when only one runtime is supported.
+- Sync scripts must copy the target-specific variant to the filename expected by the destination runtime.
+
+### Variant alignment
+
+- Keep target-specific variants semantically aligned.
+- Shared behavior/instructions should use the same wording as much as practical.
+- Diverge only for real runtime differences such as frontmatter shape, tool names, hooks, install paths, MCP naming, config paths, and permission mechanics.
+
+## Settings and Permissions
+
 - Permission entries in settings preset files (`settings\*.json`) must be sorted alphabetically.
-- Claude settings fragments belong under `settings\claude\` once migrated. Copilot settings, launch helpers, and permission notes belong under `settings\copilot\`.
-- Do not imply Copilot settings JSON is equivalent to Claude Code `permissions.allow`. Copilot shell, MCP, URL, and path permissions often require CLI flags (`--allow-tool`, `--deny-tool`, `--allow-url`, `--allow-all-paths`), `/mcp` setup, skill `allowed-tools`, agent `tools`, or hooks. Mark Copilot settings support as `⚠️` unless the repo provides the full required setup.
-- Sync scripts are target-specific. Claude sync installs Claude-compatible artifacts and filters/skips Copilot-only artifacts; Copilot sync installs Copilot-compatible artifacts and skips Claude-only artifacts. Both should support `-DryRun`.
+- Claude settings fragments belong under `settings\claude\` once migrated.
+- Copilot settings, launch helpers, and permission notes belong under `settings\copilot\`.
+- Do not imply Copilot settings JSON is equivalent to Claude Code `permissions.allow`.
+- Copilot shell, MCP, URL, and path permissions often require CLI flags (`--allow-tool`, `--deny-tool`, `--allow-url`, `--allow-all-paths`), `/mcp` setup, skill `allowed-tools`, agent `tools`, or hooks.
+- Mark Copilot settings support as `⚠️` unless the repo provides the full required setup.
+
+## Sync and Validation
+
+- Sync scripts are target-specific.
+- Claude sync installs Claude-compatible artifacts and filters/skips Copilot-only artifacts.
+- Copilot sync installs Copilot-compatible artifacts and skips Claude-only artifacts.
+- Sync scripts should support `-DryRun`.
 - Use `bin\seiji-validate.ps1` to enforce dual-target invariants such as instruction-file compatibility, skill/agent entrypoint layout, Copilot frontmatter requirements, README availability coverage, and target-specific settings conventions.
-- Items that cannot be ported to one runtime should stay in the repo as single-target artifacts and be marked with `❌` or `⚠️` in availability tables, with a short note explaining why.
+
+## Security
+
+- Do not commit secrets, credentials, or `.env` files.

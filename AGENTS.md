@@ -98,6 +98,7 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
   - `⚠️` partial support, manual setup required, or planned but incomplete
 - Add a **Notes** or **Limitations** column when a support marker could be ambiguous. Use it to explain partial support, manual setup, runtime limitations, or why an item is not planned for a runtime.
 - Do not overstate support. Use `✅` only when the repo provides meaningful working support for that runtime. Use `⚠️` for partial support or manual setup, and `❌` when the runtime lacks a required primitive or the item is intentionally not planned.
+- Docs should be tool-neutral by default. Use generic terms such as "runtime", "agent", "source variant", or "orchestrator" unless a section is explicitly about Claude Code or Copilot CLI. Put runtime-specific details under clearly labeled subsections.
 
 ### Naming
 

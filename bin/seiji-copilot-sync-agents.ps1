@@ -1,5 +1,6 @@
 # seiji-copilot-sync-agents.ps1 — copy Copilot custom agent profiles to ~\.copilot\agents\
 # Use -DryRun to preview without writing.
+# Source files use <name>.copilot.md and install as <name>.agent.md.
 [CmdletBinding()]
 param(
     [switch]$DryRun
@@ -23,9 +24,10 @@ if (-not $DryRun -and -not (Test-Path -LiteralPath $DstDir)) {
 
 $count = 0
 
-Get-ChildItem -LiteralPath $SrcDir -Filter '*.agent.md' -File | Sort-Object Name | ForEach-Object {
+Get-ChildItem -LiteralPath $SrcDir -Filter '*.copilot.md' -File | Sort-Object Name | ForEach-Object {
     $src = $_.FullName
-    $dst = Join-Path $DstDir $_.Name
+    $dstName = $_.Name -replace '\.copilot\.md$', '.agent.md'
+    $dst = Join-Path $DstDir $dstName
     if ($DryRun) {
         Write-Host "[dry-run] sync Copilot agent '$($_.Name)': $src -> $dst"
     }
@@ -37,7 +39,7 @@ Get-ChildItem -LiteralPath $SrcDir -Filter '*.agent.md' -File | Sort-Object Name
 }
 
 Get-ChildItem -LiteralPath $SrcDir -Directory | Sort-Object Name | ForEach-Object {
-    $agentFile = Join-Path $_.FullName "$($_.Name).agent.md"
+    $agentFile = Join-Path $_.FullName "$($_.Name).copilot.md"
     if (-not (Test-Path -LiteralPath $agentFile)) { return }
 
     $dst = Join-Path $DstDir "$($_.Name).agent.md"

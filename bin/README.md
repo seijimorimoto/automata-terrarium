@@ -18,7 +18,7 @@ Support markers: `✅` supported, `❌` not supported, `⚠️` partial/manual/p
 | `seiji-claude-sync-settings` (`.ps1`) | ✅ | ❌ | Merges every `settings\*.json` into `~\.claude\settings.json` per the rules below. |
 | `seiji-copilot-sync` (`.ps1`) | ❌ | ⚠️ | Wrapper for implemented Copilot per-category sync scripts; skips categories not implemented yet. |
 | `seiji-copilot-sync-skills` (`.ps1`) | ❌ | ✅ | Copy/rename sync for `SKILL.copilot.md` or shared `SKILL.md` to `~\.copilot\skills\<name>\SKILL.md`. |
-| `seiji-copilot-sync-agents` (`.ps1`) | ❌ | ✅ | Syncs Copilot `.agent.md` profiles to `~\.copilot\agents\`. |
+| `seiji-copilot-sync-agents` (`.ps1`) | ❌ | ✅ | Installs source `*.copilot.md` agent profiles as `*.agent.md` under `~\.copilot\agents\`. |
 | `seiji-copilot-sync-hooks` (`.ps1`) | ❌ | ✅ | Syncs Copilot hook scripts and JSON configs to `~\.copilot\hooks\`. |
 | `seiji-copilot-sync-settings` (`.ps1`) | ❌ | ✅ | Merges Copilot settings presets into `~\.copilot\settings.json`. |
 
@@ -104,7 +104,7 @@ seiji-claude-sync --no-backup   # skip the settings-file backup
 Future Copilot sync scripts should mirror the Claude script shape but copy runtime-specific artifacts:
 
 - `SKILL.copilot.md` becomes `SKILL.md` in `~\.copilot\skills\<name>\`.
-- `<name>.agent.md` is copied to `~\.copilot\agents\`.
+- `<name>.copilot.md` is copied to `~\.copilot\agents\<name>.agent.md`.
 - Copilot hook JSON is copied to `~\.copilot\hooks\`.
 - Copilot settings fragments or launch helpers are installed from `settings\copilot\`.
 

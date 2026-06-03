@@ -108,8 +108,11 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
   - Shared: `skills\<name>\SKILL.md` when the same file is valid for Claude Code and Copilot CLI.
   - Split: `skills\<name>\SKILL.claude.md` and `skills\<name>\SKILL.copilot.md` when runtime-specific frontmatter, tool names, hooks, paths, or instructions are needed.
   - Sync scripts must copy the target-specific variant as `SKILL.md` into the destination runtime directory.
-- Each agent must live in its own folder under `agents/`. The agent's `.md` file and its `README.md` sit at the top of that folder. Co-located implementation files (hook scripts the agent registers via its frontmatter, helper scripts, fixtures) go under `agents/<name>/scripts/`, mirroring the skills convention (`skills/<name>/scripts/`). This gives every agent a stable home for current and future resources, regardless of whether it ships with hooks today.
-- Claude agent definitions use `agents\<name>\<name>.md`. Copilot custom agent definitions use `agents\<name>\<name>.agent.md`.
+- Each agent must live in its own folder under `agents/`. The agent definition files and `README.md` sit at the top of that folder. Co-located implementation files (hook scripts the agent registers via its frontmatter, helper scripts, fixtures) go under `agents/<name>/scripts/`, mirroring the skills convention (`skills/<name>/scripts/`).
+- Agents use one of these entrypoint layouts:
+  - Shared: `agents\<name>\<name>.md` when the same file is valid for Claude Code and Copilot CLI.
+  - Split: `agents\<name>\<name>.claude.md` and `agents\<name>\<name>.copilot.md` when runtime-specific frontmatter, tool names, hooks, paths, or instructions are needed.
+  - Sync scripts must copy the target-specific variant to the filename expected by the destination runtime.
 - Every **discoverable entry-point directory** should have a `README.md` explaining its contents and usage. This means each skill, agent, hook, and settings-preset directory, plus any directory linked from a parent `README.md`. Implementation-detail subdirectories (e.g., `scripts/`, `assets/`) don't need their own README if the parent already documents them.
 - Do not commit secrets, credentials, or `.env` files.
 - Permission entries in settings preset files (`settings\*.json`) must be sorted alphabetically.

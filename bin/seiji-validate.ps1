@@ -90,6 +90,26 @@ function Test-CopilotSkillFrontmatter {
     }
 }
 
+function Test-CopilotAgentFrontmatter {
+    param([string]$Path)
+
+    $frontmatter = Get-Frontmatter -Path $Path
+    if ($null -eq $frontmatter) {
+        Add-ValidationError "Copilot agent missing YAML frontmatter: $Path"
+        return
+    }
+
+    foreach ($required in @('name:', 'description:', 'tools:')) {
+        if ($frontmatter -notmatch "(?m)^$([regex]::Escape($required))") {
+            Add-ValidationError "Copilot agent missing required frontmatter '$required': $Path"
+        }
+    }
+
+    if ($frontmatter -match '(?m)^hooks:') {
+        Add-ValidationError "Copilot agent must not use Claude frontmatter hooks: $Path"
+    }
+}
+
 function Test-SortedStringArray {
     param(
         [object[]]$Values,
@@ -151,6 +171,35 @@ if (Test-Path -LiteralPath $skillsDir) {
         if (-not $hasShared -and -not ($hasClaude -and $hasCopilot)) {
             Add-ValidationError "Skill '$skillName' must have SKILL.md or both SKILL.claude.md and SKILL.copilot.md"
         }
+
+        # Agent entrypoint invariants.
+        $agentsDir = Join-Path $RepoRoot 'agents'
+        if (Test-Path -LiteralPath $agentsDir) {
+            Get-ChildItem -LiteralPath $agentsDir -Directory | Sort-Object Name | ForEach-Object {
+                $agentName = $_.Name
+                $shared = Join-Path $_.FullName "$agentName.md"
+                $claude = Join-Path $_.FullName "$agentName.claude.md"
+                $copilot = Join-Path $_.FullName "$agentName.copilot.md"
+                $legacyCopilot = Join-Path $_.FullName "$agentName.agent.md"
+
+                $hasShared = Test-Path -LiteralPath $shared
+                $hasClaude = Test-Path -LiteralPath $claude
+                $hasCopilot = Test-Path -LiteralPath $copilot
+
+                if (-not $hasShared -and -not ($hasClaude -and $hasCopilot)) {
+                    Add-ValidationError "Agent '$agentName' must have $agentName.md or both $agentName.claude.md and $agentName.copilot.md"
+                }
+                if ($hasShared -and ($hasClaude -or $hasCopilot)) {
+                    Add-ValidationError "Agent '$agentName' must not mix shared $agentName.md with target-specific agent files"
+                }
+                if (Test-Path -LiteralPath $legacyCopilot) {
+                    Add-ValidationError "Agent '$agentName' should use source name $agentName.copilot.md, not $agentName.agent.md"
+                }
+                if ($hasCopilot) {
+                    Test-CopilotAgentFrontmatter -Path $copilot
+                }
+            }
+        }
         if ($hasShared -and ($hasClaude -or $hasCopilot)) {
             Add-ValidationError "Skill '$skillName' must not mix shared SKILL.md with target-specific SKILL.*.md files"
         }
@@ -184,7 +233,6 @@ Get-ChildItem -LiteralPath $skillsDir -Directory | Sort-Object Name | ForEach-Ob
     Test-ReadmeContains -ReadmePath $skillsReadme -Needle $_.Name -Description 'Skills table'
 }
 
-$agentsDir = Join-Path $RepoRoot 'agents'
 Get-ChildItem -LiteralPath $agentsDir -Directory | Sort-Object Name | ForEach-Object {
     Test-ReadmeContains -ReadmePath $rootReadme -Needle $_.Name -Description 'Root agents table'
     Test-ReadmeContains -ReadmePath $agentsReadme -Needle $_.Name -Description 'Agents table'

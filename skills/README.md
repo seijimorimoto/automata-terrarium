@@ -14,9 +14,9 @@ A suite of skills that bring GitHub-like PR session linking to Azure DevOps.
 
 | Skill | Claude Code | Copilot CLI | Description |
 |-------|-------------|-------------|-------------|
-| [`/ado-pr`](ado-pr/) | ✅ | ⚠️ | Create a pull request in Azure DevOps with standardized formatting; Copilot session-capture hook pending |
-| [`/ado-resume-pr`](ado-resume-pr/) | ✅ | ⚠️ | Resume the agent session that created a specific PR |
-| [`/ado-pr-status`](ado-pr-status/) | ✅ | ⚠️ | List all tracked PRs (current repo or all repos) |
+| [`/ado-pr`](ado-pr/) | ✅ | ⚠️ | Create a pull request in Azure DevOps with standardized formatting; Copilot PR creation only, no session capture |
+| [`/ado-resume-pr`](ado-resume-pr/) | ✅ | ❌ | Resume the Claude session that created a specific PR |
+| [`/ado-pr-status`](ado-pr-status/) | ✅ | ❌ | List all tracked Claude PR sessions (current repo or all repos) |
 
 See the [ADO PR Integration README](ado-pr/README.md) for full documentation, installation, and troubleshooting.
 

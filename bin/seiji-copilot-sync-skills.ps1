@@ -53,16 +53,22 @@ Get-ChildItem -LiteralPath $SrcDir -Directory | Sort-Object Name | ForEach-Objec
     $copilotSkill = Join-Path $src 'SKILL.copilot.md'
     $usesSplitSkill = (Test-Path -LiteralPath $claudeSkill) -or (Test-Path -LiteralPath $copilotSkill)
 
+    if ($usesSplitSkill -and -not (Test-Path -LiteralPath $copilotSkill)) {
+        if ($DryRun) {
+            Write-Host "[dry-run] skip skill '$name' (no Copilot entrypoint)"
+        }
+        else {
+            Write-Host "skipped skill '$name' (no Copilot entrypoint)"
+        }
+        return
+    }
+
     if ($DryRun) {
         $mode = if ($usesSplitSkill) { 'copilot variant' } else { 'shared' }
         Write-Host "[dry-run] sync skill '$name' ($mode): $src -> $dst"
     }
     else {
         if ($usesSplitSkill) {
-            if (-not (Test-Path -LiteralPath $copilotSkill)) {
-                Write-Error "seiji-copilot-sync-skills: skill '$name' has split entrypoints but is missing SKILL.copilot.md"
-                exit 1
-            }
             Copy-SkillForCopilot -Source $src -Destination $dst
         }
         else {

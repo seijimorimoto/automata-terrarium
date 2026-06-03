@@ -168,43 +168,43 @@ if (Test-Path -LiteralPath $skillsDir) {
         $hasClaude = Test-Path -LiteralPath $claude
         $hasCopilot = Test-Path -LiteralPath $copilot
 
-        if (-not $hasShared -and -not ($hasClaude -and $hasCopilot)) {
-            Add-ValidationError "Skill '$skillName' must have SKILL.md or both SKILL.claude.md and SKILL.copilot.md"
-        }
-
-        # Agent entrypoint invariants.
-        $agentsDir = Join-Path $RepoRoot 'agents'
-        if (Test-Path -LiteralPath $agentsDir) {
-            Get-ChildItem -LiteralPath $agentsDir -Directory | Sort-Object Name | ForEach-Object {
-                $agentName = $_.Name
-                $shared = Join-Path $_.FullName "$agentName.md"
-                $claude = Join-Path $_.FullName "$agentName.claude.md"
-                $copilot = Join-Path $_.FullName "$agentName.copilot.md"
-                $legacyCopilot = Join-Path $_.FullName "$agentName.agent.md"
-
-                $hasShared = Test-Path -LiteralPath $shared
-                $hasClaude = Test-Path -LiteralPath $claude
-                $hasCopilot = Test-Path -LiteralPath $copilot
-
-                if (-not $hasShared -and -not ($hasClaude -and $hasCopilot)) {
-                    Add-ValidationError "Agent '$agentName' must have $agentName.md or both $agentName.claude.md and $agentName.copilot.md"
-                }
-                if ($hasShared -and ($hasClaude -or $hasCopilot)) {
-                    Add-ValidationError "Agent '$agentName' must not mix shared $agentName.md with target-specific agent files"
-                }
-                if (Test-Path -LiteralPath $legacyCopilot) {
-                    Add-ValidationError "Agent '$agentName' should use source name $agentName.copilot.md, not $agentName.agent.md"
-                }
-                if ($hasCopilot) {
-                    Test-CopilotAgentFrontmatter -Path $copilot
-                }
-            }
+        if (-not $hasShared -and -not $hasClaude -and -not $hasCopilot) {
+            Add-ValidationError "Skill '$skillName' must have SKILL.md, SKILL.claude.md, and/or SKILL.copilot.md"
         }
         if ($hasShared -and ($hasClaude -or $hasCopilot)) {
             Add-ValidationError "Skill '$skillName' must not mix shared SKILL.md with target-specific SKILL.*.md files"
         }
         if ($hasCopilot) {
             Test-CopilotSkillFrontmatter -Path $copilot
+        }
+    }
+
+    # Agent entrypoint invariants.
+    $agentsDir = Join-Path $RepoRoot 'agents'
+    if (Test-Path -LiteralPath $agentsDir) {
+        Get-ChildItem -LiteralPath $agentsDir -Directory | Sort-Object Name | ForEach-Object {
+            $agentName = $_.Name
+            $shared = Join-Path $_.FullName "$agentName.md"
+            $claude = Join-Path $_.FullName "$agentName.claude.md"
+            $copilot = Join-Path $_.FullName "$agentName.copilot.md"
+            $legacyCopilot = Join-Path $_.FullName "$agentName.agent.md"
+
+            $hasShared = Test-Path -LiteralPath $shared
+            $hasClaude = Test-Path -LiteralPath $claude
+            $hasCopilot = Test-Path -LiteralPath $copilot
+
+            if (-not $hasShared -and -not $hasClaude -and -not $hasCopilot) {
+                Add-ValidationError "Agent '$agentName' must have $agentName.md, $agentName.claude.md, and/or $agentName.copilot.md"
+            }
+            if ($hasShared -and ($hasClaude -or $hasCopilot)) {
+                Add-ValidationError "Agent '$agentName' must not mix shared $agentName.md with target-specific agent files"
+            }
+            if (Test-Path -LiteralPath $legacyCopilot) {
+                Add-ValidationError "Agent '$agentName' should use source name $agentName.copilot.md, not $agentName.agent.md"
+            }
+            if ($hasCopilot) {
+                Test-CopilotAgentFrontmatter -Path $copilot
+            }
         }
     }
 }

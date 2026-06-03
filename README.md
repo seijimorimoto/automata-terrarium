@@ -78,9 +78,9 @@ Each directory contains its own README with setup instructions. To use any item,
 
 | Skill | Claude Code | Copilot CLI | Description | Docs |
 |-------|-------------|-------------|-------------|------|
-| `/ado-pr` | ✅ | ⚠️ | Create Azure DevOps PRs with standardized formatting; Copilot PR creation supported, session-capture hook pending | [README](skills/ado-pr/README.md) |
-| `/ado-resume-pr` | ✅ | ⚠️ | Resume the session that created a specific PR | [SKILL.md](skills/ado-resume-pr/SKILL.md) |
-| `/ado-pr-status` | ✅ | ⚠️ | List all tracked PRs linked to agent sessions | [SKILL.md](skills/ado-pr-status/SKILL.md) |
+| `/ado-pr` | ✅ | ⚠️ | Create Azure DevOps PRs with standardized formatting; Copilot PR creation only, no session capture | [README](skills/ado-pr/README.md) |
+| `/ado-resume-pr` | ✅ | ❌ | Resume the Claude session that created a specific PR | [SKILL.claude.md](skills/ado-resume-pr/SKILL.claude.md) |
+| `/ado-pr-status` | ✅ | ❌ | List all tracked Claude PR sessions | [SKILL.claude.md](skills/ado-pr-status/SKILL.claude.md) |
 | `/ado-task` | ✅ | ✅ | Create, update, complete, and list Azure DevOps work items | [README](skills/ado-task/README.md) |
 | `/cleanup-worktree` | ✅ | ✅ | Remove a git worktree and its local branch after PR merge | [README](skills/cleanup-worktree/README.md) |
 | `/coverage-check` | ✅ | ⚠️ | Run diff coverage, classify uncovered chunks, and emit JSON findings | [README](skills/coverage-check/README.md) |

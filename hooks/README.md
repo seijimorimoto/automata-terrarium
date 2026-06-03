@@ -2,13 +2,18 @@
 
 Event-driven scripts that run in response to Claude Code or GitHub Copilot CLI lifecycle events.
 
-Support markers: `✅` supported, `❌` not supported, `⚠️` partial/manual/planned.
+| Marker | Meaning |
+|--------|---------|
+| ✅ | Supported |
+| ❌ | Not supported |
+| ⚠️ | Partial support or manual setup required |
+| 🛠️ | Planned |
 
 ## Available Hooks
 
-| Hook | Claude Code | Copilot CLI | Description | Platform |
-|------|-------------|-------------|-------------|----------|
-| [`notify-windows`](notify-windows/) | ✅ | ✅ | Windows toast notifications for agent events (permission prompts, questions, task completion) | Windows |
+| Hook | Claude Code | Copilot CLI | Description | Platform | Notes |
+|------|-------------|-------------|-------------|----------|-------|
+| [`notify-windows`](notify-windows/) | ✅ | ✅ | Windows toast notifications for agent events (permission prompts, questions, task completion) | Windows |  |
 
 > **Note:** Claude skill- and agent-scoped hooks live alongside their owning skill/agent under `skills\<name>\scripts\` or `agents\<name>\scripts\` and are registered via that skill's `SKILL.md` or that agent's `<name>.md` frontmatter — not via `settings.json`. Copilot CLI supports hooks, but the documented configuration is global/user/repository/plugin JSON or settings-based lifecycle hooks; it does **not** support Claude-style skill- or agent-frontmatter-scoped hooks. Canonical Claude examples: [`skills\ado-pr\`](../skills/ado-pr/) and [`agents\verify-runner\`](../agents/verify-runner/).
 

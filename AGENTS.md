@@ -110,9 +110,10 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
 
 - Each skill, agent, and hook README must include:
   1. **Prerequisites** with install commands (not just names).
-  2. **Install location** steps for supported runtimes. Include Claude Code (`~\.claude\...` and `<project-root>\.claude\...`) and/or Copilot CLI (`~\.copilot\...` and `<project-root>\.github\...`) as applicable.
-  3. **Registration** or activation steps for each supported runtime, when required.
-- Manual install docs must show runtime filename mapping explicitly. For example, `agents\<name>\<name>.claude.md` must be copied as `<name>.md` for Claude Code, and `agents\<name>\<name>.copilot.md` must be copied as `<name>.agent.md` for Copilot CLI.
+  2. **Install location** information for supported runtimes. Include Claude Code (`~\.claude\...` and `<project-root>\.claude\...`) and/or Copilot CLI (`~\.copilot\...` and `<project-root>\.github\...`) as applicable.
+  3. **Sync script install steps** as the default documented installation path when a sync script supports that artifact type.
+  4. **Registration** or activation steps for each supported runtime, when required.
+- Do not include manual copy/install fallback instructions in skill, agent, or hook READMEs by default. If a dedicated manual-install document or section is intentionally added, it must show runtime filename mapping explicitly. For example, `agents\<name>\<name>.claude.md` must be copied as `<name>.md` for Claude Code, and `agents\<name>\<name>.copilot.md` must be copied as `<name>.agent.md` for Copilot CLI.
 
 ### Naming
 

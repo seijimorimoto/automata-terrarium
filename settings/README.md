@@ -2,7 +2,12 @@
 
 Reusable settings snippets and configurations for Claude Code and GitHub Copilot CLI.
 
-Support markers: `✅` supported, `❌` not supported, `⚠️` partial/manual/planned.
+| Marker | Meaning |
+|--------|---------|
+| ✅ | Supported |
+| ❌ | Not supported |
+| ⚠️ | Partial support or manual setup required |
+| 🛠️ | Planned |
 
 ## Available Settings
 

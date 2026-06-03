@@ -18,7 +18,7 @@ Removes a git worktree and its associated local branch after a PR has been merge
 
 ## Installation
 
-Copy the skill folder to a supported runtime location:
+Install user-level skill variants with the sync scripts.
 
 - **Claude project-level** (one project): `<project-root>\.claude\skills\`
 - **Claude user-level** (all projects): `~\.claude\skills\`
@@ -27,34 +27,14 @@ Copy the skill folder to a supported runtime location:
 
 ```powershell
 # Windows (PowerShell)
-
-# Project-level
-Copy-Item -Recurse skills\cleanup-worktree <your-project>\.claude\skills\
-
-# User-level
-Copy-Item -Recurse skills\cleanup-worktree ~\.claude\skills\
-
-# Copilot user-level
-Copy-Item -Recurse skills\cleanup-worktree ~\.copilot\skills\
-
-# Or symlink (project-level)
-New-Item -ItemType SymbolicLink -Path <your-project>\.claude\skills\cleanup-worktree -Target (Resolve-Path skills\cleanup-worktree)
+.\bin\seiji-claude-sync-skills.ps1
+.\bin\seiji-copilot-sync-skills.ps1
 ```
 
 ```sh
 # Linux / macOS
-
-# Project-level
-cp -r skills/cleanup-worktree <your-project>/.claude/skills/
-
-# User-level
-cp -r skills/cleanup-worktree ~/.claude/skills/
-
-# Copilot user-level
-cp -r skills/cleanup-worktree ~/.copilot/skills/
-
-# Or symlink (project-level)
-ln -s "$(pwd)/skills/cleanup-worktree" <your-project>/.claude/skills/cleanup-worktree
+./bin/seiji-claude-sync-skills
+# POSIX Copilot sync is planned.
 ```
 
 ## Permissions

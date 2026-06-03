@@ -27,7 +27,7 @@ Create, update, complete, and list Azure DevOps work items from the command line
 
 ## Installation
 
-Copy the skill folder to a supported runtime location:
+Install user-level skill variants with the sync scripts.
 
 - **Claude project-level** (one project): `<project-root>\.claude\skills\`
 - **Claude user-level** (all projects): `~\.claude\skills\`
@@ -36,28 +36,14 @@ Copy the skill folder to a supported runtime location:
 
 ```powershell
 # Windows (PowerShell)
-
-# Project-level
-Copy-Item -Recurse skills\ado-task <your-project>\.claude\skills\
-
-# User-level
-Copy-Item -Recurse skills\ado-task ~\.claude\skills\
-
-# Copilot user-level
-Copy-Item -Recurse skills\ado-task ~\.copilot\skills\
+.\bin\seiji-claude-sync-skills.ps1
+.\bin\seiji-copilot-sync-skills.ps1
 ```
 
 ```sh
 # Linux / macOS
-
-# Project-level
-cp -r skills/ado-task <your-project>/.claude/skills/
-
-# User-level
-cp -r skills/ado-task ~/.claude/skills/
-
-# Copilot user-level
-cp -r skills/ado-task ~/.copilot/skills/
+./bin/seiji-claude-sync-skills
+# POSIX Copilot sync is planned.
 ```
 
 ### Permissions

@@ -2,7 +2,12 @@
 
 Custom subagent and custom-agent profiles for Claude Code and GitHub Copilot CLI.
 
-Support markers: `✅` supported, `❌` not supported, `⚠️` partial/manual/planned.
+| Marker | Meaning |
+|--------|---------|
+| ✅ | Supported |
+| ❌ | Not supported |
+| ⚠️ | Partial support or manual setup required |
+| 🛠️ | Planned |
 
 **Convention in this repo: every agent lives in its own folder.** Agent source files, the agent README, and any co-located resources (hook scripts, helpers, fixtures) sit alongside each other. This mirrors the skill variant shape and keeps each runtime's source explicit.
 
@@ -34,8 +39,8 @@ Agents differ from skills in three important ways:
 
 ## Available agents
 
-| Agent | Claude Code | Copilot CLI | Purpose | Tools | Notes / limitations |
-|-------|-------------|-------------|---------|-------|---------------------|
+| Agent | Claude Code | Copilot CLI | Purpose | Tools | Notes |
+|-------|-------------|-------------|---------|-------|-------|
 | [`verify-runner`](verify-runner/) | ✅ | ⚠️ | Run one verification check against the diff and return findings as JSON. | Claude: `Skill, Read, Grep, Glob, Bash`; Copilot: `read, search, execute` | Copilot profile self-restricts shell usage; Copilot does not support the Claude-style agent-frontmatter-scoped Bash guard used by this repo. |
 
 ## Installation

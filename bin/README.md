@@ -2,27 +2,32 @@
 
 Sync executables that install the contents of this repo into user-level AI agent config directories.
 
-Per-category Claude scripts cover skills, agents, hooks, and settings under `~\.claude\`. Copilot scripts are planned and will target `~\.copilot\`. The wrapper scripts run per-category sync in the right order. `seiji-claude-install` is a one-time setup that puts `bin\` on your shell PATH.
+Per-category Claude scripts cover skills, agents, hooks, and settings under `~\.claude\`. Copilot PowerShell scripts cover skills, agents, hooks, and settings under `~\.copilot\`. The wrapper scripts run per-category sync in the right order. `seiji-claude-install` is a one-time setup that puts `bin\` on your shell PATH.
 
-Support markers: `✅` supported, `❌` not supported, `⚠️` partial/manual/planned.
+| Marker | Meaning |
+|--------|---------|
+| ✅ | Supported |
+| ❌ | Not supported |
+| ⚠️ | Partial support or manual setup required |
+| 🛠️ | Planned |
 
 ## Available scripts
 
-| Script | Claude Code | Copilot CLI | Purpose |
-| --- | --- | --- | --- |
-| `seiji-claude-install` (`.ps1`) | ✅ | ❌ | One-time PATH setup. Appends a keyed marker block to your shell profile pointing at this repo's `bin\`. Idempotent. |
-| `seiji-claude-sync` (`.ps1`) | ✅ | ❌ | Wrapper. Runs every Claude per-category sync in order. |
-| `seiji-claude-sync-skills` (`.ps1`) | ✅ | ❌ | Copies each skill to `~\.claude\skills\<name>\`. Target-specific support for `SKILL.claude.md` is planned. |
-| `seiji-claude-sync-agents` (`.ps1`) | ✅ | ❌ | Copies Claude agents to `~\.claude\agents\<name>\`. Filtering Copilot `.agent.md` files is planned. |
-| `seiji-claude-sync-hooks` (`.ps1`) | ✅ | ❌ | Copies Claude hook folders to `~\.claude\hooks\<name>\`. Script-files only — does not register hooks in `settings.json`. |
-| `seiji-claude-sync-settings` (`.ps1`) | ✅ | ❌ | Merges every `settings\*.json` into `~\.claude\settings.json` per the rules below. |
-| `seiji-copilot-sync` (`.ps1`) | ❌ | ⚠️ | Wrapper for implemented Copilot per-category sync scripts; skips categories not implemented yet. |
-| `seiji-copilot-sync-skills` (`.ps1`) | ❌ | ✅ | Copy/rename sync for `SKILL.copilot.md` or shared `SKILL.md` to `~\.copilot\skills\<name>\SKILL.md`. |
-| `seiji-copilot-sync-agents` (`.ps1`) | ❌ | ✅ | Installs source `*.copilot.md` agent profiles as `*.agent.md` under `~\.copilot\agents\`. |
-| `seiji-copilot-sync-hooks` (`.ps1`) | ❌ | ✅ | Syncs Copilot hook scripts and JSON configs to `~\.copilot\hooks\`. |
-| `seiji-copilot-sync-settings` (`.ps1`) | ❌ | ✅ | Merges Copilot settings presets into `~\.copilot\settings.json`. |
+| Script | Claude Code | Copilot CLI | Purpose | Notes |
+| --- | --- | --- | --- | --- |
+| `seiji-claude-install` (`.ps1`) | ✅ | ❌ | One-time PATH setup. Appends a keyed marker block to your shell profile pointing at this repo's `bin\`. Idempotent. | Claude user-level PATH helper. |
+| `seiji-claude-sync` (`.ps1`) | ✅ | ❌ | Wrapper. Runs every Claude per-category sync in order. | Claude-only wrapper. |
+| `seiji-claude-sync-skills` (`.ps1`) | ✅ | ❌ | Copies each skill to `~\.claude\skills\<name>\`. | Installs Claude-compatible source variants. |
+| `seiji-claude-sync-agents` (`.ps1`) | ✅ | ❌ | Copies Claude agents to `~\.claude\agents\<name>\`. | Installs Claude-compatible source variants. |
+| `seiji-claude-sync-hooks` (`.ps1`) | ✅ | ❌ | Copies Claude hook folders to `~\.claude\hooks\<name>\`. Script-files only — does not register hooks in `settings.json`. | Hook registration remains separate. |
+| `seiji-claude-sync-settings` (`.ps1`) | ✅ | ❌ | Merges every `settings\*.json` into `~\.claude\settings.json` per the rules below. | Preserves user scalar values. |
+| `seiji-copilot-sync` (`.ps1`) | ❌ | ⚠️ | Wrapper. Runs every Copilot PowerShell per-category sync in order. | PowerShell workflow; POSIX is not included. |
+| `seiji-copilot-sync-skills` (`.ps1`) | ❌ | ✅ | Copy/rename sync for `SKILL.copilot.md` or shared `SKILL.md` to `~\.copilot\skills\<name>\SKILL.md`. | Installs Copilot-compatible source variants. |
+| `seiji-copilot-sync-agents` (`.ps1`) | ❌ | ✅ | Installs source `*.copilot.md` agent profiles as `*.agent.md` under `~\.copilot\agents\`. | Uses Copilot custom agent filename mapping. |
+| `seiji-copilot-sync-hooks` (`.ps1`) | ❌ | ✅ | Syncs Copilot hook scripts and JSON configs to `~\.copilot\hooks\`. | Rewrites hook config template paths. |
+| `seiji-copilot-sync-settings` (`.ps1`) | ❌ | ✅ | Merges Copilot settings presets into `~\.copilot\settings.json`. | Applies Copilot JSON settings only. |
 
-Both PowerShell (`.ps1`) and POSIX (no extension) variants are provided. Use whichever matches your shell.
+Claude sync scripts provide both PowerShell (`.ps1`) and POSIX (no extension) variants. Copilot sync scripts are currently PowerShell-only.
 
 ## Prerequisites
 
@@ -101,12 +106,12 @@ seiji-claude-sync --no-backup   # skip the settings-file backup
 
 `settings` runs last so any hook registrations land after their script files are in place. `--no-backup` / `-NoBackup` is forwarded only to `seiji-claude-sync-settings` — the other steps don't produce backups.
 
-Future Copilot sync scripts should mirror the Claude script shape but copy runtime-specific artifacts:
+Copilot sync scripts mirror the Claude script shape but copy runtime-specific artifacts:
 
 - `SKILL.copilot.md` becomes `SKILL.md` in `~\.copilot\skills\<name>\`.
 - `<name>.copilot.md` is copied to `~\.copilot\agents\<name>.agent.md`.
 - Copilot hook JSON is copied to `~\.copilot\hooks\`.
-- Copilot settings fragments or launch helpers are installed from `settings\copilot\`.
+- Copilot settings fragments are installed from `settings\copilot\`.
 
 ### Per-category
 
@@ -146,7 +151,7 @@ Per-category Copilot scripts:
 .\bin\seiji-copilot-sync-settings.ps1 -DryRun
 ```
 
-POSIX Copilot sync scripts are planned as follow-up work.
+POSIX Copilot sync scripts are not included in this PR.
 
 ## Settings merge rules
 

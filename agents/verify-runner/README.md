@@ -6,6 +6,13 @@ This folder contains Claude Code and Copilot CLI source variants. The Claude Cod
 
 ## Support
 
+| Marker | Meaning |
+|--------|---------|
+| ✅ | Supported |
+| ❌ | Not supported |
+| ⚠️ | Partial support or manual setup required |
+| 🛠️ | Planned |
+
 | Runtime | Support | Notes |
 |---------|---------|-------|
 | Claude Code | ✅ | Uses `verify-runner.claude.md` and the frontmatter-scoped Bash guard. |
@@ -22,9 +29,35 @@ This folder contains Claude Code and Copilot CLI source variants. The Claude Cod
 
 Implementation scripts live under `scripts/` per the repo's convention (mirrors `skills/<name>/scripts/`).
 
+## Prerequisites
+
+- **Git** — required for diff inspection.
+- **PowerShell 7+** (`pwsh`) — required by the default Claude Code hook guard command and the PowerShell sync script.
+- **`jq`** — required only when using the POSIX `verify-runner-bash-guard.sh` hook variant.
+
+```powershell
+# Windows (PowerShell)
+winget install --id Git.Git -e
+winget install --id Microsoft.PowerShell -e
+winget install jqlang.jq
+```
+
+```sh
+# Linux / macOS
+brew install git jq             # macOS
+brew install --cask powershell  # macOS
+sudo apt-get install git jq     # Debian/Ubuntu
+sudo snap install powershell --classic
+```
+
 ## Installation
 
 Install the agent with the runtime-specific sync script. The sync scripts rename source variants to the filename expected by each tool.
+
+- **Claude user-level:** `~\.claude\agents\verify-runner\`
+- **Claude project-level:** `<project-root>\.claude\agents\verify-runner\`
+- **Copilot user-level:** `~\.copilot\agents\`
+- **Copilot project-level:** `<project-root>\.github\agents\`
 
 ### Claude Code
 
@@ -53,9 +86,7 @@ seiji-claude-sync-agents
 
 ```sh
 # Linux / macOS / Git Bash
-# POSIX Copilot sync is planned. Manual install:
-mkdir -p ~/.copilot/agents
-cp agents/verify-runner/verify-runner.copilot.md ~/.copilot/agents/verify-runner.agent.md
+# POSIX Copilot sync is planned.
 ```
 
 ## Claude Code hook guard

@@ -13,6 +13,13 @@ Copilot CLI can create PRs with the `/ado-pr` Copilot skill variant, but the ses
 
 ## Available Skills
 
+| Marker | Meaning |
+|--------|---------|
+| ✅ | Supported |
+| ❌ | Not supported |
+| ⚠️ | Partial support or manual setup required |
+| 🛠️ | Planned |
+
 | Skill | Claude Code | Copilot CLI | Description | Notes |
 |-------|-------------|-------------|-------------|-------|
 | `/ado-pr` | ✅ | ⚠️ | Create a pull request in Azure DevOps with standardized formatting | Copilot supports PR creation only; automatic session capture is Claude-only because it uses a skill-scoped hook. |
@@ -21,7 +28,7 @@ Copilot CLI can create PRs with the `/ado-pr` Copilot skill variant, but the ses
 
 ## Installation
 
-Copy the supported skill folders to a runtime location:
+Install user-level skill variants with the sync scripts.
 
 - **Claude project-level** (one project): `<project-root>\.claude\skills\`
 - **Claude user-level** (all projects): `~\.claude\skills\`
@@ -30,41 +37,17 @@ Copy the supported skill folders to a runtime location:
 
 ```powershell
 # Windows (PowerShell)
-
-# All ADO skills (project-level)
-Copy-Item -Recurse skills\ado-pr, skills\ado-resume-pr, skills\ado-pr-status <your-project>\.claude\skills\
-
-# All ADO skills (user-level)
-Copy-Item -Recurse skills\ado-pr, skills\ado-resume-pr, skills\ado-pr-status ~\.claude\skills\
-
-# Copilot user-level for ado-pr only
-Copy-Item -Recurse skills\ado-pr ~\.copilot\skills\
-
-# Or symlink them (project-level)
-New-Item -ItemType SymbolicLink -Path <your-project>\.claude\skills\ado-pr -Target (Resolve-Path skills\ado-pr)
-New-Item -ItemType SymbolicLink -Path <your-project>\.claude\skills\ado-resume-pr -Target (Resolve-Path skills\ado-resume-pr)
-New-Item -ItemType SymbolicLink -Path <your-project>\.claude\skills\ado-pr-status -Target (Resolve-Path skills\ado-pr-status)
+.\bin\seiji-claude-sync-skills.ps1
+.\bin\seiji-copilot-sync-skills.ps1
 ```
 
 ```sh
 # Linux / macOS
-
-# All ADO skills (project-level)
-cp -r skills/ado-pr skills/ado-resume-pr skills/ado-pr-status <your-project>/.claude/skills/
-
-# All ADO skills (user-level)
-cp -r skills/ado-pr skills/ado-resume-pr skills/ado-pr-status ~/.claude/skills/
-
-# Copilot user-level for ado-pr only
-cp -r skills/ado-pr ~/.copilot/skills/
-
-# Or symlink them (project-level)
-ln -s "$(pwd)/skills/ado-pr" <your-project>/.claude/skills/ado-pr
-ln -s "$(pwd)/skills/ado-resume-pr" <your-project>/.claude/skills/ado-resume-pr
-ln -s "$(pwd)/skills/ado-pr-status" <your-project>/.claude/skills/ado-pr-status
+./bin/seiji-claude-sync-skills
+# POSIX Copilot sync is planned.
 ```
 
-For project-level installs, the skills are available to anyone who clones the target project — no extra setup beyond the prerequisites.
+For project-level installs, the skills are available to anyone who clones the target project. Project-level sync support is not documented here yet.
 
 ---
 

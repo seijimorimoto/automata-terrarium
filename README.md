@@ -12,7 +12,8 @@ Support tables use:
 |--------|---------|
 | ✅ | Supported |
 | ❌ | Not supported |
-| ⚠️ | Partial support, manual setup required, or planned |
+| ⚠️ | Partial support or manual setup required |
+| 🛠️ | Planned |
 
 ## Setup
 
@@ -67,73 +68,73 @@ Each directory contains its own README with setup instructions. To use any item,
 
 > **Paths:** Shown in Windows format (`\`). On Linux/macOS, use forward slashes (`/`) instead.
 
-| Type     | Claude Code install location                           | Copilot CLI install location                         | Docs                          |
-|----------|--------------------------------------------------------|-------------------------------------------------------|-------------------------------|
-| Skills   | `~\.claude\skills\` or `<project>\.claude\skills\`     | `~\.copilot\skills\` or `<project>\.github\skills\`  | [skills/README.md](skills/)   |
-| Agents   | `~\.claude\agents\` or `<project>\.claude\agents\`     | `~\.copilot\agents\` or `<project>\.github\agents\`  | [agents/README.md](agents/)   |
-| Hooks    | `~\.claude\hooks\` or `<project>\.claude\hooks\`       | `~\.copilot\hooks\` or `<project>\.github\hooks\`    | [hooks/README.md](hooks/)     |
-| Settings | `~\.claude\settings.json` or `<project>\.claude\settings.json` | `~\.copilot\settings.json` or `<project>\.github\copilot\settings.json` | [settings/README.md](settings/) |
+| Type     | Claude Code install location                           | Copilot CLI install location                         | Docs                          | Notes |
+|----------|--------------------------------------------------------|-------------------------------------------------------|-------------------------------|-------|
+| Skills   | `~\.claude\skills\` or `<project>\.claude\skills\`     | `~\.copilot\skills\` or `<project>\.github\skills\`  | [skills/README.md](skills/)   |  |
+| Agents   | `~\.claude\agents\` or `<project>\.claude\agents\`     | `~\.copilot\agents\` or `<project>\.github\agents\`  | [agents/README.md](agents/)   |  |
+| Hooks    | `~\.claude\hooks\` or `<project>\.claude\hooks\`       | `~\.copilot\hooks\` or `<project>\.github\hooks\`    | [hooks/README.md](hooks/)     |  |
+| Settings | `~\.claude\settings.json` or `<project>\.claude\settings.json` | `~\.copilot\settings.json` or `<project>\.github\copilot\settings.json` | [settings/README.md](settings/) | Copilot permissions are not equivalent to Claude `permissions.allow`. |
 
 ### Available skills
 
-| Skill | Claude Code | Copilot CLI | Description | Docs |
-|-------|-------------|-------------|-------------|------|
-| `/ado-pr` | ✅ | ⚠️ | Create Azure DevOps PRs with standardized formatting; Copilot PR creation only, no session capture | [README](skills/ado-pr/README.md) |
-| `/ado-resume-pr` | ✅ | ❌ | Resume the Claude session that created a specific PR | [SKILL.claude.md](skills/ado-resume-pr/SKILL.claude.md) |
-| `/ado-pr-status` | ✅ | ❌ | List all tracked Claude PR sessions | [SKILL.claude.md](skills/ado-pr-status/SKILL.claude.md) |
-| `/ado-task` | ✅ | ✅ | Create, update, complete, and list Azure DevOps work items | [README](skills/ado-task/README.md) |
-| `/cleanup-worktree` | ✅ | ✅ | Remove a git worktree and its local branch after PR merge | [README](skills/cleanup-worktree/README.md) |
-| `/coverage-check` | ✅ | ⚠️ | Run diff coverage, classify uncovered chunks, and emit JSON findings | [README](skills/coverage-check/README.md) |
-| `/doc-review` | ✅ | ⚠️ | Inspect the diff for missing/stale documentation; report-only JSON findings | [README](skills/doc-review/README.md) |
-| `/implement` | ✅ | ⚠️ | Carry out an approved plan: branch, per-step commits, draft PR | [README](skills/implement/README.md) |
-| `/log` | ✅ | ⚠️ | Append timestamped work entries to a weekly log | [SKILL.md](skills/log/SKILL.md) |
-| `/quick-pr` | ✅ | ⚠️ | Create a branch, commit, push, open a GitHub PR, merge, and clean up | [README](skills/quick-pr/README.md) |
-| `/standards-check` | ✅ | ⚠️ | Discover repo standards, check the diff, and emit tiered JSON findings | [README](skills/standards-check/README.md) |
-| `/weekly-status` | ✅ | ⚠️ | Generate weekly status from ADO + Todoist + local log | [README](skills/weekly-status/README.md) |
+| Skill | Claude Code | Copilot CLI | Description | Docs | Notes |
+|-------|-------------|-------------|-------------|------|-------|
+| `/ado-pr` | ✅ | ⚠️ | Create Azure DevOps PRs with standardized formatting | [README](skills/ado-pr/README.md) | Copilot PR creation only; no session capture. |
+| `/ado-resume-pr` | ✅ | ❌ | Resume the Claude session that created a specific PR | [SKILL.claude.md](skills/ado-resume-pr/SKILL.claude.md) | Depends on Claude session database capture. |
+| `/ado-pr-status` | ✅ | ❌ | List all tracked Claude PR sessions | [SKILL.claude.md](skills/ado-pr-status/SKILL.claude.md) | Depends on Claude session database capture. |
+| `/ado-task` | ✅ | ✅ | Create, update, complete, and list Azure DevOps work items | [README](skills/ado-task/README.md) |  |
+| `/cleanup-worktree` | ✅ | ✅ | Remove a git worktree and its local branch after PR merge | [README](skills/cleanup-worktree/README.md) |  |
+| `/coverage-check` | ✅ | ⚠️ | Run diff coverage, classify uncovered chunks, and emit JSON findings | [README](skills/coverage-check/README.md) | Copilot support may require manual tool permissions. |
+| `/doc-review` | ✅ | ⚠️ | Inspect the diff for missing/stale documentation; report-only JSON findings | [README](skills/doc-review/README.md) | Copilot support may require manual tool permissions. |
+| `/implement` | ✅ | ⚠️ | Carry out an approved plan: branch, per-step commits, draft PR | [README](skills/implement/README.md) | Copilot support is partial. |
+| `/log` | ✅ | ⚠️ | Append timestamped work entries to a weekly log | [SKILL.md](skills/log/SKILL.md) | Copilot path/config support is partial. |
+| `/quick-pr` | ✅ | ⚠️ | Create a branch, commit, push, open a GitHub PR, merge, and clean up | [README](skills/quick-pr/README.md) | Copilot support may require manual shell permissions. |
+| `/standards-check` | ✅ | ⚠️ | Discover repo standards, check the diff, and emit tiered JSON findings | [README](skills/standards-check/README.md) | Copilot support may require manual tool permissions. |
+| `/weekly-status` | ✅ | ⚠️ | Generate weekly status from ADO + Todoist + local log | [README](skills/weekly-status/README.md) | Copilot path/config support is partial. |
 
 ### Available settings
 
-| Preset | Claude Code | Copilot CLI | Description | Docs |
-|--------|-------------|-------------|-------------|------|
-| `ado` | ✅ | ⚠️ | Azure DevOps MCP tool permissions — PRs, work items, iterations, repos | [ado.json](settings/ado.json) |
-| `base` | ✅ | ⚠️ | General-purpose permissions/preferences — file ops, git, grep | [base.json](settings/base.json) |
-| `dotnet` | ✅ | ⚠️ | C#/.NET permissions and the C# LSP plugin | [dotnet.json](settings/dotnet.json) |
-| `github` | ✅ | ⚠️ | GitHub CLI (`gh`) permissions and GitHub URL access | [github.json](settings/github.json) |
-| `work-status` | ✅ | ⚠️ | MCP tool permissions for weekly status tracking (ADO + Todoist) | [work-status.json](settings/work-status.json) |
+| Preset | Claude Code | Copilot CLI | Description | Docs | Notes |
+|--------|-------------|-------------|-------------|------|-------|
+| `ado` | ✅ | ⚠️ | Azure DevOps MCP tool permissions — PRs, work items, iterations, repos | [ado.json](settings/ado.json) | Copilot requires MCP setup and tool permissions outside this Claude preset. |
+| `base` | ✅ | ⚠️ | General-purpose permissions/preferences — file ops, git, grep | [base.json](settings/base.json) | Copilot has a minimal JSON preset; shell permissions require launch flags. |
+| `dotnet` | ✅ | ⚠️ | C#/.NET permissions and the C# LSP plugin | [dotnet.json](settings/dotnet.json) | Copilot requires separate LSP/plugin or launch configuration. |
+| `github` | ✅ | ⚠️ | GitHub CLI (`gh`) permissions and GitHub URL access | [github.json](settings/github.json) | Copilot URL settings do not grant `gh` shell permissions. |
+| `work-status` | ✅ | ⚠️ | MCP tool permissions for weekly status tracking (ADO + Todoist) | [work-status.json](settings/work-status.json) | Copilot requires MCP setup plus path/tool permission flags. |
 
 > Copilot settings support is marked `⚠️` because `settings\copilot\*.json` only covers Copilot JSON settings. Copilot shell/MCP/path permissions often require launch flags such as `--allow-tool`, `/mcp` setup, skill `allowed-tools`, agent `tools`, or hooks rather than Claude-style `permissions.allow` presets.
 
 ### Available hooks
 
-| Hook | Claude Code | Copilot CLI | Description | Platform | Docs |
-|------|-------------|-------------|-------------|----------|------|
-| `notify-windows` | ✅ | ✅ | Windows toast notifications for agent events | Windows | [README](hooks/notify-windows/README.md) |
+| Hook | Claude Code | Copilot CLI | Description | Platform | Docs | Notes |
+|------|-------------|-------------|-------------|----------|------|-------|
+| `notify-windows` | ✅ | ✅ | Windows toast notifications for agent events | Windows | [README](hooks/notify-windows/README.md) |  |
 
 > Agent-scoped PreToolUse hooks (e.g., the `verify-runner-bash-guard` that ships with the `verify-runner` agent) are registered via their owning agent's frontmatter — not via `settings.json` — and live alongside the agent's `.md` file. See `agents/<name>/` folders for the canonical pattern.
 
 ### Available agents
 
-| Agent | Claude Code | Copilot CLI | Description | Tools | Docs |
-|-------|-------------|-------------|-------------|-------|------|
-| `verify-runner` | ✅ | ⚠️ | Read-only verification subagent/custom agent that runs one verification check against the diff and returns JSON findings. | Copilot profile self-restricts commands; Copilot does not support the Claude-style agent-frontmatter-scoped Bash guard used here. | [agents/verify-runner/](agents/verify-runner/) |
+| Agent | Claude Code | Copilot CLI | Description | Tools | Docs | Notes |
+|-------|-------------|-------------|-------------|-------|------|-------|
+| `verify-runner` | ✅ | ⚠️ | Read-only verification subagent/custom agent that runs one verification check against the diff and returns JSON findings. | Claude: `Skill, Read, Grep, Glob, Bash`; Copilot: `read, search, execute` | [agents/verify-runner/](agents/verify-runner/) | Copilot lacks the Claude-style agent-frontmatter-scoped Bash guard. |
 
 ### Sync infrastructure (`bin/`)
 
-The `bin/` folder contains executables that install artifacts into user-level agent config directories. Claude sync scripts target `~\.claude\`; Copilot sync scripts are planned for `~\.copilot\`. Existing scripts have both a PowerShell variant (`.ps1`) and a POSIX variant (no extension).
+The `bin\` folder contains executables that install artifacts into user-level agent config directories. Claude sync scripts target `~\.claude\`; Copilot PowerShell sync scripts target `~\.copilot\`. Claude scripts have both a PowerShell variant (`.ps1`) and a POSIX variant (no extension); Copilot sync is currently PowerShell-only.
 
-| Script | Claude Code | Copilot CLI | Purpose |
-|--------|-------------|-------------|---------|
-| `seiji-claude-install` | ✅ | ❌ | One-time PATH setup. Idempotent — re-running is safe. |
-| `seiji-claude-sync` | ✅ | ❌ | Wrapper. Runs every Claude per-category sync in order: skills → agents → hooks → settings. |
-| `seiji-claude-sync-skills` | ✅ | ❌ | Copies each skill to `~\.claude\skills\<name>\`. |
-| `seiji-claude-sync-agents` | ✅ | ❌ | Copies Claude agents to `~\.claude\agents\`. |
-| `seiji-claude-sync-hooks` | ✅ | ❌ | Copies Claude hook scripts to `~\.claude\hooks\<name>\`. |
-| `seiji-claude-sync-settings` | ✅ | ❌ | Merges Claude settings into `~\.claude\settings.json`. |
-| `seiji-copilot-sync` | ❌ | ⚠️ | Copilot wrapper for implemented per-category sync scripts; skips categories not implemented yet. |
-| `seiji-copilot-sync-skills` | ❌ | ✅ | Copies Copilot-compatible skills to `~\.copilot\skills\<name>\`. |
-| `seiji-copilot-sync-agents` | ❌ | ✅ | Copies Copilot custom agent profiles to `~\.copilot\agents\`. |
-| `seiji-copilot-sync-hooks` | ❌ | ✅ | Copies Copilot hook scripts and JSON configs to `~\.copilot\hooks\`. |
-| `seiji-copilot-sync-settings` | ❌ | ✅ | Merges Copilot settings presets into `~\.copilot\settings.json`. |
+| Script | Claude Code | Copilot CLI | Purpose | Notes |
+|--------|-------------|-------------|---------|-------|
+| `seiji-claude-install` | ✅ | ❌ | One-time PATH setup. Idempotent — re-running is safe. | Claude user-level PATH helper. |
+| `seiji-claude-sync` | ✅ | ❌ | Wrapper. Runs every Claude per-category sync in order: skills → agents → hooks → settings. | Claude-only wrapper. |
+| `seiji-claude-sync-skills` | ✅ | ❌ | Copies each skill to `~\.claude\skills\<name>\`. | Installs Claude-compatible source variants. |
+| `seiji-claude-sync-agents` | ✅ | ❌ | Copies Claude agents to `~\.claude\agents\`. | Installs Claude-compatible source variants. |
+| `seiji-claude-sync-hooks` | ✅ | ❌ | Copies Claude hook scripts to `~\.claude\hooks\<name>\`. | Does not register hooks in settings. |
+| `seiji-claude-sync-settings` | ✅ | ❌ | Merges Claude settings into `~\.claude\settings.json`. | Preserves user scalar values. |
+| `seiji-copilot-sync` | ❌ | ⚠️ | Copilot wrapper. Runs every Copilot PowerShell per-category sync in order: skills → agents → hooks → settings. | PowerShell workflow; POSIX is not included. |
+| `seiji-copilot-sync-skills` | ❌ | ✅ | Copies Copilot-compatible skills to `~\.copilot\skills\<name>\`. | Installs Copilot-compatible source variants. |
+| `seiji-copilot-sync-agents` | ❌ | ✅ | Copies Copilot custom agent profiles to `~\.copilot\agents\`. | Installs Copilot profiles as `.agent.md`. |
+| `seiji-copilot-sync-hooks` | ❌ | ✅ | Copies Copilot hook scripts and JSON configs to `~\.copilot\hooks\`. | Rewrites hook config template paths. |
+| `seiji-copilot-sync-settings` | ❌ | ✅ | Merges Copilot settings presets into `~\.copilot\settings.json`. | Applies Copilot JSON settings only. |
 
 Quick start:
 
@@ -163,7 +164,7 @@ The Copilot sync path currently supports skills, agents, hooks, and settings on 
 .\bin\seiji-copilot-sync.ps1
 ```
 
-POSIX Copilot sync scripts are planned after the PowerShell workflow settles.
+POSIX Copilot sync scripts are not included in this PR.
 
 ## Migration guide
 
@@ -177,7 +178,7 @@ POSIX Copilot sync scripts are planned after the PowerShell workflow settles.
 .\bin\seiji-copilot-sync.ps1 -DryRun
 ```
 
-5. Check the availability tables before assuming a workflow is fully ported. `⚠️` means the item is partial, requires manual setup, or is planned.
+5. Check the availability tables before assuming a workflow is fully ported. `⚠️` means the item is partial or requires manual setup; `🛠️` means support is planned but not implemented.
 
 ### Symlink fallback
 

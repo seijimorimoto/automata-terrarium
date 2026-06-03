@@ -2,7 +2,7 @@
 
 A read-only verification agent. `/implement`'s verify phase fans out one `verify-runner` per check (`/standards-check`, `/review`, `/security-review`, `/doc-review`, `/simplify`, `/coverage-check`) so each runs in its own context window in parallel and returns findings as JSON.
 
-This folder contains Claude Code and Copilot CLI source variants plus the co-located Claude PreToolUse hook (`verify-runner-bash-guard`) that enforces a read-only Bash allowlist.
+This folder contains Claude Code and Copilot CLI source variants. The Claude Code variant also ships a co-located PreToolUse hook (`verify-runner-bash-guard`) that enforces a read-only Bash allowlist.
 
 ## Support
 
@@ -22,11 +22,51 @@ This folder contains Claude Code and Copilot CLI source variants plus the co-loc
 
 Implementation scripts live under `scripts/` per the repo's convention (mirrors `skills/<name>/scripts/`).
 
-## Why the hook exists
+## Installation
+
+Install the agent with the runtime-specific sync script. The sync scripts rename source variants to the filename expected by each tool.
+
+### Claude Code
+
+`seiji-claude-sync-agents` installs `verify-runner.claude.md` as `~\.claude\agents\verify-runner\verify-runner.md` and copies the `scripts\` folder needed by the Claude-specific hook.
+
+```powershell
+# Windows (PowerShell)
+.\bin\seiji-claude-install.ps1   # one-time PATH setup
+seiji-claude-sync-agents
+```
+
+```sh
+# Linux / macOS / Git Bash
+./bin/seiji-claude-install
+seiji-claude-sync-agents
+```
+
+### Copilot CLI
+
+`seiji-copilot-sync-agents.ps1` installs `verify-runner.copilot.md` as `~\.copilot\agents\verify-runner.agent.md`.
+
+```powershell
+# Windows (PowerShell)
+.\bin\seiji-copilot-sync-agents.ps1
+```
+
+```sh
+# Linux / macOS / Git Bash
+# POSIX Copilot sync is planned. Manual install:
+mkdir -p ~/.copilot/agents
+cp agents/verify-runner/verify-runner.copilot.md ~/.copilot/agents/verify-runner.agent.md
+```
+
+## Claude Code hook guard
+
+The sections below are specific to Claude Code. Copilot CLI supports hooks, but not this repo's current agent-frontmatter-scoped Bash guard pattern for `verify-runner`.
+
+### Why the hook exists
 
 The agent's `tools:` list already excludes `Edit`, `Write`, and `NotebookEdit` — the harness ensures the agent physically cannot modify files via those tools. `Bash` is allowed because verify checks need to run things like `git diff` and `pytest --cov`, and the hook prevents that Bash channel from being a back door for mutation.
 
-## Hook scope and registration
+### Hook scope and registration
 
 The hook is registered via the `hooks:` block in [`verify-runner.claude.md`](verify-runner.claude.md)'s frontmatter, not via `~\.claude\settings.json`. Per the Claude Code subagent docs, frontmatter hooks **only run while that specific subagent is active** and are cleaned up when it finishes. That means:
 
@@ -46,7 +86,7 @@ PowerShell expands `$HOME` to the user's home regardless of OS, and the `~\.clau
 bash "$HOME/.claude/agents/verify-runner/scripts/verify-runner-bash-guard.sh"
 ```
 
-## What the hook allows
+### What the hook allows
 
 | Category | Allowed prefixes |
 |----------|------------------|
@@ -56,7 +96,7 @@ bash "$HOME/.claude/agents/verify-runner/scripts/verify-runner-bash-guard.sh"
 
 Commands containing `rm`, `mv`, `cp`, `curl`, `wget`, write redirection (`>`, `>>`), pipes to `tee`, or `dd` are denied even if the leading command would otherwise be allowlisted (e.g., `git diff && rm -rf .`).
 
-## Hook output convention
+### Hook output convention
 
 Per the [Claude Code hooks docs](https://code.claude.com/docs/en/hooks#exit-code-output):
 
@@ -66,36 +106,7 @@ Per the [Claude Code hooks docs](https://code.claude.com/docs/en/hooks#exit-code
 
 The script writes nothing to stdout in either case.
 
-## Installation
-
-Run `seiji-claude-sync` from the repo root (or `seiji-claude-sync-agents` alone if you only want agents). That copies this whole folder to `~\.claude\agents\verify-runner\`. Once the agent file is in place, the harness picks up the frontmatter hook automatically — no settings merge needed.
-
-```powershell
-# Windows (PowerShell)
-.\bin\seiji-claude-install.ps1   # one-time PATH setup
-seiji-claude-sync                # syncs skills, agents, hooks, settings
-```
-
-```sh
-# Linux / macOS / Git Bash
-./bin/seiji-claude-install
-seiji-claude-sync
-```
-
-For Copilot CLI:
-
-```powershell
-# Windows (PowerShell)
-.\bin\seiji-copilot-sync-agents.ps1
-```
-
-```sh
-# Linux / macOS / Git Bash
-# POSIX Copilot sync is planned. Manual install:
-cp agents/verify-runner/verify-runner.copilot.md ~/.copilot/agents/verify-runner.agent.md
-```
-
-## How to disable
+### How to disable
 
 Remove or rename the `hooks:` block in `~\.claude\agents\verify-runner\verify-runner.md`. The agent will still work — it just won't enforce the read-only Bash allowlist anymore. The verify-runner system prompt's defense-in-depth language tells the agent to self-restrict, so removing the hook isn't catastrophic for already-trusted models, but you lose the harness-enforced backstop.
 

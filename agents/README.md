@@ -47,21 +47,31 @@ Agent sources are synced to user-level via the runtime-specific sync scripts:
 
 The Claude script also accepts flat `agents\<name>.md` entries for compatibility with externally-authored agents, but new agents in this repo should follow the folder convention.
 
-Manual install (if you're not using the sync infrastructure):
+Manual install (if you're not using the sync infrastructure) must rename source variants to the runtime filenames:
 
 ```powershell
 # Windows (PowerShell)
-Copy-Item -Recurse agents\verify-runner ~\.claude\agents\
 
-# Copilot user-level
+# Claude Code user-level path
+New-Item -ItemType Directory -Path ~\.claude\agents\verify-runner -Force
+Copy-Item -Recurse agents\verify-runner\scripts ~\.claude\agents\verify-runner\
+Copy-Item agents\verify-runner\verify-runner.claude.md ~\.claude\agents\verify-runner\verify-runner.md
+
+# Copilot CLI user-level path
+New-Item -ItemType Directory -Path ~\.copilot\agents -Force
 Copy-Item agents\verify-runner\verify-runner.copilot.md ~\.copilot\agents\verify-runner.agent.md
 ```
 
 ```sh
 # Linux / macOS / Git Bash
-cp -r agents/verify-runner ~/.claude/agents/
 
-# Copilot user-level
+# Claude Code user-level path
+mkdir -p ~/.claude/agents/verify-runner
+cp -r agents/verify-runner/scripts ~/.claude/agents/verify-runner/
+cp agents/verify-runner/verify-runner.claude.md ~/.claude/agents/verify-runner/verify-runner.md
+
+# Copilot CLI user-level path
+mkdir -p ~/.copilot/agents
 cp agents/verify-runner/verify-runner.copilot.md ~/.copilot/agents/verify-runner.agent.md
 ```
 

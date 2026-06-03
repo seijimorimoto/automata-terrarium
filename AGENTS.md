@@ -96,6 +96,8 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
   - `✅` supported
   - `❌` not supported
   - `⚠️` partial support, manual setup required, or planned but incomplete
+- Add a **Notes** or **Limitations** column when a support marker could be ambiguous. Use it to explain partial support, manual setup, runtime limitations, or why an item is not planned for a runtime.
+- Do not overstate support. Use `✅` only when the repo provides meaningful working support for that runtime. Use `⚠️` for partial support or manual setup, and `❌` when the runtime lacks a required primitive or the item is intentionally not planned.
 
 ### Naming
 
@@ -108,13 +110,19 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
   - Shared: `skills\<name>\SKILL.md` when the same file is valid for Claude Code and Copilot CLI.
   - Split: `skills\<name>\SKILL.claude.md` and `skills\<name>\SKILL.copilot.md` when runtime-specific frontmatter, tool names, hooks, paths, or instructions are needed.
   - Sync scripts must copy the target-specific variant as `SKILL.md` into the destination runtime directory.
+- A skill may be single-target. For example, a Claude-only skill can use `SKILL.claude.md` without `SKILL.copilot.md`; Copilot sync must skip it instead of installing a Claude-only artifact.
 - Each agent must live in its own folder under `agents/`. The agent definition files and `README.md` sit at the top of that folder. Co-located implementation files (hook scripts the agent registers via its frontmatter, helper scripts, fixtures) go under `agents/<name>/scripts/`, mirroring the skills convention (`skills/<name>/scripts/`).
 - Agents use one of these entrypoint layouts:
   - Shared: `agents\<name>\<name>.md` when the same file is valid for Claude Code and Copilot CLI.
   - Split: `agents\<name>\<name>.claude.md` and `agents\<name>\<name>.copilot.md` when runtime-specific frontmatter, tool names, hooks, paths, or instructions are needed.
   - Sync scripts must copy the target-specific variant to the filename expected by the destination runtime.
+- Keep target-specific variants semantically aligned. Shared behavior/instructions should use the same wording as much as practical; diverge only for real runtime differences such as frontmatter shape, tool names, hooks, install paths, MCP naming, config paths, and permission mechanics.
+- Manual install docs must show runtime filename mapping explicitly. For example, `agents\<name>\<name>.claude.md` must be copied as `<name>.md` for Claude Code, and `agents\<name>\<name>.copilot.md` must be copied as `<name>.agent.md` for Copilot CLI.
 - Every **discoverable entry-point directory** should have a `README.md` explaining its contents and usage. This means each skill, agent, hook, and settings-preset directory, plus any directory linked from a parent `README.md`. Implementation-detail subdirectories (e.g., `scripts/`, `assets/`) don't need their own README if the parent already documents them.
 - Do not commit secrets, credentials, or `.env` files.
 - Permission entries in settings preset files (`settings\*.json`) must be sorted alphabetically.
 - Claude settings fragments belong under `settings\claude\` once migrated. Copilot settings, launch helpers, and permission notes belong under `settings\copilot\`.
+- Do not imply Copilot settings JSON is equivalent to Claude Code `permissions.allow`. Copilot shell, MCP, URL, and path permissions often require CLI flags (`--allow-tool`, `--deny-tool`, `--allow-url`, `--allow-all-paths`), `/mcp` setup, skill `allowed-tools`, agent `tools`, or hooks. Mark Copilot settings support as `⚠️` unless the repo provides the full required setup.
+- Sync scripts are target-specific. Claude sync installs Claude-compatible artifacts and filters/skips Copilot-only artifacts; Copilot sync installs Copilot-compatible artifacts and skips Claude-only artifacts. Both should support `-DryRun`.
+- Use `bin\seiji-validate.ps1` to enforce dual-target invariants such as instruction-file compatibility, skill/agent entrypoint layout, Copilot frontmatter requirements, README availability coverage, and target-specific settings conventions.
 - Items that cannot be ported to one runtime should stay in the repo as single-target artifacts and be marked with `❌` or `⚠️` in availability tables, with a short note explaining why.

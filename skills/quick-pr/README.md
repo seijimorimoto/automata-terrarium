@@ -1,6 +1,6 @@
 # GitHub Quick PR
 
-Automates the full PR lifecycle for routine, no-review-needed changes in GitHub repos with PR-only workflows. One command to: create a branch, stage, commit, push, open a PR, squash-merge, and clean up.
+Automates the PR lifecycle for GitHub repos with PR-only workflows. One command can create a branch, stage, commit, push, open a PR, and optionally squash-merge and clean up.
 
 ## Prerequisites
 
@@ -70,7 +70,9 @@ Git permissions (`git checkout`, `git push`, etc.) are covered by [`settings/bas
 /quick-pr --title "Add weekly status for W15"      # Custom PR title
 /quick-pr --branch add-weekly-status-w15           # Custom branch name
 /quick-pr --no-merge                               # Create PR but skip merge
+/quick-pr --draft                                  # Create a draft PR and skip merge
 /quick-pr --base develop                           # Target a different base branch
+/quick-pr --target develop                         # Alias for --base
 ```
 
 ### Parameters
@@ -79,7 +81,8 @@ Git permissions (`git checkout`, `git push`, etc.) are covered by [`settings/bas
 |-----------|----------|---------|-------------|
 | `--title` | No | Auto-generated from commits | PR title |
 | `--branch` | No | Auto-generated from changes | Feature branch name (prefixed with `u/<username>/`) |
-| `--base` | No | Repo's default branch | Target branch for the PR |
+| `--base` / `--target` | No | Repo's default branch | Target branch for the PR |
+| `--draft` | No | `false` | Create a draft PR and skip merge |
 | `--no-merge` | No | `false` | Create the PR but do not merge it |
 
 ## Behavior by State

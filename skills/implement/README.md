@@ -1,129 +1,109 @@
 # Implement Plan
 
-After a plan has been approved (e.g., via plan mode), `/implement` carries it out: creates a feature branch (or worktree), implements each step with auto-edits, makes one logical commit per step, runs a parallel **verify phase** (standards / review / security / doc-review / simplify / coverage), iterates on the findings, and opens a draft PR with the unresolved findings posted as review comments.
+Implements a plan from a session, local file, issue, PR, work item, or another readable reference. The skill creates an isolated branch or worktree, applies the plan one step at a time with one logical commit per step, runs verification, opens a draft PR, and posts unresolved verify findings.
 
 ## Prerequisites
 
-- **A plan in the current session.** `/implement` only runs after a plan has been presented in the same conversation — typically via plan mode, but a manually written numbered step list works too.
 - **Git** — configured with user name and email.
-- **A PR-creation skill installed** for the remote you're working against:
-  - GitHub repos: `/quick-pr` (default)
-  - Azure DevOps repos: `/ado-pr` (default)
-  - Override the default with `--pr-tool`.
-- **The verify-runner agent** at `~\.claude\agents\verify-runner\verify-runner.md` (synced from this repo's `agents/verify-runner/` folder). Required unless you run with `--skip-verify`. The folder also contains the co-located `verify-runner-bash-guard` PreToolUse hook (under `scripts/`); it's registered automatically via the agent's frontmatter `hooks:` block, so syncing the agent folder also installs the hook.
-- **The verify checks the verify phase calls.** Required unless skipped:
-  - `/standards-check`, `/doc-review`, `/coverage-check` (in this repo's `skills/`)
-  - `/review`, `/security-review`, `/simplify` (Anthropic-shipped Claude Code skills, available by default)
+
+  ```powershell
+  git --version
+  ```
+
+  ```sh
+  git --version
+  ```
+
+- **PR-creation skill** — `/quick-pr` for GitHub or `/ado-pr` for Azure DevOps.
+- **Verification skills** — `/standards-check` and `/doc-review`; `/coverage-check` is used when a coverage tool is detectable. Runtime-native review/security/simplification checks or equivalent available skills are attempted best-effort unless skipped with `--skip-native-verify`.
 
 ## Installation
 
-Copy the skill folder to either location:
+Install the skill with the sync scripts.
 
-- **Project-level** (one project): `<project-root>\.claude\skills\`
-- **User-level** (all projects): `~\.claude\skills\`
+- **Claude project-level** (one project): `<project-root>\.claude\skills\`
+- **Claude user-level** (all projects): `~\.claude\skills\`
+- **Copilot project-level** (one project): `<project-root>\.github\skills\`
+- **Copilot user-level** (all projects): `~\.copilot\skills\`
 
 ```powershell
 # Windows (PowerShell)
-
-# Project-level
-Copy-Item -Recurse skills\implement <your-project>\.claude\skills\
-
-# User-level
-Copy-Item -Recurse skills\implement ~\.claude\skills\
-
-# Or symlink (project-level)
-New-Item -ItemType SymbolicLink -Path <your-project>\.claude\skills\implement -Target (Resolve-Path skills\implement)
+.\bin\seiji-claude-sync-skills.ps1
+.\bin\seiji-copilot-sync-skills.ps1
 ```
 
 ```sh
-# Linux / macOS
-cp -r skills/implement <your-project>/.claude/skills/    # project-level
-cp -r skills/implement ~/.claude/skills/                 # user-level
-ln -s "$(pwd)/skills/implement" <your-project>/.claude/skills/implement  # symlink
+# Linux / macOS / POSIX
+./bin/seiji-claude-sync-skills
+# POSIX Copilot sync is tracked by #21.
 ```
-
-If you're using the `bin/seiji-claude-sync` infrastructure in this repo, just run `seiji-claude-sync` and `/implement` will land at the user level along with every other skill.
-
-## Permissions
-
-This skill orchestrates `git`, `gh`/`az`, and your PR-creation skill of choice; it does not introduce permissions of its own. Add permissions from these presets to your Claude Code settings to avoid prompts:
-
-- [`settings/base.json`](../../settings/base.json) — git operations
-- [`settings/github.json`](../../settings/github.json) — `gh` (when using `/quick-pr`)
-- [`settings/ado.json`](../../settings/ado.json) — `az` (when using `/ado-pr`)
 
 ## Usage
 
-```bash
-/implement                                                   # use defaults: auto-detect target + PR tool
-/implement --branch u/alice/cool-feature                     # custom branch name
-/implement --target develop                                  # target a non-default branch
-/implement --no-worktree                                     # work in current tree, skip worktree
-/implement --pr-tool /ado-pr                                 # force a specific PR-creation skill
-/implement --branch u/alice/cool-feature --target develop    # combine flags
+```
+# Implement the plan from the current session
+/implement
+
+# Read a local plan file
+/implement --plan-source plans\dual-runtime-workflow-migration.md
+
+# Read an issue or PR URL
+/implement --plan-source https://github.com/owner/repo/issues/123
+
+# Use a custom branch and target
+/implement --branch u/alice/cool-feature --target develop
+
+# Work in the current tree instead of a new worktree
+/implement --no-worktree
+
+# Skip optional native/equivalent checks and coverage
+/implement --skip-native-verify --skip-coverage
 ```
 
-### Parameters
+## Parameters
 
 | Parameter | Required | Default | Description |
 |-----------|----------|---------|-------------|
-| `--branch` | No | Auto-generated from the plan, following any naming convention in the project's CLAUDE.md (otherwise `{alias}/{short-kebab-case}`) | Feature branch name |
-| `--target` | No | `git symbolic-ref refs/remotes/origin/HEAD` (typically `main`); falls back to `main` | Target branch for the PR |
-| `--no-worktree` | No | `false` (worktrees on by default) | Skip worktree isolation; work directly in the current tree |
-| `--pr-tool` | No | Auto-detected from origin URL: GitHub → `/quick-pr`, ADO → `/ado-pr` | PR-creation skill to dispatch to |
-| `--skip-verify` | No | `false` (verify runs by default) | Skip the entire verify phase |
-| `--skip-standards`, `--skip-coverage`, `--skip-review`, `--skip-security`, `--skip-doc-review`, `--skip-simplify` | No | none | Skip individual verify checks; combinable |
+| `--plan-source` | No | `session` | Session discussion, local file path, issue/PR URL, work item, or other readable reference |
+| `--branch` | No | Generated from project instructions or plan title | Feature branch name |
+| `--target` | No | Remote default branch, then `main` | Target branch for the PR |
+| `--no-worktree` | No | `false` (worktrees on by default) | Work in the current tree instead of creating a git worktree |
+| `--pr-tool` | No | GitHub -> `/quick-pr`, Azure DevOps -> `/ado-pr` | PR-creation skill |
+| `--skip-native-verify` | No | `false` | Skip best-effort runtime-native or equivalent review, security, and simplification checks |
+| `--skip-verify` | No | off | Skip all verification |
+| `--skip-standards`, `--skip-coverage`, `--skip-doc-review` | No | none | Skip individual repo-provided checks |
 
 ## Workflow
 
-```
-1. Find plan      →  Look back through the conversation for a plan
-2. Resolve args   →  Decide branch, target, worktree, PR tool, skips up front
-3. Plan file      →  Prepend a concrete instruction block (no templates)
-4. ExitPlanMode   →  Hand off to a fresh implementation context
-5. Branch / WT    →  Create worktree (default) or branch (--no-worktree)
-6. Code + commit  →  One logical commit per step, no `git add -A`
-7. Verify         →  Spawn verify-runner subagents in parallel (skipped on --skip-verify):
-                     /standards-check, /review, /security-review,
-                     /doc-review, /simplify, /coverage-check.
-                     Classify findings (hard_block / soft_block / report),
-                     auto-fix or AskUserQuestion, re-run addressed checks.
-                     Cap: 3 outer iterations, 2 for the coverage sub-loop.
-                     Auto-fixes commit as 'fix(review): address verify findings'.
-8. Push           →  git push -u origin <branch>
-9. Draft PR       →  Dispatch to <pr-tool> --draft --target <target>
-10. Verify summary →  Post a PR-level (overall) comment with finding counts.
-11. PR comments   →  Post unresolved report-only findings as review comments
-                     with the fallback chain: line-targeted (via gh/az/MCP)
-                     → PR-level overall comment → file at
-                     ~\.claude\verify-findings\<owner>-<repo>-pr-<n>-<ts>.md.
-12. Summary       →  Print branch, commit count, PR URL, /rename hint
-                     (and the verify-findings file path if anything
-                     landed in the file fallback).
+```text
+1. Read plan      -> session, file, issue, PR, work item, or readable reference
+2. Resolve args   -> branch, target, worktree mode, PR tool, checks
+3. Branch/worktree-> git worktree add -b ... or git checkout -b ...
+4. Code + commit  -> one logical commit per plan step
+5. Verify         -> repo checks plus best-effort native/equivalent checks
+6. Fix/queue      -> fix hard blocks, ask plainly on soft blocks, queue reports
+7. Draft PR       -> dispatch /quick-pr or /ado-pr
+8. Comments       -> post verify summary and unresolved findings
+9. Summary        -> branch, commit count, PR URL, /rename hint
 ```
 
-## Customization
+## Verification behavior
 
-### Personal `/rename` reminder
+Default checks are repo-provided: `/standards-check`, `/doc-review`, and `/coverage-check` when applicable. The skill also tries available runtime-native review/security/simplification checks or equivalent skills best-effort unless `--skip-native-verify` is set.
 
-The default workflow prints a copiable `/rename PR #<n>: <title>` command at the end. `/rename` is a personal-workflow shortcut that only the user can run (not Claude). If you don't use `/rename`, delete the "Print a copiable command…" bullet from `SKILL.md`'s "After coding" section.
+The skill prefers a `verify-runner` agent when available so enabled checks can run in parallel; it falls back to direct check execution when the agent is not available. Findings are classified as `hard_block`, `soft_block`, or `report`; hard blocks are fixed before push, soft blocks are fixed or overridden by user choice, and report findings are posted on the PR.
 
-### Adding a new PR-creation skill
+## PR comment fallback
 
-The auto-detection table in `SKILL.md` maps remote URL patterns to PR-creation skills. To register a new one:
-
-1. Add a row to the table in `SKILL.md` with the URL pattern and the new skill's slash name.
-2. Confirm the new skill accepts a `--draft` flag and a `--target`/`--base` flag for the target branch (or document the exact flag set in the table).
-
-`/implement` does not modify the dispatched skills' behavior — they're invoked unchanged. Comment-posting on the resulting PR is done directly from `/implement` (see the "After coding" section of `SKILL.md`'s workflow template for the line-targeted → PR-level → file fallback chain), so PR-creation skills don't need to know anything about line-level review comments.
+Unresolved findings are posted as line-targeted review comments when possible. If line targeting fails, the skill posts a PR-level comment. If PR posting fails, it writes findings to `~\.agents\verify-findings\` and prints the full path.
 
 ## Troubleshooting
 
 | Problem | Solution |
 |---------|----------|
-| "No implementation plan found in this session" | Create a plan first (plan mode, or paste a numbered step list) and re-run `/implement` |
-| Auto-detected target is wrong | Pass `--target <branch>` explicitly |
-| PR-tool auto-detection fails (unknown remote host) | Pass `--pr-tool </name-of-skill>` and add a row to the auto-detection table in `SKILL.md` |
-| EnterWorktree refuses ("already inside a worktree") | You're nested. Either `cd` to the main checkout first, or use `--no-worktree` |
-| Build/test fails partway through | Fix in-place and amend into the same step's commit before moving to the next step |
-| Branch has merge conflicts with target | Stop and resolve manually — `/implement` will not auto-resolve or force-push |
+| No plan found | Pass `--plan-source <file-or-url>` or provide a plan in the session |
+| Target branch is wrong | Pass `--target <branch>` |
+| PR-tool auto-detection fails | Pass `--pr-tool /quick-pr` or `--pr-tool /ado-pr` |
+| Worktree path already exists | Choose `--branch` with a unique name or remove the stale worktree |
+| Verify-runner unavailable | The skill falls back to direct checks |
+| Branch conflicts with target | Stop and resolve manually; the skill does not auto-resolve conflicts |

@@ -1,7 +1,7 @@
 ---
 name: quick-pr
-description: Create a branch, commit, push, open a GitHub PR, squash-merge, and clean up
-argument-hint: "[--title \"Title\"] [--branch name] [--base main] [--no-merge]"
+description: Create a branch, commit, push, open a GitHub PR, optionally squash-merge, and clean up
+argument-hint: "[--title \"Title\"] [--branch name] [--base main|--target main] [--draft] [--no-merge]"
 ---
 
 # GitHub Quick PR
@@ -11,14 +11,15 @@ Automates the full PR lifecycle for routine changes: create branch, stage, commi
 ## Usage
 
 ```
-/quick-pr [--title "Title"] [--branch name] [--base main] [--no-merge]
+/quick-pr [--title "Title"] [--branch name] [--base main|--target main] [--draft] [--no-merge]
 ```
 
 ## Parameters
 
 - `--title`: Custom PR title (auto-generated from commits if not provided)
 - `--branch`: Custom branch name (auto-generated from changes if not provided)
-- `--base`: Target branch (default: repo's default branch, detected via `gh repo view`)
+- `--base` / `--target`: Target branch (default: repo's default branch, detected via `gh repo view`)
+- `--draft`: Create the PR as a draft and skip merge
 - `--no-merge`: Create the PR but do not merge it (useful when review is needed)
 
 ## Instructions
@@ -39,7 +40,8 @@ Run these commands in parallel:
 Parse `$ARGUMENTS` for:
 - `--title "<value>"` — Custom PR title.
 - `--branch <value>` — Custom branch name.
-- `--base <value>` — Target branch. If not provided, detect the repo's default branch: `gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'`.
+- `--base <value>` or `--target <value>` — Target branch. If not provided, detect the repo's default branch: `gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'`.
+- `--draft` — Create the PR as a draft and skip merge.
 - `--no-merge` — Flag to skip the merge step.
 
 ### Step 3 — Assess State
@@ -113,12 +115,11 @@ git push -u origin '<branch-name>'
    ## Changes
    [Bulleted list of notable changes]
 
-   🤖 Generated with [Claude Code](https://claude.ai/code)
    ```
 
 4. Create the PR:
    ```bash
-   gh pr create --base '<base>' --head '<branch-name>' --title '<title>' --body '$(cat <<'\''EOF'\''
+   gh pr create --base '<base>' --head '<branch-name>' --title '<title>' [--draft if requested] --body '$(cat <<'\''EOF'\''
    <generated body>
    EOF
    )'
@@ -128,7 +129,7 @@ git push -u origin '<branch-name>'
 
 ### Step 8 — Merge
 
-**Skip if `--no-merge` was specified.** If skipping, print the PR URL and **stop**.
+**Skip if `--no-merge` or `--draft` was specified.** If skipping, print the PR URL and **stop**.
 
 1. Merge with squash strategy and delete the remote branch:
    ```bash
@@ -159,7 +160,7 @@ Print a brief summary:
 
 ## Important Notes
 
-- Always use **single quotes** around shell string arguments (per project CLAUDE.md).
+- Always use **single quotes** around shell string arguments.
 - If any step fails, **stop immediately** and report the error. Do not continue to subsequent steps.
 - The squash merge strategy means all branch commits become a single commit on the base branch.
 - Do NOT stage or commit files that look like secrets (`.env`, credentials, tokens).

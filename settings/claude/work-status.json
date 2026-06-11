@@ -1,7 +1,6 @@
 {
   "permissions": {
     "allow": [
-      "Read(~/.claude/work-status-config.json)",
       "mcp__ado__repo_get_pull_request_by_id",
       "mcp__ado__repo_list_pull_requests_by_commits",
       "mcp__ado__repo_search_commits",
@@ -13,7 +12,8 @@
       "mcp__todoist__find-projects",
       "mcp__todoist__find-tasks",
       "mcp__todoist__find-tasks-by-date",
-      "mcp__todoist__user-info"
+      "mcp__todoist__user-info",
+      "Read(~/.agents/work-status-config.json)"
     ]
   }
 }

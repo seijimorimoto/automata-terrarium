@@ -28,15 +28,15 @@ Create, update, complete, and list Azure DevOps work items from the command line
 
 ## Instructions
 
-When this skill is invoked with `$ARGUMENTS`:
+When this skill is invoked:
 
 ### 1. Load Configuration
 
-Read `~/.claude/work-status-config.json`.
+Read `~\.agents\work-status-config.json`.
 
 If missing, tell the user:
 
-> Configuration file not found. Please create `~/.claude/work-status-config.json`:
+> Configuration file not found. Please create `~\.agents\work-status-config.json`:
 > ```json
 > {
 >   "userEmail": "you@example.com",
@@ -51,7 +51,7 @@ Required config keys for this skill: `adoProject`, `adoTeam`.
 
 ### 2. Parse Subcommand
 
-Parse the first word of `$ARGUMENTS` as the subcommand. The rest is arguments to that subcommand.
+Parse the first word of the skill arguments as the subcommand. The rest is arguments to that subcommand.
 
 ---
 
@@ -60,11 +60,11 @@ Parse the first word of `$ARGUMENTS` as the subcommand. The rest is arguments to
 **Syntax:** `create <title> [--desc "description"] [--type Bug|Task|User Story]`
 
 1. Parse the title (all text before any flags), `--desc` (optional description), and `--type` (default: `Task`).
-2. Resolve the **current sprint iteration** using `mcp__ado__work_list_team_iterations` with:
+2. Resolve the **current sprint iteration** using the available Azure DevOps MCP equivalent of `work_list_team_iterations` with:
    - `projectName`: config `adoProject`
    - `teamName`: config `adoTeam`
    - `timeframe`: `"current"`
-3. Use `mcp__ado__wit_create_work_item` with:
+3. Use the available Azure DevOps MCP equivalent of `wit_create_work_item` with:
    - `projectName`: config `adoProject`
    - `workItemType`: the parsed type (default `Task`)
    - `title`: the parsed title
@@ -80,11 +80,11 @@ Parse the first word of `$ARGUMENTS` as the subcommand. The rest is arguments to
 **Syntax:** `done <id> [notes]`
 
 1. Parse the work item ID (first argument) and optional notes (remaining text).
-2. Use `mcp__ado__wit_update_work_item` to set:
+2. Use the available Azure DevOps MCP equivalent of `wit_update_work_item` to set:
    - `id`: the parsed ID
    - `projectName`: config `adoProject`
    - `state`: `"Closed"` (or `"Done"` — try `Closed` first; if the work item type does not support `Closed`, use `Done`)
-3. If notes were provided, also use `mcp__ado__wit_add_work_item_comment` with:
+3. If notes were provided, also use the available Azure DevOps MCP equivalent of `wit_add_work_item_comment` with:
    - `id`: the parsed ID
    - `projectName`: config `adoProject`
    - `text`: the notes
@@ -99,13 +99,13 @@ Parse the first word of `$ARGUMENTS` as the subcommand. The rest is arguments to
 At least one of `--state` or notes must be provided.
 
 1. Parse the work item ID (first argument), optional `--state` flag, and optional notes (remaining text after flags).
-2. If `--state` is provided, use `mcp__ado__wit_update_work_item` to set:
+2. If `--state` is provided, use the available Azure DevOps MCP equivalent of `wit_update_work_item` to set:
    - `id`: the parsed ID
    - `projectName`: config `adoProject`
    - `state`: the parsed state value
    - Supported states (case-insensitive): `Accepted`, `Active`, `Blocked`, `Cancelled`, `Closed`, `Committed`, `Completed`, `Cut`, `Deferred`, `Design`, `In Planning`, `In Progress`, `Inactive`, `New`, `Proposed`, `Ready`, `Removed`, `Requested`, `Resolved`.
    - If the state is not supported by the work item type, report the error to the user.
-3. If notes were provided, use `mcp__ado__wit_add_work_item_comment` with:
+3. If notes were provided, use the available Azure DevOps MCP equivalent of `wit_add_work_item_comment` with:
    - `id`: the parsed ID
    - `projectName`: config `adoProject`
    - `text`: the notes
@@ -120,11 +120,11 @@ At least one of `--state` or notes must be provided.
 At least one of `--state` or notes must be provided. IDs are comma-separated.
 
 1. Parse the comma-separated work item IDs, optional `--state` flag, and optional notes (remaining text after flags).
-2. If `--state` is provided, use `mcp__ado__wit_update_work_items_batch` with a single batch call containing one update per ID:
+2. If `--state` is provided, use the available Azure DevOps MCP equivalent of `wit_update_work_items_batch` with a single batch call containing one update per ID:
    - Each update: `{ "op": "Replace", "id": <id>, "path": "/fields/System.State", "value": "<state>" }`
    - Supported states (case-insensitive): `Accepted`, `Active`, `Blocked`, `Cancelled`, `Closed`, `Committed`, `Completed`, `Cut`, `Deferred`, `Design`, `In Planning`, `In Progress`, `Inactive`, `New`, `Proposed`, `Ready`, `Removed`, `Requested`, `Resolved`.
    - If the batch update fails (e.g., some work item types don't support the requested state), report which items failed and suggest a fallback state (e.g., "Closed" instead of "Cut" for Bugs).
-3. If notes were provided, call `mcp__ado__wit_add_work_item_comment` for **each** ID individually with:
+3. If notes were provided, call the available Azure DevOps MCP equivalent of `wit_add_work_item_comment` for **each** ID individually with:
    - `projectName`: config `adoProject`
    - `workItemId`: the ID
    - `comment`: the notes
@@ -144,9 +144,9 @@ At least one of `--state` or notes must be provided. IDs are comma-separated.
 
 **Syntax:** `list [--all] [--filter "<field>=<value>[,<value>...] [...]"] [--order-by "<field> <direction>[, ...]"]`
 
-1. Use `mcp__ado__wit_my_work_items` with:
+1. Use the available Azure DevOps MCP equivalent of `wit_my_work_items` with:
    - `projectName`: config `adoProject`
-2. Extract the IDs from the results and fetch full details using `mcp__ado__wit_get_work_items_batch_by_ids` with:
+2. Extract the IDs from the results and fetch full details using the available Azure DevOps MCP equivalent of `wit_get_work_items_batch_by_ids` with:
    - `projectName`: config `adoProject`
    - `ids`: the list of work item IDs from step 1
    - `fields`: `["System.Id", "System.WorkItemType", "System.Title", "System.State", "System.IterationPath", "System.CreatedDate", "System.ChangedDate"]`
@@ -181,6 +181,12 @@ If no items found, say: "No work items found matching the current filter." (or "
 
 - If an unrecognized subcommand is given, show the usage examples above.
 - If a required argument is missing (e.g., `done` without an ID, `bulk` without IDs), show the syntax for that subcommand.
+- If an Azure DevOps MCP tool is unavailable, say which Azure DevOps capability is missing and suggest running `/mcp` to configure the ADO server.
+- Do not silently ignore failed work item updates; report the item ID and error.
+
+## MCP Tool Notes
+
+- MCP tool names vary by runtime and server. Use the available Azure DevOps MCP equivalent for each named capability.
 
 ## Configuration Reference
 

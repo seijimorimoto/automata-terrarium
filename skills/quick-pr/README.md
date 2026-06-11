@@ -1,6 +1,6 @@
 # GitHub Quick PR
 
-Automates the full PR lifecycle for routine, no-review-needed changes in GitHub repos with PR-only workflows. One command to: create a branch, stage, commit, push, open a PR, squash-merge, and clean up.
+Automates the PR lifecycle for GitHub repos with PR-only workflows. One command can create a branch, stage, commit, push, open a PR, and optionally squash-merge and clean up.
 
 ## Prerequisites
 
@@ -12,13 +12,19 @@ Automates the full PR lifecycle for routine, no-review-needed changes in GitHub 
   ```
 
   ```sh
-  # Linux / macOS
+  # Linux / macOS / POSIX
   brew install gh
   ```
 
 - **Authenticated with GitHub** — Sign in with:
 
   ```powershell
+  # Windows (PowerShell)
+  gh auth login
+  ```
+
+  ```sh
+  # Linux / macOS / POSIX
   gh auth login
   ```
 
@@ -26,42 +32,32 @@ Automates the full PR lifecycle for routine, no-review-needed changes in GitHub 
 
 ## Installation
 
-Copy the skill folder to either location:
+Install the skill with the sync scripts.
 
-- **Project-level** (one project): `<project-root>\.claude\skills\`
-- **User-level** (all projects): `~\.claude\skills\`
+- **Claude project-level** (one project): `<project-root>\.claude\skills\`
+- **Claude user-level** (all projects): `~\.claude\skills\`
+- **Copilot project-level** (one project): `<project-root>\.github\skills\`
+- **Copilot user-level** (all projects): `~\.copilot\skills\`
 
 ```powershell
 # Windows (PowerShell)
-
-# Project-level
-Copy-Item -Recurse skills\quick-pr <your-project>\.claude\skills\
-
-# User-level
-Copy-Item -Recurse skills\quick-pr ~\.claude\skills\
-
-# Or symlink (project-level)
-New-Item -ItemType SymbolicLink -Path <your-project>\.claude\skills\quick-pr -Target (Resolve-Path skills\quick-pr)
+.\bin\seiji-claude-sync-skills.ps1
+.\bin\seiji-copilot-sync-skills.ps1
 ```
 
 ```sh
-# Linux / macOS
-
-# Project-level
-cp -r skills/quick-pr <your-project>/.claude/skills/
-
-# User-level
-cp -r skills/quick-pr ~/.claude/skills/
-
-# Or symlink (project-level)
-ln -s "$(pwd)/skills/quick-pr" <your-project>/.claude/skills/quick-pr
+# Linux / macOS / POSIX
+./bin/seiji-claude-sync-skills
+# POSIX Copilot sync is tracked by #21.
 ```
 
 ## Permissions
 
-This skill uses the GitHub CLI (`gh`). Add the permissions from [`settings/github.json`](../../settings/github.json) to your Claude Code settings file to avoid permission prompts.
+This skill uses the GitHub CLI (`gh`). For Claude Code, add the permissions from [`settings\claude\github.json`](../../settings/claude/github.json) to your settings file to avoid permission prompts.
 
-Git permissions (`git checkout`, `git push`, etc.) are covered by [`settings/base.json`](../../settings/base.json).
+Git permissions (`git checkout`, `git push`, etc.) are covered by [`settings\claude\base.json`](../../settings/claude/base.json).
+
+For Copilot CLI, approve the requested `git` and `gh` shell commands interactively or launch Copilot with equivalent `--allow-tool` permissions.
 
 ## Usage
 
@@ -70,7 +66,9 @@ Git permissions (`git checkout`, `git push`, etc.) are covered by [`settings/bas
 /quick-pr --title "Add weekly status for W15"      # Custom PR title
 /quick-pr --branch add-weekly-status-w15           # Custom branch name
 /quick-pr --no-merge                               # Create PR but skip merge
+/quick-pr --draft                                  # Create a draft PR and skip merge
 /quick-pr --base develop                           # Target a different base branch
+/quick-pr --target develop                         # Alias for --base
 ```
 
 ### Parameters
@@ -79,7 +77,8 @@ Git permissions (`git checkout`, `git push`, etc.) are covered by [`settings/bas
 |-----------|----------|---------|-------------|
 | `--title` | No | Auto-generated from commits | PR title |
 | `--branch` | No | Auto-generated from changes | Feature branch name (prefixed with `u/<username>/`) |
-| `--base` | No | Repo's default branch | Target branch for the PR |
+| `--base` / `--target` | No | Repo's default branch | Target branch for the PR |
+| `--draft` | No | `false` | Create a draft PR and skip merge |
 | `--no-merge` | No | `false` | Create the PR but do not merge it |
 
 ## Behavior by State

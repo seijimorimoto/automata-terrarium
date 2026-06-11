@@ -1,6 +1,6 @@
 # Hooks
 
-Event-driven scripts that run in response to Claude Code or GitHub Copilot CLI lifecycle events.
+Event-driven scripts that run in response to runtime lifecycle events.
 
 | Marker | Meaning |
 |--------|---------|
@@ -13,70 +13,51 @@ Event-driven scripts that run in response to Claude Code or GitHub Copilot CLI l
 
 | Hook | Claude Code | Copilot CLI | Description | Platform | Notes |
 |------|-------------|-------------|-------------|----------|-------|
-| [`notify-windows`](notify-windows/) | ✅ | ✅ | Windows toast notifications for agent events (permission prompts, questions, task completion) | Windows |  |
+| [`notify-windows`](notify-windows/) | ⚠️ | ⚠️ | Windows toast notifications for permission prompts, questions, completions, and shell events | Windows | Preset files exist for both runtimes; automatic registration/merge is tracked by #22. |
 
-> **Note:** Claude skill- and agent-scoped hooks live alongside their owning skill/agent under `skills\<name>\scripts\` or `agents\<name>\scripts\` and are registered via that skill's `SKILL.md` or that agent's `<name>.md` frontmatter — not via `settings.json`. Copilot CLI supports hooks, but the documented configuration is global/user/repository/plugin JSON or settings-based lifecycle hooks; it does **not** support Claude-style skill- or agent-frontmatter-scoped hooks. Canonical Claude examples: [`skills\ado-pr\`](../skills/ado-pr/) and [`agents\verify-runner\`](../agents/verify-runner/).
+> **Note:** Skill- and agent-scoped hooks live alongside their owning skill/agent under `skills\<name>\scripts\` or `agents\<name>\scripts\` when that runtime supports scoped hook frontmatter. Copilot hooks are lifecycle/tool hooks registered through hook JSON or settings; they are not scoped by placing them in a skill or agent folder.
 
 ## Installation
 
-### 1. Copy hook files into your runtime folder
+Hook sync scripts copy hook script files. They do **not** automatically merge hook registrations into runtime settings yet; that registration/merge work is tracked by #22.
 
-Claude hooks must live inside a `.claude` directory. Copilot hook JSON can live under `~\.copilot\hooks\` or `<project-root>\.github\hooks\`.
+### Claude Code
 
-- **Claude user-level** (applies to all projects): `~\.claude\hooks\`
-- **Claude project-level** (applies to one project): `<project-root>\.claude\hooks\`
-- **Copilot user-level** (applies to all projects): `~\.copilot\hooks\`
-- **Copilot project-level** (applies to one project): `<project-root>\.github\hooks\`
-
-For example, to install a hook called `my-hook` for all projects:
+Install script files:
 
 ```powershell
-# Windows (PowerShell)
-Copy-Item -Recurse hooks\my-hook ~\.claude\hooks\
+.\bin\seiji-claude-sync-hooks.ps1
 ```
 
 ```sh
-# Linux / macOS
-cp -r hooks/my-hook ~/.claude/hooks/
+./bin/seiji-claude-sync-hooks
 ```
 
-### 2. Register the hook in settings
+Then use the checked-in preset `hooks\<name>\claude.hooks.json` as the registration template for `~\.claude\settings.json` or `<project-root>\.claude\settings.json`. Replace template placeholders such as `{{CLAUDE_HOOK_DIR}}` with the installed hook folder path.
 
-Add hook entries to the matching `settings.json` under the `"hooks"` key:
+### Copilot CLI
 
-- **User-level**: `~\.claude\settings.json`
-- **Project-level**: `<project-root>\.claude\settings.json`
+Install script files and Copilot hook JSON:
 
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": ["bash hooks/my-hook.sh"]
-      }
-    ]
-  }
-}
+```powershell
+.\bin\seiji-copilot-sync-hooks.ps1
 ```
 
-> **Note:** Hook paths in settings are relative to the `.claude` directory they live in.
+For Linux/macOS, POSIX Copilot sync parity is tracked by #21.
 
-Copilot hook entries use Copilot's JSON hook schema. Prefer a checked-in template such as `hooks\<name>\copilot.hooks.json` and install it to `~\.copilot\hooks\<name>.json` or `<project-root>\.github\hooks\<name>.json`. These hooks are not scoped by placing them in a skill or agent folder; use matchers and hook event payloads for any filtering Copilot supports.
+Copilot hook presets live at `hooks\<name>\copilot.hooks.json` and sync to `~\.copilot\hooks\<name>.json`.
 
 ## Hook Events Examples
 
-| Event          | Fires when                        |
-|----------------|-----------------------------------|
-| `PreToolUse`   | Before a tool call executes       |
-| `PostToolUse`  | After a tool call completes       |
-| `Notification` | When Claude sends a notification  |
+| Event | Fires when |
+|-------|------------|
+| `PreToolUse` | Before a tool call executes |
+| `PostToolUse` | After a tool call completes |
+| `Notification` | When the runtime sends a notification |
 
 ## Creating a New Hook
 
-1. Create a script in this directory
-2. The hook receives a JSON payload on stdin with tool name, input, and other context
-3. Output JSON to stdout to modify behavior (e.g., block a tool call)
-4. Make scripts executable (Linux/macOS): `chmod +x hooks/my-hook.sh`
-
-See the [Claude Code docs](https://code.claude.com/docs/en/hooks) for more details.
+1. Create a folder under `hooks\` with the hook script and a README.
+2. Add runtime preset files using `<orchestrator>.hooks.json`, such as `claude.hooks.json` or `copilot.hooks.json`.
+3. Document install locations, prerequisites, and registration steps in the hook README.
+4. Update the Available Hooks tables in this README and the repo-level README.

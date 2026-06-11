@@ -22,9 +22,7 @@ $ErrorActionPreference = 'Stop'
 
 $ScriptDir   = Split-Path -Parent $PSCommandPath
 $RepoRoot    = Split-Path -Parent $ScriptDir
-$LegacyPresetsDir = Join-Path $RepoRoot 'settings'
-$TargetPresetsDir = Join-Path $RepoRoot 'settings\claude'
-$PresetsDir = if (Test-Path -LiteralPath $TargetPresetsDir) { $TargetPresetsDir } else { $LegacyPresetsDir }
+$PresetsDir  = Join-Path $RepoRoot 'settings\claude'
 $UserConfDir = Join-Path $HOME '.claude'
 $UserConfig  = Join-Path $UserConfDir 'settings.json'
 

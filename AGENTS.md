@@ -69,6 +69,7 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
 
 - Docs should be tool-neutral by default. Use generic terms such as "runtime", "agent", "source variant", or "orchestrator" unless a section is explicitly about Claude Code or Copilot CLI.
 - Put runtime-specific details under clearly labeled subsections.
+- Refer to `AGENTS.md`, `CLAUDE.md`, `.github\copilot-instructions.md`, and similar orchestrator files broadly as "project instructions" unless the runtime-specific filename matters.
 - Do not overstate support. Use `✅` only when the repo provides meaningful working support for that runtime.
 - Every **discoverable entry-point directory** should have a `README.md` explaining its contents and usage. This means each skill, agent, hook, and settings-preset directory, plus any directory linked from a parent `README.md`.
 - Implementation-detail subdirectories (e.g., `scripts\`, `assets\`) don't need their own README if the parent already documents them.
@@ -76,6 +77,7 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
 ### Paths
 
 - Use **Windows-style backslashes** (`\`) as the primary path format in all inline references and examples (e.g., `~\.claude\hooks\`, `~\.copilot\skills\`, `<project-root>\.github\skills\`).
+- Shared runtime-neutral workflows should use agent-neutral config/data paths such as `~\.agents\work-status-config.json`, `~\.agents\work-status\`, and `~\.agents\verify-findings\` instead of a runtime-specific home directory.
 - Always show user-level and project-level install locations for both supported tools when applicable:
   - Claude Code user-level: `~\.claude\...`
   - Claude Code project-level: `<project-root>\.claude\...`
@@ -103,7 +105,7 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
   | 🛠️ | Planned |
   ```
 - Every availability table that lists Claude Code and Copilot CLI variants must include a **Notes** column.
-- Use `⚠️` for partial support or manual setup requirements; use `🛠️` only for planned-but-not-implemented support.
+- Use `✅` only for broad, working parity. Use `⚠️` for partial, barebones, external-setup, or permission-model gaps. Use `🛠️` only for planned-but-not-implemented support, often tracked by a follow-up issue such as #19.
 - Items that cannot be ported to one runtime should stay in the repo as single-target artifacts and be marked with `❌` or `⚠️` in availability tables, with a short note explaining why.
 
 ### Installation instructions
@@ -125,8 +127,11 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
 - Claude session-wide hooks under `hooks\` are registered in `~\.claude\settings.json` or the project-level equivalent.
 - Copilot hooks are registered through `~\.copilot\hooks\*.json`, `<project-root>\.github\hooks\*.json`, or the documented Copilot settings `hooks` block.
 - Copilot hooks are lifecycle/tool hooks, not skill- or agent-frontmatter-scoped hooks. Do not describe Claude frontmatter hooks as Copilot-compatible or as something this repo simply has not added yet.
+- Runtime hook preset files under `hooks\<name>\` use the naming pattern `<orchestrator>.hooks.json`, such as `claude.hooks.json` and `copilot.hooks.json`.
 
 ## Artifact Layout Rules
+
+- Prefer shared artifacts when runtime-neutral wording, paths, and behavior are possible. Split variants only for real runtime differences such as frontmatter shape, tool names, hooks, install paths, MCP naming, config paths, or permission mechanics.
 
 ### Skills
 
@@ -157,8 +162,8 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
 
 ## Settings and Permissions
 
-- Permission entries in settings preset files (`settings\*.json`) must be sorted alphabetically.
-- Claude settings fragments belong under `settings\claude\` once migrated.
+- Permission entries in settings preset files (`settings\claude\*.json` and `settings\copilot\*.json`) must be sorted alphabetically.
+- Claude settings fragments belong under `settings\claude\`; do not add new Claude presets at the top level of `settings\`.
 - Copilot settings, launch helpers, and permission notes belong under `settings\copilot\`.
 - Do not imply Copilot settings JSON is equivalent to Claude Code `permissions.allow`.
 - Copilot shell, MCP, URL, and path permissions often require CLI flags (`--allow-tool`, `--deny-tool`, `--allow-url`, `--allow-all-paths`), `/mcp` setup, skill `allowed-tools`, agent `tools`, or hooks.

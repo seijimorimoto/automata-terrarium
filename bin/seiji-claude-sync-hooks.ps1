@@ -2,9 +2,10 @@
 # Use -DryRun to preview without writing.
 #
 # This script copies hook scripts only. It does NOT register hooks in
-# ~\.claude\settings.json — that responsibility belongs to
-# seiji-claude-sync-settings.ps1, which merges settings\*.json presets.
-# Copilot hook JSON files are excluded from Claude installs.
+# ~\.claude\settings.json. Checked-in claude.hooks.json files are
+# registration templates; safe registration/merge automation is tracked by #22.
+# Only Claude hook JSON files are included. The hook JSON files of any other
+# agent orchestrator are excluded.
 [CmdletBinding()]
 param(
     [switch]$DryRun
@@ -38,7 +39,7 @@ function Copy-HookForClaude {
     New-Item -ItemType Directory -Path $Destination -Force | Out-Null
 
     Get-ChildItem -LiteralPath $Source -Force | ForEach-Object {
-        if (-not $_.PSIsContainer -and $_.Name -like '*.hooks.json') { return }
+        if (-not $_.PSIsContainer -and $_.Name -like '*.hooks.json' -and $_.Name -ne 'claude.hooks.json') { return }
         Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $Destination $_.Name) -Recurse -Force
     }
 }

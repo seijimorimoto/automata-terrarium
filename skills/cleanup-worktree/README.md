@@ -18,7 +18,7 @@ Removes a git worktree and its associated local branch after a PR has been merge
 
 ## Installation
 
-Install user-level skill variants with the sync scripts.
+Install the skill with the sync scripts.
 
 - **Claude project-level** (one project): `<project-root>\.claude\skills\`
 - **Claude user-level** (all projects): `~\.claude\skills\`
@@ -45,7 +45,7 @@ This skill uses only local git commands. For Claude Code, add the following perm
 "Bash(git worktree *)"
 ```
 
-The remaining git operations (`git branch`, `git rev-parse`, `git status`, `git symbolic-ref`, `git log`) are covered by [`settings\base.json`](../../settings/base.json).
+The remaining git operations (`git branch`, `git rev-parse`, `git status`, `git symbolic-ref`, `git log`) are covered by [`settings\claude\base.json`](../../settings/claude/base.json).
 
 For Copilot CLI, approve the requested git shell commands interactively or launch Copilot with equivalent `--allow-tool` permissions for the git subcommands used by the skill.
 

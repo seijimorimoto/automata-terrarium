@@ -4,8 +4,8 @@ Create, update, complete, and list Azure DevOps work items from the command line
 
 ## Prerequisites
 
-- **Azure DevOps MCP server** — configured and running in your Claude Code or Copilot CLI environment
-- **Configuration file** — `~\.claude\work-status-config.json` for Claude Code or `~\.copilot\work-status-config.json` for Copilot CLI
+- **Azure DevOps MCP server** — configured and running in your runtime
+- **Configuration file** — `~\.agents\work-status-config.json`
 
 ```json
 {
@@ -41,9 +41,9 @@ Install user-level skill variants with the sync scripts.
 ```
 
 ```sh
-# Linux / macOS
+# Linux / macOS / POSIX
 ./bin/seiji-claude-sync-skills
-# POSIX Copilot sync is planned.
+# POSIX Copilot sync is tracked by #21.
 ```
 
 ### Permissions
@@ -52,23 +52,23 @@ For Claude Code, merge the ADO permissions preset into your settings file to aut
 
 ```powershell
 # Windows (PowerShell) — view the preset
-Get-Content settings\ado.json
+Get-Content settings\claude\ado.json
 ```
 
-See [settings\ado.json](../../settings/ado.json) for the full list of permitted MCP tools.
+See [settings\claude\ado.json](../../settings/claude/ado.json) for the full list of permitted MCP tools.
 
 For Copilot CLI, configure the Azure DevOps MCP server with `/mcp` and approve or allow the equivalent ADO MCP tools exposed by that server.
 
 ## Usage Examples
 
 ```
-/ado-task create Fix the auth token expiry bug --desc "Tokens expire silently" --type Bug
-/ado-task done 78901 Fixed by adding token refresh logic
-/ado-task update 78901 --state Active Started working on this
-/ado-task bulk 78901,78902 --state Closed "Closing old items"
-/ado-task list
-/ado-task list --filter "state=Active,New"
-/ado-task list --order-by "updated desc"
+/ado-task create Fix the auth token expiry bug --desc "Tokens expire silently" --type Bug   # Create a bug
+/ado-task done 78901 Fixed by adding token refresh logic                             # Close one work item
+/ado-task update 78901 --state Active Started working on this                       # Update state and add notes
+/ado-task bulk 78901,78902 --state Closed "Closing old items"                       # Update several work items
+/ado-task list                                                                      # List assigned work items
+/ado-task list --filter "state=Active,New"                                          # Filter list results
+/ado-task list --order-by "updated desc"                                            # Sort list results
 ```
 
 ## Configuration Reference

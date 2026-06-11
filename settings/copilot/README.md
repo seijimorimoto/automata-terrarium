@@ -4,7 +4,7 @@ Reusable GitHub Copilot CLI settings fragments and permission guidance.
 
 ## Available presets
 
-These are Copilot CLI JSON settings fragments only. They do **not** replace Copilot's shell, MCP, URL, and path permission flags.
+These are Copilot CLI JSON settings fragments only. They do **not** replace Copilot's shell, MCP, URL, and path permission flags. Full permission-model translation is tracked by #19.
 
 | Preset | File | Purpose | Notes |
 |--------|------|---------|-------|

@@ -19,17 +19,17 @@ Appends a timestamped entry to the current week's work log file.
 
 ## Instructions
 
-When this skill is invoked with `$ARGUMENTS`:
+When this skill is invoked with arguments:
 
 ### 1. Load Configuration
 
-Read the config file at `~/.claude/work-status-config.json`.
+Read the config file at `~\.agents\work-status-config.json`.
 
-If the file does not exist, silently use defaults (`statusRepoPath` = `~/.claude/work-status/`). Do **not** block or prompt the user.
+If the file does not exist, silently use defaults (`statusRepoPath` = `~\.agents\work-status\`). Do **not** block or prompt the user.
 
 ### 2. Parse Arguments
 
-Parse `$ARGUMENTS` for:
+Parse the skill arguments for:
 - **note** — all free text (everything that is not a recognized flag or its value)
 - **--impact "..."** — optional impact description (the quoted string after `--impact`)
 - **--week YYYY-WNN** — optional; target the ISO week specified (e.g., `2026-W11`). Resolve to Monday–Sunday of that week.
@@ -41,12 +41,12 @@ Default (no time flag): current ISO week.
 
 ### 3. Determine File Path
 
-1. Resolve `statusRepoPath` from config (default: `~/.claude/work-status/` if not set).
+1. Resolve `statusRepoPath` from config (default: `~\.agents\work-status\` if not set).
 2. Using the resolved week (from Step 2), calculate:
    - The ISO week number and year (e.g., `2026-W12`).
    - The week's start date (Monday) and end date (Sunday) in `YYYY-MM-DD` format.
 3. Target file: `<statusRepoPath>/work-log/<startDate>_to_<endDate>.md`
-   (e.g., `~/.claude/work-status/work-log/2026-03-16_to_2026-03-22.md`)
+   (e.g., `~\.agents\work-status\work-log\2026-03-16_to_2026-03-22.md`)
 
 ### 4. Create or Append
 
@@ -83,4 +83,4 @@ Print a confirmation message showing:
 
 | Key | Required | Default | Description |
 |-----|----------|---------|-------------|
-| `statusRepoPath` | No | `~/.claude/work-status/` | Root directory for all status data files |
+| `statusRepoPath` | No | `~\.agents\work-status\` | Root directory for all status data files |

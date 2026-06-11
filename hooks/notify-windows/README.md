@@ -1,8 +1,8 @@
-# Notify Hook
+# Notify Windows Hook
 
-Windows toast notifications for Claude Code and Copilot CLI events, powered by [BurntToast](https://github.com/Windos/BurntToast).
+Windows toast notifications for runtime events, powered by [BurntToast](https://github.com/Windos/BurntToast).
 
-Alerts you when an agent needs attention — permission prompts, questions, task completion, background agent completion, shell completion, and authentication events.
+Alerts when an agent needs attention, including permission prompts, questions, task completion, background agent completion, shell completion, and authentication events.
 
 ## Prerequisites
 
@@ -12,69 +12,61 @@ Install the BurntToast PowerShell module:
 Install-Module -Name BurntToast
 ```
 
+## Install locations
+
+- **Claude user-level** (all projects): `~\.claude\hooks\notify-windows\`
+- **Claude project-level** (one project): `<project-root>\.claude\hooks\notify-windows\`
+- **Copilot user-level** (all projects): `~\.copilot\hooks\notify-windows\`
+- **Copilot project-level** (one project): `<project-root>\.github\hooks\notify-windows\`
+
 ## Installation
 
-### 1. Copy to your runtime folder
+### Claude Code
 
-Copy the `notify-windows` folder to a supported runtime location:
-
-- **Claude user-level** (all projects): `~\.claude\hooks\`
-- **Claude project-level** (one project): `<project-root>\.claude\hooks\`
-- **Copilot user-level** (all projects): `~\.copilot\hooks\notify-windows\`
-- **Copilot project-level** (one project): `<project-root>\.github\hooks\`
+Install script files:
 
 ```powershell
-Copy-Item -Recurse hooks\notify-windows ~\.claude\hooks\
-
-# Copilot user-level script files
-Copy-Item -Recurse hooks\notify-windows ~\.copilot\hooks\
+.\bin\seiji-claude-sync-hooks.ps1
 ```
 
-### 2. Register in settings
+`claude.hooks.json` is the registration template. Copy its `"hooks"` block into `~\.claude\settings.json` or `<project-root>\.claude\settings.json`, then replace `{{CLAUDE_HOOK_DIR}}` with the full installed hook folder path, such as `~\.claude\hooks\notify-windows`.
 
-Add the following to the matching `settings.json` (`~\.claude\settings.json` for user-level, or `<project-root>\.claude\settings.json` for project-level):
+Automatic hook registration is not implemented yet; #22 tracks safe registration/merge automation.
 
-```json
-{
-  "hooks": {
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -ExecutionPolicy Bypass -File hooks\\notify-windows\\notify.ps1"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+### Copilot CLI
 
-For Copilot CLI, install via the sync script:
+Install script files and hook JSON:
 
 ```powershell
 .\bin\seiji-copilot-sync-hooks.ps1
 ```
 
-Or copy `hooks\notify-windows\copilot.hooks.json` to `~\.copilot\hooks\notify-windows.json` and replace `{{COPILOT_HOOK_DIR}}` with the full path to the installed `notify-windows` folder.
+The sync script copies `copilot.hooks.json` to `~\.copilot\hooks\notify-windows.json` and replaces `{{COPILOT_HOOK_DIR}}` with the installed hook folder path.
+
+For Linux/macOS, POSIX Copilot sync parity is tracked by #21.
+
+## Preset files
+
+| Runtime | Preset file | Notes |
+|---------|-------------|-------|
+| Claude Code | `claude.hooks.json` | Manual registration template; replace `{{CLAUDE_HOOK_DIR}}`. |
+| Copilot CLI | `copilot.hooks.json` | Installed by `seiji-copilot-sync-hooks.ps1`; placeholder rewritten during sync. |
 
 ## Notification types
 
-| Event               | Title               | Sound    | Urgent | Expiry   |
-|---------------------|---------------------|----------|--------|----------|
-| `permission_prompt` | Permission Required  | Reminder | Yes    | —        |
-| `elicitation_dialog`| Question for You     | Reminder | Yes    | —        |
-| `idle_prompt`       | Task Complete        | IM       | No     | 15 min   |
-| `auth_success`      | Authentication       | Silent   | No     | 5 min    |
-| `agent_completed`   | Agent Complete       | IM       | No     | 15 min   |
-| `agent_idle`        | Agent Waiting        | Reminder | Yes    | —        |
-| `shell_completed`   | Shell Complete       | IM       | No     | 15 min   |
-| *(other)*           | AI Agent             | Default  | No     | 15 min   |
+| Event | Title | Sound | Urgent | Expiry |
+|-------|-------|-------|--------|--------|
+| `permission_prompt` | Permission Required | Reminder | Yes | — |
+| `elicitation_dialog` | Question for You | Reminder | Yes | — |
+| `idle_prompt` | Task Complete | IM | No | 15 min |
+| `auth_success` | Authentication | Silent | No | 5 min |
+| `agent_completed` | Agent Complete | IM | No | 15 min |
+| `agent_idle` | Agent Waiting | Reminder | Yes | — |
+| `shell_completed` | Shell Complete | IM | No | 15 min |
+| *(other)* | AI Agent | Default | No | 15 min |
 
 ## Customization
 
 - **Logo** — Replace `claude-logo.png` with any image. The script resolves it relative to its own directory.
-- **Sounds** — Change the `-Sound` parameter in `notify.ps1`. See [BurntToast docs](https://github.com/Windos/BurntToast) for available sounds.
+- **Sounds** — Change the `-Sound` parameter in `notify.ps1`. See BurntToast docs for available sounds.
 - **Expiry** — Adjust the `-ExpirationTime` values to control how long notifications persist.

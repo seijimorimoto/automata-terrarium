@@ -108,7 +108,7 @@ Each directory contains its own README with setup instructions. To use any item,
 
 | Hook | Claude Code | Copilot CLI | Description | Platform | Docs | Notes |
 |------|-------------|-------------|-------------|----------|------|-------|
-| `notify-windows` | ✅ | ✅ | Windows toast notifications for agent events | Windows | [README](hooks/notify-windows/README.md) |  |
+| `notify-windows` | ⚠️ | ⚠️ | Windows toast notifications for agent events | Windows | [README](hooks/notify-windows/README.md) | Preset files exist for both runtimes; automatic registration/merge is tracked by #22. |
 
 > Agent-scoped PreToolUse hooks (e.g., the `verify-runner-bash-guard` that ships with the `verify-runner` agent) are registered via their owning agent's frontmatter — not via `settings.json` — and live alongside the agent's `.md` file. See `agents/<name>/` folders for the canonical pattern.
 

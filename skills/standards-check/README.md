@@ -35,7 +35,7 @@ If you're using `bin/seiji-claude-sync`, just run it once and `/standards-check`
 
 ## Permissions
 
-- Git read commands (`git diff`, `git log`, `git rev-parse`) — covered by [`settings/base.json`](../../settings/base.json).
+- Git read commands (`git diff`, `git log`, `git rev-parse`) — covered by [`settings\claude\base.json`](../../settings/claude/base.json).
 - Helper script execution — `bash` (POSIX) and `pwsh` (Windows) on the user's PATH; no extra permission entries needed.
 
 ## Usage

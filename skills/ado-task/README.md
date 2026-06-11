@@ -52,10 +52,10 @@ For Claude Code, merge the ADO permissions preset into your settings file to aut
 
 ```powershell
 # Windows (PowerShell) — view the preset
-Get-Content settings\ado.json
+Get-Content settings\claude\ado.json
 ```
 
-See [settings\ado.json](../../settings/ado.json) for the full list of permitted MCP tools.
+See [settings\claude\ado.json](../../settings/claude/ado.json) for the full list of permitted MCP tools.
 
 For Copilot CLI, configure the Azure DevOps MCP server with `/mcp` and approve or allow the equivalent ADO MCP tools exposed by that server.
 

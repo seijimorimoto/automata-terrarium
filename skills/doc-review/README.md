@@ -32,7 +32,7 @@ If you're using `bin/seiji-claude-sync`, it lands at the user level along with e
 
 ## Permissions
 
-Git read commands (`git diff`, `git symbolic-ref`) are covered by [`settings\base.json`](../../settings/base.json). No additional permissions needed.
+Git read commands (`git diff`, `git symbolic-ref`) are covered by [`settings\claude\base.json`](../../settings/claude/base.json). No additional permissions needed.
 
 ## Usage
 

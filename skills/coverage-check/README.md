@@ -41,7 +41,7 @@ If you're using `bin/seiji-claude-sync`, it lands at the user level along with e
 
 ## Permissions
 
-Git read commands are covered by [`settings/base.json`](../../settings/base.json). The coverage tool itself runs as a Bash command (e.g., `pytest --cov=...`); add the tool to your `permissions.allow` list (or use a per-language preset like [`settings/dotnet.json`](../../settings/dotnet.json)) to avoid prompts.
+Git read commands are covered by [`settings\claude\base.json`](../../settings/claude/base.json). The coverage tool itself runs as a Bash command (e.g., `pytest --cov=...`); add the tool to your `permissions.allow` list (or use a per-language preset like [`settings\claude\dotnet.json`](../../settings/claude/dotnet.json)) to avoid prompts.
 
 ## Usage
 

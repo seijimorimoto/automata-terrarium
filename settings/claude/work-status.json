@@ -1,7 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Read(~/.claude/work-status-config.json)",
+      "Read(~/.agents/work-status-config.json)",
       "mcp__ado__repo_get_pull_request_by_id",
       "mcp__ado__repo_list_pull_requests_by_commits",
       "mcp__ado__repo_search_commits",

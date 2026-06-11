@@ -59,9 +59,9 @@ ln -s "$(pwd)/skills/quick-pr" <your-project>/.claude/skills/quick-pr
 
 ## Permissions
 
-This skill uses the GitHub CLI (`gh`). Add the permissions from [`settings/github.json`](../../settings/github.json) to your Claude Code settings file to avoid permission prompts.
+This skill uses the GitHub CLI (`gh`). Add the permissions from [`settings\claude\github.json`](../../settings/claude/github.json) to your Claude Code settings file to avoid permission prompts.
 
-Git permissions (`git checkout`, `git push`, etc.) are covered by [`settings/base.json`](../../settings/base.json).
+Git permissions (`git checkout`, `git push`, etc.) are covered by [`settings\claude\base.json`](../../settings/claude/base.json).
 
 ## Usage
 

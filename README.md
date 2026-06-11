@@ -96,11 +96,11 @@ Each directory contains its own README with setup instructions. To use any item,
 
 | Preset | Claude Code | Copilot CLI | Description | Docs | Notes |
 |--------|-------------|-------------|-------------|------|-------|
-| `ado` | ✅ | ⚠️ | Azure DevOps MCP tool permissions — PRs, work items, iterations, repos | [ado.json](settings/ado.json) | Copilot requires MCP setup and tool permissions outside this Claude preset. |
-| `base` | ✅ | ⚠️ | General-purpose permissions/preferences — file ops, git, grep | [base.json](settings/base.json) | Copilot has a minimal JSON preset; shell permissions require launch flags. |
-| `dotnet` | ✅ | ⚠️ | C#/.NET permissions and the C# LSP plugin | [dotnet.json](settings/dotnet.json) | Copilot requires separate LSP/plugin or launch configuration. |
-| `github` | ✅ | ⚠️ | GitHub CLI (`gh`) permissions and GitHub URL access | [github.json](settings/github.json) | Copilot URL settings do not grant `gh` shell permissions. |
-| `work-status` | ✅ | ⚠️ | MCP tool permissions for weekly status tracking (ADO + Todoist) | [work-status.json](settings/work-status.json) | Copilot requires MCP setup plus path/tool permission flags. |
+| `ado` | ✅ | 🛠️ | Azure DevOps MCP tool permissions — PRs, work items, iterations, repos | [ado.json](settings/claude/ado.json) | Copilot requires MCP setup and permission-model translation tracked by #19. |
+| `base` | ✅ | ⚠️ | General-purpose permissions/preferences — file ops, git, grep | [base.json](settings/claude/base.json) | Copilot has a minimal JSON preset; shell permissions require launch flags. |
+| `dotnet` | ✅ | 🛠️ | C#/.NET permissions and the C# LSP plugin | [dotnet.json](settings/claude/dotnet.json) | Copilot requires separate LSP/plugin or launch configuration tracked by #19. |
+| `github` | ✅ | ⚠️ | GitHub CLI (`gh`) permissions and GitHub URL access | [github.json](settings/claude/github.json) | Copilot URL settings do not grant `gh` shell permissions. |
+| `work-status` | ✅ | 🛠️ | MCP tool permissions for weekly status tracking (ADO + Todoist) | [work-status.json](settings/claude/work-status.json) | Copilot requires MCP setup plus path/tool permission translation tracked by #19. |
 
 > Copilot settings support is marked `⚠️` because `settings\copilot\*.json` only covers Copilot JSON settings. Copilot shell/MCP/path permissions often require launch flags such as `--allow-tool`, `/mcp` setup, skill `allowed-tools`, agent `tools`, or hooks rather than Claude-style `permissions.allow` presets.
 

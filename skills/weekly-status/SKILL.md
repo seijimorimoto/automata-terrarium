@@ -87,7 +87,7 @@ Derive:
 
 For each repo in `defaultRepos`:
 
-1. Use `mcp__ado__repo_list_pull_requests_by_repo_or_project` to list PRs directly. Make **two calls in parallel**:
+1. Use the available Azure DevOps MCP equivalent of `repo_list_pull_requests_by_repo_or_project` to list PRs directly. Make **two calls in parallel**:
    - **Completed PRs**: `status: "Completed"`, `top: 50`
    - **Active PRs**: `status: "Active"`, `top: 50`
    - Both with `project`: config `adoProject`, `repositoryId`: the repo name
@@ -103,13 +103,13 @@ For each repo in `defaultRepos`:
    - **URL**: use `_links.web.href` from the tool response (the web UI link)
    - **Summary and Impact**: parse the PR description body to extract Summary, Key Changes, and Impact sections (following the `/ado-pr` template format)
 
-> **Why direct PR listing instead of commit search?** The previous approach used `mcp__ado__repo_search_commits` with `searchText: userEmail`, which searches commit *comments* — not author metadata. Squash-merge commits use the PR title as their comment, causing most PRs to be silently missed.
+> **Why direct PR listing instead of commit search?** The previous approach used the available Azure DevOps MCP equivalent of `repo_search_commits` with `searchText: userEmail`, which searches commit *comments* — not author metadata. Squash-merge commits use the PR title as their comment, causing most PRs to be silently missed.
 
 #### 3b. ADO Work Items
 
 **Step 1 — Fetch item IDs and basic fields:**
 
-Use `mcp__ado__wit_my_work_items` to get work items assigned to the user. This returns IDs, titles, types, states, area paths, and `ChangedDate`.
+Use the available Azure DevOps MCP equivalent of `wit_my_work_items` to get work items assigned to the user. This returns IDs, titles, types, states, area paths, and `ChangedDate`.
 
 **Step 2 — Classify as active or stale:**
 
@@ -123,7 +123,7 @@ For each item, note:
 
 **Step 3 — Fetch descriptions only for active items:**
 
-For items classified as **Active This Week**, use `mcp__ado__wit_get_work_items_batch_by_ids` to fetch `System.Description` in batches of **10 items at a time** (to stay within tool response limits). Extract a brief summary of key details from the description.
+For items classified as **Active This Week**, use the available Azure DevOps MCP equivalent of `wit_get_work_items_batch_by_ids` to fetch `System.Description` in batches of **10 items at a time** (to stay within tool response limits). Extract a brief summary of key details from the description.
 
 Do **not** fetch descriptions for stale items — they only need ID, title, and URL.
 
@@ -135,9 +135,9 @@ Read the file `<statusRepoPath>/work-log/<startDate>_to_<endDate>.md` if it exis
 
 #### 3d. Todoist Completed Tasks
 
-1. Use `mcp__todoist__find-projects` to find the project named in config `todoistProject`.
+1. Use the available Todoist MCP equivalent of `find-projects` to find the project named in config `todoistProject`.
 2. **Recursively collect all descendant project IDs**: walk the project tree to find all children, grandchildren, etc. of the matched project.
-3. For each project ID (parent + all descendants), use `mcp__todoist__find-completed-tasks` with:
+3. For each project ID (parent + all descendants), use the available Todoist MCP equivalent of `find-completed-tasks` with:
    - `projectId`: the project ID
    - `since`: startDate
    - `until`: queryEndDate (endDate + 1 day, since `until` is exclusive)

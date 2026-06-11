@@ -1,8 +1,8 @@
 # Skills
 
-Custom skills for Claude Code and GitHub Copilot CLI.
+Reusable skills for Claude Code and GitHub Copilot CLI.
 
-Use `SKILL.md` only when the same entrypoint works for both tools. When runtime behavior diverges, use `SKILL.claude.md` and `SKILL.copilot.md`; sync scripts copy the correct variant as `SKILL.md` into the target runtime directory.
+Use shared `SKILL.md` when the same entrypoint works for both runtimes. Use `SKILL.claude.md` and `SKILL.copilot.md` only for real runtime differences such as frontmatter shape, hooks, install paths, MCP tool names, or permission mechanics.
 
 | Marker | Meaning |
 |--------|---------|
@@ -13,132 +13,42 @@ Use `SKILL.md` only when the same entrypoint works for both tools. When runtime 
 
 ## Available Skills
 
-### Azure DevOps PR Integration
-
-A suite of skills that bring GitHub-like PR session linking to Azure DevOps.
-
-| Skill | Claude Code | Copilot CLI | Description | Notes |
-|-------|-------------|-------------|-------------|-------|
-| [`/ado-pr`](ado-pr/) | ✅ | ⚠️ | Create a pull request in Azure DevOps with standardized formatting | Copilot PR creation only; no session capture. |
-| [`/ado-resume-pr`](ado-resume-pr/) | ✅ | ❌ | Resume the Claude session that created a specific PR | Depends on Claude session database capture. |
-| [`/ado-pr-status`](ado-pr-status/) | ✅ | ❌ | List all tracked Claude PR sessions (current repo or all repos) | Depends on Claude session database capture. |
-
-See the [ADO PR Integration README](ado-pr/README.md) for full documentation, installation, and troubleshooting.
-
-### Azure DevOps Work Item Management
-
-| Skill | Claude Code | Copilot CLI | Description | Notes |
-|-------|-------------|-------------|-------------|-------|
-| [`/ado-task`](ado-task/) | ✅ | ✅ | Create, update, complete, and list Azure DevOps work items |  |
-
-See the [ADO Task README](ado-task/README.md) for full documentation, installation, and configuration.
-
-### Weekly Work Status Tracking
-
-Skills for logging work, generating status reports, and preparing performance review materials. Data is stored in a configurable directory (current Claude default: `~\.claude\work-status\`; Copilot path support is planned). See [Configuration](weekly-status/README.md#prerequisites) for setup.
-
-| Skill | Claude Code | Copilot CLI | Description | Notes |
-|-------|-------------|-------------|-------------|-------|
-| [`/log`](log/) | ✅ | ⚠️ | Append a timestamped work entry to the current week's log | Copilot path/config support is partial. |
-| [`/weekly-status`](weekly-status/) | ✅ | ⚠️ | Generate a weekly status report from ADO, Todoist, and local log | Copilot path/config support is partial. |
-
-### GitHub Quick PR
-
-| Skill | Claude Code | Copilot CLI | Description | Notes |
-|-------|-------------|-------------|-------------|-------|
-| [`/quick-pr`](quick-pr/) | ✅ | ⚠️ | Create a branch, commit, push, open a GitHub PR, squash-merge, and clean up | Copilot support may require manual shell permissions. |
-
-See the [Quick PR README](quick-pr/README.md) for full documentation, installation, and usage.
-
-### Git Worktree Cleanup
-
-| Skill | Claude Code | Copilot CLI | Description | Notes |
-|-------|-------------|-------------|-------------|-------|
-| [`/cleanup-worktree`](cleanup-worktree/) | ✅ | ✅ | Remove a git worktree and its associated local branch after PR merge |  |
-
-See the [Cleanup Worktree README](cleanup-worktree/README.md) for full documentation.
-
-### Coverage Check
-
-| Skill | Claude Code | Copilot CLI | Description | Notes |
-|-------|-------------|-------------|-------------|-------|
-| [`/coverage-check`](coverage-check/) | ✅ | ⚠️ | Detect the project's coverage tool, run coverage scoped to the diff, classify each uncovered chunk by kind (`pure_logic` / `trivial` / `untestable` / `generated`); emits JSON findings | Copilot support may require manual tool permissions. |
-
-See the [Coverage Check README](coverage-check/README.md) for the supported toolchains, threshold resolution, output schema, and chunk-kind heuristics.
-
-### Documentation Review
-
-| Skill | Claude Code | Copilot CLI | Description | Notes |
-|-------|-------------|-------------|-------------|-------|
-| [`/doc-review`](doc-review/) | ✅ | ⚠️ | Inspect the diff for missing/stale documentation and emit report-only JSON findings (doc accuracy, stale references, missing doc-comments, suggest-new-docs, index linkage) | Copilot support may require manual tool permissions. |
-
-See the [Doc Review README](doc-review/README.md) for what it checks, the per-language doc-comment recognizers, and the output schema.
-
-### Standards Verification
-
-| Skill | Claude Code | Copilot CLI | Description | Notes |
-|-------|-------------|-------------|-------------|-------|
-| [`/standards-check`](standards-check/) | ✅ | ⚠️ | Discover a repo's standards files, extract rules, check the diff against them; emits tiered JSON findings (`hard_block` / `soft_block` / `report`) | Copilot support may require manual tool permissions. |
-
-See the [Standards Check README](standards-check/README.md) for prereqs, output schema, the diff-scoped discovery model, and how to extend the pre-baked recognizers.
-
-### Plan Implementation
-
-| Skill | Claude Code | Copilot CLI | Description | Notes |
-|-------|-------------|-------------|-------------|-------|
-| [`/implement`](implement/) | ✅ | ⚠️ | Carry out an approved plan: branch (or worktree), per-step commits, draft PR via the right PR-creation skill | Copilot support is partial. |
-
-See the [Implement Plan README](implement/README.md) for prereqs, the parameter table, the workflow, and how to register a new PR-creation skill in the auto-detection table.
+| Skill | Claude Code | Copilot CLI | Description | Docs | Notes |
+|-------|-------------|-------------|-------------|------|-------|
+| `/ado-pr` | ✅ | ✅ | Create Azure DevOps PRs with standardized formatting | [README](ado-pr/README.md) | Shared skill; removed session capture/list/resume workflows. |
+| `/ado-task` | ✅ | ⚠️ | Create, update, complete, and list Azure DevOps work items | [README](ado-task/README.md) | Requires Azure DevOps MCP setup; Copilot permission translation is tracked by #19. |
+| `/cleanup-worktree` | ✅ | ✅ | Remove a git worktree and its local branch after PR merge | [README](cleanup-worktree/README.md) | Uses local git commands only. |
+| `/coverage-check` | ✅ | ⚠️ | Run diff coverage, classify uncovered chunks, and emit JSON findings | [README](coverage-check/README.md) | Copilot may need shell/tool permission setup for the coverage command. |
+| `/doc-review` | ✅ | ⚠️ | Inspect the diff for missing or stale documentation and emit report-only findings | [README](doc-review/README.md) | Copilot may need shell permission setup for git diff commands. |
+| `/implement` | ✅ | ⚠️ | Implement a plan from a session, file, issue, PR, or readable reference | [README](implement/README.md) | Defaults to repo checks; native review/security/simplify checks are best-effort. |
+| `/log` | ✅ | ✅ | Append timestamped work entries to the current week's log | [SKILL.md](log/SKILL.md) | Uses agent-neutral `~\.agents\` work-status paths. |
+| `/quick-pr` | ✅ | ⚠️ | Create a branch, commit, push, open a GitHub PR, optionally merge, and clean up | [README](quick-pr/README.md) | Copilot may need `gh` shell permission setup. |
+| `/standards-check` | ✅ | ⚠️ | Discover project instructions and standards files, check the diff, and emit tiered JSON findings | [README](standards-check/README.md) | Copilot may need git/helper-script permission setup. |
+| `/weekly-status` | ✅ | ⚠️ | Generate weekly status from Azure DevOps, Todoist, and local work logs | [README](weekly-status/README.md) | Requires ADO/Todoist MCP setup; Copilot permission translation is tracked by #19. |
 
 ## Installation
 
-Claude Code skills must live inside a `.claude\skills\` directory. Copilot CLI skills can live under `~\.copilot\skills\` for user-level install or `<project-root>\.github\skills\` for project-level install.
+Install user-level skills with the sync scripts, which copy the correct source variant as `SKILL.md`.
 
 - **Claude project-level** (one project): `<project-root>\.claude\skills\`
 - **Claude user-level** (all projects): `~\.claude\skills\`
 - **Copilot project-level** (one project): `<project-root>\.github\skills\`
 - **Copilot user-level** (all projects): `~\.copilot\skills\`
 
-Install user-level skill variants with the sync scripts, which copy the correct source variant as `SKILL.md`:
-
 ```powershell
-# Windows (PowerShell)
 .\bin\seiji-claude-sync-skills.ps1
 .\bin\seiji-copilot-sync-skills.ps1
 ```
 
 ```sh
-# Linux / macOS
 ./bin/seiji-claude-sync-skills
-# POSIX Copilot sync is planned.
+# POSIX Copilot sync is tracked by #21.
 ```
 
 ## Creating a New Skill
 
-1. Create a new directory under `skills/` named after your skill
-2. Add either a shared `SKILL.md` file or target-specific `SKILL.claude.md` and `SKILL.copilot.md` files
-3. Use `$ARGUMENTS` placeholder for user-provided arguments
-4. Add a `README.md` for human-readable documentation of the skill if needed
-5. Document any prerequisites (CLI tools, authentication, OS requirements) in the skill's `README.md`
-
-See the [Claude Code docs](https://code.claude.com/docs/en/skills) for more details.
-
-### Skill-Scoped Hooks
-
-Hooks can be attached to individual skills via YAML frontmatter in the `SKILL.md`:
-
-```yaml
----
-name: my-skill
-hooks:
-  PostToolUse:
-    - matcher: Bash
-      hooks:
-        - type: command
-          command: powershell.exe -NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -Command "$input | & \"$env:CLAUDE_PROJECT_DIR\.claude\skills\my-skill\scripts\my-hook.ps1\""
----
-```
-
-This is more efficient than global hooks since they only run when the skill executes.
-
-> **Note:** On Windows, use PowerShell scripts (`.ps1`) for hooks. The `$env:CLAUDE_PROJECT_DIR` environment variable provides the project root path. Invoke PowerShell with `-Command` (not `-File`), as `-File` does not resolve `$env:CLAUDE_PROJECT_DIR` properly.
+1. Create `skills\<name>\`.
+2. Add `SKILL.md` for shared behavior, or target-specific `SKILL.claude.md` and `SKILL.copilot.md` files only when runtime differences require them.
+3. Add `skills\<name>\README.md` with prerequisites, install locations, sync-script steps, and runtime-specific registration or activation steps.
+4. Keep shared text runtime-neutral. Put runtime-specific hooks, MCP naming, permissions, or paths under clearly labeled runtime subsections.
+5. Update the Available Skills tables in this README and the repo-level README.

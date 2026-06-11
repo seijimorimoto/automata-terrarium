@@ -1,8 +1,8 @@
-# bin/
+# bin
 
-Sync executables that install the contents of this repo into user-level AI agent config directories.
+Sync executables that install this repo's skills, agents, hooks, and settings into user-level runtime config directories.
 
-Per-category Claude scripts cover skills, agents, hooks, and settings under `~\.claude\`. Copilot PowerShell scripts cover skills, agents, hooks, and settings under `~\.copilot\`. The wrapper scripts run per-category sync in the right order. `seiji-claude-install` is a one-time setup that puts `bin\` on your shell PATH.
+Actual script renames are out of scope for this migration and tracked by #20. The tables below use conceptual `seiji-<orchestrator>-...` patterns while listing the current script files.
 
 | Marker | Meaning |
 |--------|---------|
@@ -11,116 +11,61 @@ Per-category Claude scripts cover skills, agents, hooks, and settings under `~\.
 | ⚠️ | Partial support or manual setup required |
 | 🛠️ | Planned |
 
-## Available scripts
+## Available Sync Scripts
 
-| Script | Claude Code | Copilot CLI | Purpose | Notes |
-| --- | --- | --- | --- | --- |
-| `seiji-claude-install` (`.ps1`) | ✅ | ❌ | One-time PATH setup. Appends a keyed marker block to your shell profile pointing at this repo's `bin\`. Idempotent. | Claude user-level PATH helper. |
-| `seiji-claude-sync` (`.ps1`) | ✅ | ❌ | Wrapper. Runs every Claude per-category sync in order. | Claude-only wrapper. |
-| `seiji-claude-sync-skills` (`.ps1`) | ✅ | ❌ | Copies each skill to `~\.claude\skills\<name>\`. | Installs Claude-compatible source variants. |
-| `seiji-claude-sync-agents` (`.ps1`) | ✅ | ❌ | Copies Claude agents to `~\.claude\agents\<name>\`. | Installs Claude-compatible source variants. |
-| `seiji-claude-sync-hooks` (`.ps1`) | ✅ | ❌ | Copies Claude hook folders to `~\.claude\hooks\<name>\`. Script-files only — does not register hooks in `settings.json`. | Hook registration remains separate. |
-| `seiji-claude-sync-settings` (`.ps1`) | ✅ | ❌ | Merges every `settings\*.json` into `~\.claude\settings.json` per the rules below. | Preserves user scalar values. |
-| `seiji-copilot-sync` (`.ps1`) | ❌ | ⚠️ | Wrapper. Runs every Copilot PowerShell per-category sync in order. | PowerShell workflow; POSIX is not included. |
-| `seiji-copilot-sync-skills` (`.ps1`) | ❌ | ✅ | Copy/rename sync for `SKILL.copilot.md` or shared `SKILL.md` to `~\.copilot\skills\<name>\SKILL.md`. | Installs Copilot-compatible source variants. |
-| `seiji-copilot-sync-agents` (`.ps1`) | ❌ | ✅ | Installs source `*.copilot.md` agent profiles as `*.agent.md` under `~\.copilot\agents\`. | Uses Copilot custom agent filename mapping. |
-| `seiji-copilot-sync-hooks` (`.ps1`) | ❌ | ✅ | Syncs Copilot hook scripts and JSON configs to `~\.copilot\hooks\`. | Rewrites hook config template paths. |
-| `seiji-copilot-sync-settings` (`.ps1`) | ❌ | ✅ | Merges Copilot settings presets into `~\.copilot\settings.json`. | Applies Copilot JSON settings only. |
-
-Claude sync scripts provide both PowerShell (`.ps1`) and POSIX (no extension) variants. Copilot sync scripts are currently PowerShell-only.
+| Conceptual script | Claude Code | Copilot CLI | Current files | Purpose | Notes |
+|-------------------|-------------|-------------|---------------|---------|-------|
+| `seiji-<orchestrator>-install` | ✅ | ❌ | `seiji-claude-install`, `seiji-claude-install.ps1` | One-time PATH setup for sync commands | Copilot install helper is not implemented; broader renames are tracked by #20. |
+| `seiji-<orchestrator>-sync` | ✅ | ⚠️ | `seiji-claude-sync`, `seiji-claude-sync.ps1`, `seiji-copilot-sync.ps1` | Wrapper that runs skills, agents, hooks, then settings sync | Copilot wrapper is PowerShell-only; POSIX parity is tracked by #21. |
+| `seiji-<orchestrator>-sync-skills` | ✅ | ⚠️ | `seiji-claude-sync-skills`, `seiji-claude-sync-skills.ps1`, `seiji-copilot-sync-skills.ps1` | Install compatible skill entrypoints | Copilot skill sync is PowerShell-only; POSIX parity is tracked by #21. |
+| `seiji-<orchestrator>-sync-agents` | ✅ | ⚠️ | `seiji-claude-sync-agents`, `seiji-claude-sync-agents.ps1`, `seiji-copilot-sync-agents.ps1` | Install compatible agent/custom-agent profiles | Copilot agent sync is PowerShell-only; POSIX parity is tracked by #21. |
+| `seiji-<orchestrator>-sync-hooks` | ✅ | ⚠️ | `seiji-claude-sync-hooks`, `seiji-claude-sync-hooks.ps1`, `seiji-copilot-sync-hooks.ps1` | Install hook script files and Copilot hook JSON | Hook registration/merge automation is tracked by #22; Copilot sync is PowerShell-only (#21). |
+| `seiji-<orchestrator>-sync-settings` | ✅ | ⚠️ | `seiji-claude-sync-settings`, `seiji-claude-sync-settings.ps1`, `seiji-copilot-sync-settings.ps1` | Merge settings presets into user-level settings files | Claude reads `settings\claude\`; Copilot reads `settings\copilot\` and is PowerShell-only (#21). |
 
 ## Prerequisites
 
 - **PowerShell 7+** (`pwsh`) — primary on Windows.
-- **bash** with `readlink -f` available — for the POSIX variants. Git Bash on Windows, plus any modern Linux/macOS, satisfy this.
-- **`jq`** (>= 1.6) — required only by `seiji-claude-sync-settings` (POSIX). Install:
-  ```powershell
-  # Windows (PowerShell)
-  winget install jqlang.jq
-  ```
-  ```sh
-  # macOS / Linux
-  brew install jq          # macOS
-  sudo apt-get install jq  # Debian/Ubuntu
-  ```
-  PowerShell does not need `jq` — it uses native `ConvertFrom-Json` / `ConvertTo-Json`.
-
-## Install
+- **bash** with `readlink -f` — for Claude POSIX variants.
+- **`jq` 1.6+** — required only by the Claude POSIX settings merge.
 
 ```powershell
-# Windows (PowerShell) — from this repo's root
+winget install jqlang.jq
+```
+
+```sh
+brew install jq
+sudo apt-get install jq
+```
+
+## Quick start
+
+```powershell
 .\bin\seiji-claude-install.ps1
-# Open a new PowerShell window (or:  . $PROFILE) so PATH refreshes
+# Open a new PowerShell window so PATH refreshes.
 seiji-claude-sync
+
+.\bin\seiji-copilot-sync.ps1 -DryRun
+.\bin\seiji-copilot-sync.ps1
 ```
 
 ```sh
-# Linux / macOS / Git Bash — from this repo's root
 ./bin/seiji-claude-install
-# Open a new shell (or:  source ~/.bashrc) so PATH refreshes
+# Open a new shell so PATH refreshes.
 seiji-claude-sync
 ```
 
-The install scripts append a marker block to your shell profile:
-
-- **PowerShell** — `$PROFILE` (e.g., `~\Documents\PowerShell\Microsoft.PowerShell_profile.ps1`)
-- **POSIX** — `~/.bashrc` and `~/.zshrc` (whichever exist; `~/.bashrc` is created if neither does)
-
-Running the install script again is a no-op once the marker is present. Use `--uninstall` / `-Uninstall` to remove the block.
-
-### Manual PATH fallback
-
-If you prefer not to have a script edit your shell profile, run the installer with `--dry-run` (or `-DryRun`), copy the printed `export PATH=...` / `$env:PATH = ...` line, and put it wherever you usually configure PATH.
-
-### Symlink alternative (instead of sync)
-
-If you'd rather have your user-level config point at this checkout via symlinks (so edits in the repo are visible immediately), you can create symlinks manually:
-
-```powershell
-# Windows (PowerShell) — requires Developer Mode or admin
-New-Item -ItemType SymbolicLink -Path "$HOME\.claude\skills" -Target "<repo>\skills"
-```
-
-```sh
-# Linux / macOS
-ln -s "<repo>/skills" "$HOME/.claude/skills"
-```
-
-Caveat for Windows: symbolic links typically need either Developer Mode enabled or an elevated shell. The sync approach is simpler if you're not set up for symlinks.
-
-## Usage
-
-### Wrapper
-
-```powershell
-seiji-claude-sync.ps1               # run skills -> agents -> hooks -> settings
-seiji-claude-sync.ps1 -DryRun       # preview every step without writing
-seiji-claude-sync.ps1 -NoBackup     # skip the settings-file backup
-```
-
-```sh
-seiji-claude-sync               # run skills -> agents -> hooks -> settings
-seiji-claude-sync --dry-run     # preview every step without writing
-seiji-claude-sync --no-backup   # skip the settings-file backup
-```
-
-`settings` runs last so any hook registrations land after their script files are in place. `--no-backup` / `-NoBackup` is forwarded only to `seiji-claude-sync-settings` — the other steps don't produce backups.
-
-Copilot sync scripts mirror the Claude script shape but copy runtime-specific artifacts:
-
-- `SKILL.copilot.md` becomes `SKILL.md` in `~\.copilot\skills\<name>\`.
-- `<name>.copilot.md` is copied to `~\.copilot\agents\<name>.agent.md`.
-- Copilot hook JSON is copied to `~\.copilot\hooks\`.
-- Copilot settings fragments are installed from `settings\copilot\`.
-
-### Per-category
+## Per-category commands
 
 ```powershell
 seiji-claude-sync-skills.ps1
 seiji-claude-sync-agents.ps1
 seiji-claude-sync-hooks.ps1
 seiji-claude-sync-settings.ps1 -DryRun
-seiji-claude-sync-settings.ps1 -NoBackup   # write merged file but skip the backup
+
+.\bin\seiji-copilot-sync-skills.ps1 -DryRun
+.\bin\seiji-copilot-sync-agents.ps1 -DryRun
+.\bin\seiji-copilot-sync-hooks.ps1 -DryRun
+.\bin\seiji-copilot-sync-settings.ps1 -DryRun
 ```
 
 ```sh
@@ -128,52 +73,24 @@ seiji-claude-sync-skills
 seiji-claude-sync-agents
 seiji-claude-sync-hooks
 seiji-claude-sync-settings --dry-run
-seiji-claude-sync-settings --no-backup     # write merged file but skip the backup
 ```
-
-Every per-category script is independent — you can run just the one(s) you need.
-
-### Copilot wrapper
-
-```powershell
-.\bin\seiji-copilot-sync.ps1
-.\bin\seiji-copilot-sync.ps1 -DryRun
-```
-
-The Copilot wrapper currently runs implemented PowerShell sync scripts for skills, agents, hooks, and settings. It skips missing categories so partial rollouts remain usable.
-
-Per-category Copilot scripts:
-
-```powershell
-.\bin\seiji-copilot-sync-skills.ps1 -DryRun
-.\bin\seiji-copilot-sync-agents.ps1 -DryRun
-.\bin\seiji-copilot-sync-hooks.ps1 -DryRun
-.\bin\seiji-copilot-sync-settings.ps1 -DryRun
-```
-
-POSIX Copilot sync scripts are not included in this PR.
 
 ## Settings merge rules
 
-`seiji-claude-sync-settings` merges every `settings\*.json` preset into `~\.claude\settings.json`. Presets are processed alphabetically (deterministic order). For each key:
+`seiji-claude-sync-settings` merges every `settings\claude\*.json` preset into `~\.claude\settings.json`. `seiji-copilot-sync-settings.ps1` merges every `settings\copilot\*.json` preset into `~\.copilot\settings.json`.
 
-- **Arrays of strings** (e.g., `permissions.allow`, `permissions.deny`, `permissions.ask`) — union, dedupe, sort alphabetically.
-- **Arrays of objects** (e.g., `hooks.PreToolUse[*]`) — union, dedupe by deep JSON equality, **preserve order** (don't sort).
+For each key:
+
+- **Arrays of strings** such as `permissions.allow`, `permissions.deny`, and `permissions.ask` — union, dedupe, sort alphabetically.
+- **Arrays of objects** such as hook entries — union, dedupe by deep JSON equality, preserve order.
 - **Objects** — recursive merge.
-- **Scalars** (strings, numbers, booleans) — **preserve the user's existing value if set**. The preset's value is only written when the key is missing in `~\.claude\settings.json`. A warning is printed naming the key, the preset, and the value that would have been set.
+- **Scalars** — preserve the user's existing value if set; otherwise write the preset value.
 
-By default the script backs up the existing `~\.claude\settings.json` to `~\.claude\settings.backup-<ISO timestamp>.json` before writing — the `.json` extension is preserved at the end so editors recognize the file's type. The merged JSON is validated before being written; if anything fails parsing, the script aborts and the original file is left untouched.
+By default, settings sync scripts back up existing user settings before writing. Use `-NoBackup` or `--no-backup` to skip backup where supported, and `-DryRun` or `--dry-run` to preview without writing.
 
-`-NoBackup` / `--no-backup` skips the backup step but still writes the merged settings file. Use this when you've made other arrangements for backups (e.g., your shell profile is under version control, or you're running this in CI on disposable state) and don't want timestamped copies accumulating in `~\.claude\`.
+## What sync does not do
 
-`-DryRun` / `--dry-run` prints the merged result and any warnings without writing.
-
-The script targets `~\.claude\settings.json` only — it never touches `settings.local.json` or any project-level settings file.
-
-### Sort-order note
-
-The PowerShell variant uses culture-aware case-insensitive sort. The POSIX/jq variant uses ASCII byte order. The merged content is semantically identical (same union, same dedupe), but the visible ordering of strings inside arrays may differ between the two. Pick one variant and stick with it if you want byte-identical output across runs.
-
-### What sync-settings does NOT do
-
-The script does a content merge only. It does **not** verify that hook scripts referenced in a preset's hook registrations physically exist at `~\.claude\hooks\` before activating them. If you add a settings preset that registers a new hook, run `seiji-claude-sync-hooks` first (or just use the `seiji-claude-sync` wrapper, which runs hooks before settings).
+- It does not rename repo/bin scripts; #20 tracks that work.
+- It does not provide POSIX Copilot sync scripts; #21 tracks that work.
+- It does not auto-register or merge hook settings; #22 tracks that work.
+- It does not translate Copilot's full permission model into JSON settings; #19 tracks that work.

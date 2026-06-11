@@ -29,19 +29,7 @@ cp git-hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 
 ## Local skill testing
 
-The repo includes a `.claude\skills` symlink pointing to `skills\` so Claude Code can discover skills directly from the repo. For Copilot CLI project-level testing, create the matching `.github\skills` symlink locally:
-
-```powershell
-# Windows (PowerShell)
-New-Item -ItemType Directory -Path .github -Force
-New-Item -ItemType SymbolicLink -Path .github\skills -Target (Resolve-Path skills)
-```
-
-```sh
-# Linux / macOS / POSIX
-mkdir -p .github
-ln -sfn "$(pwd)/skills" .github/skills
-```
+The repo includes `.claude\skills` and `.github\skills` symlinks pointing to `skills\` so Claude Code and Copilot CLI can discover skills directly from the repo for project-level testing.
 
 On Windows, symlinks may require Developer Mode or an elevated terminal.
 

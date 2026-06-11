@@ -15,18 +15,13 @@ Claude Code settings fragments merge into `~\.claude\settings.json` with `bin\se
 ## Install
 
 ```powershell
+# Windows (PowerShell)
 .\bin\seiji-claude-sync-settings.ps1
-```
-
-Dry-run without writing:
-
-```powershell
 .\bin\seiji-claude-sync-settings.ps1 -DryRun
 ```
 
-Linux/macOS:
-
 ```sh
+# Linux / macOS / POSIX
 ./bin/seiji-claude-sync-settings
 ./bin/seiji-claude-sync-settings --dry-run
 ```

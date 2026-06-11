@@ -11,7 +11,7 @@ Creates a pull request in Azure DevOps with a standardized format.
 ## Usage
 
 ```
-/ado-pr [--target BRANCH] [--title "Custom Title"]
+/ado-pr [--target BRANCH] [--title "Custom Title"] [--draft]
 ```
 
 ## Parameters

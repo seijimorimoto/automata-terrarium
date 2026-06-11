@@ -4,33 +4,39 @@ Creates Azure DevOps pull requests with standardized titles and descriptions.
 
 ## Prerequisites
 
-- **Azure CLI** — install from the Microsoft guide:
+- **Azure CLI** — install from the [Microsoft Azure CLI install guide](https://learn.microsoft.com/cli/azure/install-azure-cli):
 
   ```powershell
+  # Windows (PowerShell)
   winget install --id Microsoft.AzureCLI
   ```
 
   ```sh
+  # Linux / macOS / POSIX
   curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
   ```
 
 - **Azure DevOps extension** — install with:
 
   ```powershell
+  # Windows (PowerShell)
   az extension add --name azure-devops
   ```
 
   ```sh
+  # Linux / macOS / POSIX
   az extension add --name azure-devops
   ```
 
 - **Authenticated Azure DevOps session** — sign in with:
 
   ```powershell
+  # Windows (PowerShell)
   az login
   ```
 
   ```sh
+  # Linux / macOS / POSIX
   az login
   ```
 
@@ -45,7 +51,7 @@ Creates Azure DevOps pull requests with standardized titles and descriptions.
 
 | Skill | Claude Code | Copilot CLI | Description | Notes |
 |-------|-------------|-------------|-------------|-------|
-| `/ado-pr` | ✅ | ✅ | Create a pull request in Azure DevOps with standardized formatting | Shared skill; session capture/list/resume workflows were removed. |
+| `/ado-pr` | ✅ | ✅ | Create a pull request in Azure DevOps with standardized formatting | Shared skill. |
 
 ## Installation
 
@@ -57,11 +63,13 @@ Install the skill with the sync scripts.
 - **Copilot user-level** (all projects): `~\.copilot\skills\`
 
 ```powershell
+# Windows (PowerShell)
 .\bin\seiji-claude-sync-skills.ps1
 .\bin\seiji-copilot-sync-skills.ps1
 ```
 
 ```sh
+# Linux / macOS / POSIX
 ./bin/seiji-claude-sync-skills
 # POSIX Copilot sync is tracked by #21.
 ```
@@ -70,10 +78,17 @@ For project-level installs, the skills are available to anyone who clones the ta
 
 ## Usage
 
-```text
+```
+# Create a PR with an auto-generated title and target
 /ado-pr
+
+# Target a specific branch
 /ado-pr --target develop
+
+# Use a custom title
 /ado-pr --title "[ServiceName] Add authentication middleware"
+
+# Create a draft PR when supported
 /ado-pr --draft
 ```
 

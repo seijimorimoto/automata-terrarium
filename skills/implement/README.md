@@ -1,6 +1,6 @@
 # Implement Plan
 
-Implements a plan from a session, local file, GitHub issue or PR, or another readable reference. The skill creates an isolated branch or worktree, applies the plan one step at a time with one logical commit per step, runs verification, opens a draft PR, and posts unresolved verify findings.
+Implements a plan from a session, local file, issue, PR, work item, or another readable reference. The skill creates an isolated branch or worktree, applies the plan one step at a time with one logical commit per step, runs verification, opens a draft PR, and posts unresolved verify findings.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ Implements a plan from a session, local file, GitHub issue or PR, or another rea
   ```
 
 - **PR-creation skill** — `/quick-pr` for GitHub or `/ado-pr` for Azure DevOps.
-- **Verification skills** — `/standards-check` and `/doc-review`; `/coverage-check` is used when a coverage tool is detectable. Runtime-native review/security/simplification checks are optional and enabled with `--try-native-verify-skills`.
+- **Verification skills** — `/standards-check` and `/doc-review`; `/coverage-check` is used when a coverage tool is detectable. Runtime-native review/security/simplification checks or equivalent available skills are attempted best-effort unless skipped with `--skip-native-verify`.
 
 ## Installation
 
@@ -27,47 +27,60 @@ Install the skill with the sync scripts.
 - **Copilot user-level** (all projects): `~\.copilot\skills\`
 
 ```powershell
+# Windows (PowerShell)
 .\bin\seiji-claude-sync-skills.ps1
 .\bin\seiji-copilot-sync-skills.ps1
 ```
 
 ```sh
+# Linux / macOS / POSIX
 ./bin/seiji-claude-sync-skills
 # POSIX Copilot sync is tracked by #21.
 ```
 
 ## Usage
 
-```text
+```
+# Implement the plan from the current session
 /implement
+
+# Read a local plan file
 /implement --plan-source plans\dual-runtime-workflow-migration.md
+
+# Read an issue or PR URL
 /implement --plan-source https://github.com/owner/repo/issues/123
+
+# Use a custom branch and target
 /implement --branch u/alice/cool-feature --target develop
+
+# Work in the current tree instead of a new worktree
 /implement --no-worktree
-/implement --try-native-verify-skills --skip-coverage
+
+# Skip optional native/equivalent checks and coverage
+/implement --skip-native-verify --skip-coverage
 ```
 
 ## Parameters
 
 | Parameter | Required | Default | Description |
 |-----------|----------|---------|-------------|
-| `--plan-source` | No | `session` | Session discussion, local file path, GitHub issue/PR URL, or other readable reference |
+| `--plan-source` | No | `session` | Session discussion, local file path, issue/PR URL, work item, or other readable reference |
 | `--branch` | No | Generated from project instructions or plan title | Feature branch name |
 | `--target` | No | Remote default branch, then `main` | Target branch for the PR |
-| `--no-worktree` | No | off | Work in the current tree instead of creating a git worktree |
+| `--no-worktree` | No | `false` (worktrees on by default) | Work in the current tree instead of creating a git worktree |
 | `--pr-tool` | No | GitHub -> `/quick-pr`, Azure DevOps -> `/ado-pr` | PR-creation skill |
-| `--try-native-verify-skills` | No | off | Also try runtime-native review, security, and simplification checks |
+| `--skip-native-verify` | No | `false` | Skip best-effort runtime-native or equivalent review, security, and simplification checks |
 | `--skip-verify` | No | off | Skip all verification |
-| `--skip-standards`, `--skip-coverage`, `--skip-doc-review`, `--skip-review`, `--skip-security`, `--skip-simplify` | No | none | Skip individual checks |
+| `--skip-standards`, `--skip-coverage`, `--skip-doc-review` | No | none | Skip individual repo-provided checks |
 
 ## Workflow
 
 ```text
-1. Read plan      -> session, file, GitHub issue/PR, or readable reference
+1. Read plan      -> session, file, issue, PR, work item, or readable reference
 2. Resolve args   -> branch, target, worktree mode, PR tool, checks
 3. Branch/worktree-> git worktree add -b ... or git checkout -b ...
 4. Code + commit  -> one logical commit per plan step
-5. Verify         -> repo checks by default; optional native checks on request
+5. Verify         -> repo checks plus best-effort native/equivalent checks
 6. Fix/queue      -> fix hard blocks, ask plainly on soft blocks, queue reports
 7. Draft PR       -> dispatch /quick-pr or /ado-pr
 8. Comments       -> post verify summary and unresolved findings
@@ -76,9 +89,9 @@ Install the skill with the sync scripts.
 
 ## Verification behavior
 
-Default checks are repo-provided: `/standards-check`, `/doc-review`, and `/coverage-check` when applicable. `--try-native-verify-skills` adds available runtime-native review/security/simplification checks without making them required.
+Default checks are repo-provided: `/standards-check`, `/doc-review`, and `/coverage-check` when applicable. The skill also tries available runtime-native review/security/simplification checks or equivalent skills best-effort unless `--skip-native-verify` is set.
 
-The skill prefers a `verify-runner` agent when available and falls back to direct check execution when it is not. Findings are classified as `hard_block`, `soft_block`, or `report`; hard blocks are fixed before push, soft blocks are fixed or overridden by user choice, and report findings are posted on the PR.
+The skill prefers a `verify-runner` agent when available so enabled checks can run in parallel; it falls back to direct check execution when the agent is not available. Findings are classified as `hard_block`, `soft_block`, or `report`; hard blocks are fixed before push, soft blocks are fixed or overridden by user choice, and report findings are posted on the PR.
 
 ## PR comment fallback
 

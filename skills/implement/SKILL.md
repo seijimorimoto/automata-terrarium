@@ -1,7 +1,7 @@
 ---
 name: implement
-description: Implement a plan from a session, file, issue, PR, or readable reference with step commits, verification, and a draft PR
-argument-hint: "[--plan-source SOURCE] [--branch NAME] [--target BRANCH] [--no-worktree] [--pr-tool NAME] [--try-native-verify-skills] [--skip-verify] [--skip-standards|--skip-coverage|--skip-doc-review|--skip-review|--skip-security|--skip-simplify]"
+description: Implement a plan from a session, file, issue, PR, work item, or readable reference with step commits, verification, and a draft PR
+argument-hint: "[--plan-source SOURCE] [--branch NAME] [--target BRANCH] [--no-worktree] [--pr-tool NAME] [--skip-native-verify] [--skip-verify] [--skip-standards|--skip-coverage|--skip-doc-review]"
 ---
 
 # Implement Plan
@@ -15,7 +15,7 @@ Implements a plan from the selected source. The workflow creates an isolated bra
 /implement --plan-source plans\feature.md
 /implement --plan-source https://github.com/owner/repo/issues/123
 /implement --branch u/alice/feature --target develop --no-worktree
-/implement --try-native-verify-skills --skip-coverage
+/implement --skip-native-verify --skip-coverage
 ```
 
 ## Parameters
@@ -23,15 +23,15 @@ Implements a plan from the selected source. The workflow creates an isolated bra
 - `--plan-source`: Where to read the plan from. Default: `session`. Supported forms:
   - `session` — use the current conversation.
   - A local file path, or `file:<path>` — read the file from the current repo.
-  - A GitHub issue or PR URL — read the title/body and relevant comments with `gh`.
+  - An issue, PR, work item, or other readable URL/reference — read the title/body and relevant comments with the available local, CLI, web, or MCP tools.
   - Any other readable reference — use the available local, web, or MCP reader. If it cannot be read, stop with the failed reference.
 - `--branch`: Feature branch name. If omitted, read project instructions (`AGENTS.md`, `CLAUDE.md`, `.github\copilot-instructions.md`, and linked instruction files) for a branch naming convention. If none exists, use `{alias}/{short-kebab-case-feature-title}`, where `{alias}` is the part before `@` in `git config user.email`.
 - `--target`: Target branch for the PR. Default: `git symbolic-ref refs/remotes/origin/HEAD --short` with `origin/` stripped; falls back to `main`.
 - `--no-worktree`: Work directly in the current working tree. By default, create a git worktree for isolation.
 - `--pr-tool`: PR-creation skill to dispatch to. Default: auto-detect from `git remote get-url origin`.
-- `--try-native-verify-skills`: Best-effort opt-in for runtime-native review, security, and simplification checks in addition to repo-provided checks.
+- `--skip-native-verify`: Skip best-effort runtime-native or equivalent review, security, and simplification checks.
 - `--skip-verify`: Skip all verification checks.
-- `--skip-standards`, `--skip-coverage`, `--skip-doc-review`, `--skip-review`, `--skip-security`, `--skip-simplify`: Skip individual checks. Review/security/simplify skips only matter when `--try-native-verify-skills` is enabled or those checks are otherwise available.
+- `--skip-standards`, `--skip-coverage`, `--skip-doc-review`: Skip individual repo-provided checks.
 
 ## Instructions
 
@@ -44,6 +44,7 @@ Resolve `--plan-source` before changing files.
 - For `session`, use the implementation plan already discussed in the conversation. If no actionable plan exists, say: "No implementation plan found in this session. Provide a plan or pass `--plan-source <file-or-url>`."
 - For local paths, read the file and treat its ordered steps as the implementation plan.
 - For GitHub issue or PR URLs, use `gh issue view` or `gh pr view` to read the title, body, and comments that materially change the plan.
+- For Azure DevOps work item or PR references, use the available Azure DevOps CLI or MCP tools to read the title, body, comments, and linked context that materially change the plan.
 - For other readable references, use the available local, web, or MCP tools. Do not guess at unreadable content.
 
 Extract a short feature title and an ordered step list. If the source is prose rather than numbered steps, derive a practical ordered checklist before coding.
@@ -56,14 +57,14 @@ Extract a short feature title and an ordered step list. If the source is prose r
 
   | Remote URL contains | Default PR-creation skill | Required interface |
   | --- | --- | --- |
-  | `github.com` | `/quick-pr` | Accepts `--draft`, `--target` or `--base`, and a no-merge option |
+  | `github.com` | `/quick-pr` | Accepts `--draft`, `--target` or `--base`, and `--no-merge` |
   | `dev.azure.com` or `visualstudio.com` | `/ado-pr` | Accepts `--draft` and `--target` |
 
   If no mapping matches, ask plainly which PR skill to use and wait for the answer.
 - Build the verify check list:
   - Default checks: `/standards-check`, `/doc-review`, and `/coverage-check` when a project coverage tool is detectable.
   - Remove checks skipped by `--skip-<check>`.
-  - If `--try-native-verify-skills` is enabled, add runtime-native `/review`, `/security-review`, and `/simplify` only when they are available in the current runtime.
+  - Unless `--skip-native-verify` is set, add runtime-native `/review`, `/security-review`, `/simplify`, or any other equivalent available skills only when they are available in the current runtime.
 
 Before coding, compare the current branch to `<target>`. If there are merge conflicts with `<target>`, stop and inform the user; do not force-push or auto-resolve.
 
@@ -95,7 +96,7 @@ For each plan step:
 
 Skip this section when `--skip-verify` is set.
 
-Prefer a `verify-runner` agent when one is available in the current runtime. If not available, run the enabled check skills directly. Either path must return each check's raw output and preserve JSON schemas:
+Prefer a `verify-runner` agent when one is available in the current runtime. Use it to run the N enabled checks in parallel when the runtime supports parallel agent calls. If not available, run the enabled check skills directly. Either path must return each check's raw output and preserve JSON schemas:
 
 - `/standards-check`, `/doc-review`, `/review`, `/security-review`, and `/simplify` return a JSON array.
 - `/coverage-check` returns `{ "summary": ..., "findings": [...] }`.
@@ -135,6 +136,8 @@ Ran <N> checks in parallel: <comma-separated list>.
 - Findings posted as text (line-targeting failed): <count>
 - Findings written to file (posting failed): <count>
 ```
+
+If the summary is posted through an API that creates a resolvable review thread, mark that summary thread resolved or closed immediately because it is awareness-only.
 
 Post each unresolved finding with this fallback chain:
 

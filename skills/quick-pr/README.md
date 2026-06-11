@@ -12,13 +12,19 @@ Automates the PR lifecycle for GitHub repos with PR-only workflows. One command 
   ```
 
   ```sh
-  # Linux / macOS
+  # Linux / macOS / POSIX
   brew install gh
   ```
 
 - **Authenticated with GitHub** — Sign in with:
 
   ```powershell
+  # Windows (PowerShell)
+  gh auth login
+  ```
+
+  ```sh
+  # Linux / macOS / POSIX
   gh auth login
   ```
 
@@ -26,42 +32,32 @@ Automates the PR lifecycle for GitHub repos with PR-only workflows. One command 
 
 ## Installation
 
-Copy the skill folder to either location:
+Install the skill with the sync scripts.
 
-- **Project-level** (one project): `<project-root>\.claude\skills\`
-- **User-level** (all projects): `~\.claude\skills\`
+- **Claude project-level** (one project): `<project-root>\.claude\skills\`
+- **Claude user-level** (all projects): `~\.claude\skills\`
+- **Copilot project-level** (one project): `<project-root>\.github\skills\`
+- **Copilot user-level** (all projects): `~\.copilot\skills\`
 
 ```powershell
 # Windows (PowerShell)
-
-# Project-level
-Copy-Item -Recurse skills\quick-pr <your-project>\.claude\skills\
-
-# User-level
-Copy-Item -Recurse skills\quick-pr ~\.claude\skills\
-
-# Or symlink (project-level)
-New-Item -ItemType SymbolicLink -Path <your-project>\.claude\skills\quick-pr -Target (Resolve-Path skills\quick-pr)
+.\bin\seiji-claude-sync-skills.ps1
+.\bin\seiji-copilot-sync-skills.ps1
 ```
 
 ```sh
-# Linux / macOS
-
-# Project-level
-cp -r skills/quick-pr <your-project>/.claude/skills/
-
-# User-level
-cp -r skills/quick-pr ~/.claude/skills/
-
-# Or symlink (project-level)
-ln -s "$(pwd)/skills/quick-pr" <your-project>/.claude/skills/quick-pr
+# Linux / macOS / POSIX
+./bin/seiji-claude-sync-skills
+# POSIX Copilot sync is tracked by #21.
 ```
 
 ## Permissions
 
-This skill uses the GitHub CLI (`gh`). Add the permissions from [`settings\claude\github.json`](../../settings/claude/github.json) to your Claude Code settings file to avoid permission prompts.
+This skill uses the GitHub CLI (`gh`). For Claude Code, add the permissions from [`settings\claude\github.json`](../../settings/claude/github.json) to your settings file to avoid permission prompts.
 
 Git permissions (`git checkout`, `git push`, etc.) are covered by [`settings\claude\base.json`](../../settings/claude/base.json).
+
+For Copilot CLI, approve the requested `git` and `gh` shell commands interactively or launch Copilot with equivalent `--allow-tool` permissions.
 
 ## Usage
 

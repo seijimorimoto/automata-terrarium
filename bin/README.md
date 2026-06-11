@@ -29,10 +29,12 @@ Actual script renames are out of scope for this migration and tracked by #20. Th
 - **`jq` 1.6+** — required only by the Claude POSIX settings merge.
 
 ```powershell
+# Windows (PowerShell)
 winget install jqlang.jq
 ```
 
 ```sh
+# Linux / macOS / POSIX
 brew install jq
 sudo apt-get install jq
 ```
@@ -40,39 +42,44 @@ sudo apt-get install jq
 ## Quick start
 
 ```powershell
+# Windows (PowerShell)
 .\bin\seiji-claude-install.ps1
 # Open a new PowerShell window so PATH refreshes.
 seiji-claude-sync
 
-.\bin\seiji-copilot-sync.ps1 -DryRun
 .\bin\seiji-copilot-sync.ps1
 ```
 
 ```sh
+# Linux / macOS / POSIX
 ./bin/seiji-claude-install
 # Open a new shell so PATH refreshes.
 seiji-claude-sync
+# POSIX Copilot sync is tracked by #21.
 ```
 
 ## Per-category commands
 
 ```powershell
+# Windows (PowerShell)
 seiji-claude-sync-skills.ps1
 seiji-claude-sync-agents.ps1
 seiji-claude-sync-hooks.ps1
-seiji-claude-sync-settings.ps1 -DryRun
+seiji-claude-sync-settings.ps1
 
-.\bin\seiji-copilot-sync-skills.ps1 -DryRun
-.\bin\seiji-copilot-sync-agents.ps1 -DryRun
-.\bin\seiji-copilot-sync-hooks.ps1 -DryRun
-.\bin\seiji-copilot-sync-settings.ps1 -DryRun
+.\bin\seiji-copilot-sync-skills.ps1
+.\bin\seiji-copilot-sync-agents.ps1
+.\bin\seiji-copilot-sync-hooks.ps1
+.\bin\seiji-copilot-sync-settings.ps1
 ```
 
 ```sh
+# Linux / macOS / POSIX
 seiji-claude-sync-skills
 seiji-claude-sync-agents
 seiji-claude-sync-hooks
-seiji-claude-sync-settings --dry-run
+seiji-claude-sync-settings
+# POSIX Copilot sync is tracked by #21.
 ```
 
 ## Settings merge rules

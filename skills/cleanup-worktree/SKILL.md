@@ -1,6 +1,7 @@
 ---
 name: cleanup-worktree
 description: Remove a git worktree and its associated local branch after PR merge
+argument-hint: "[branch-or-path]"
 ---
 
 # Cleanup Worktree

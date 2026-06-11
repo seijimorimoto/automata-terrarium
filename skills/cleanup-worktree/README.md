@@ -18,7 +18,7 @@ Removes a git worktree and its associated local branch after a PR has been merge
 
 ## Installation
 
-Install user-level skill variants with the sync scripts.
+Install the skill with the sync scripts.
 
 - **Claude project-level** (one project): `<project-root>\.claude\skills\`
 - **Claude user-level** (all projects): `~\.claude\skills\`

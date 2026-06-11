@@ -159,7 +159,7 @@ Print a brief summary:
 
 ## Important Notes
 
-- Always use **single quotes** around shell string arguments (per project CLAUDE.md).
+- Always use **single quotes** around shell string arguments (per project instructions).
 - If any step fails, **stop immediately** and report the error. Do not continue to subsequent steps.
 - The squash merge strategy means all branch commits become a single commit on the base branch.
 - Do NOT stage or commit files that look like secrets (`.env`, credentials, tokens).

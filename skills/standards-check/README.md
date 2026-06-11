@@ -1,6 +1,6 @@
 # Standards Check
 
-Repo-agnostic standards verifier. Discovers a repo's standards files (`CLAUDE.md`, `AGENTS.md`, `.cursorrules`, `.github/copilot-instructions.md`, plus anything those link to and any extras you point at), extracts the rules they encode, runs them against the current diff, and emits findings as a JSON array.
+Repo-agnostic standards verifier. Discovers a repo's project instruction and standards files (`AGENTS.md`, `CLAUDE.md`, `.cursorrules`, `.github/copilot-instructions.md`, plus anything those link to and any extras you point at), extracts the rules they encode, runs them against the current diff, and emits findings as a JSON array.
 
 Useful standalone for spot checks before opening a PR — and consumed by `/implement`'s verify phase, where it runs in parallel with other quality gates.
 
@@ -63,7 +63,7 @@ The skill discovers standards files based on the paths in the diff, not the cwd:
 1. Run `git diff <target>...HEAD --name-only` to get the list of changed files.
 2. For each changed file, walk upward from its directory to the repo root. At each level, pick up `CLAUDE.md`, `AGENTS.md`, `.cursorrules` if they exist.
 3. Always also include the repo-root copies plus `.github/copilot-instructions.md` (this last one is conventionally repo-root only).
-4. Each discovered file's **scope** is the directory it lives in. Rules from `apps/web/AGENTS.md` apply only to changed files under `apps/web/`. Rules from the repo-root `CLAUDE.md` apply to every changed file.
+4. Each discovered file's **scope** is the directory it lives in. Rules from `apps/web/AGENTS.md` apply only to changed files under `apps/web/`. Rules from repo-root project instructions apply to every changed file.
 5. Linked files (markdown links from a discovered file to another file in the repo) inherit their parent's scope.
 6. `--include` and `.standards-check.sources` entries are treated as scope = repo root.
 
@@ -85,7 +85,7 @@ A single JSON array on stdout. Each object:
   "file": "path/to/file or null",
   "line": 42,
   "rule_quote": "exact rule text from the source",
-  "source_file": "CLAUDE.md",
+  "source_file": "AGENTS.md",
   "confidence": "high | medium | low",
   "message": "short explanation of the violation"
 }
@@ -150,7 +150,7 @@ The skill does not need to be re-installed — `SKILL.md` is read each invocatio
 
 | Problem | Solution |
 |---------|----------|
-| Returns `[]` even when CLAUDE.md exists | Confirm there's actually a diff vs `--target`: `git diff <target>...HEAD --name-only`. Discovery is driven by the changed paths, so an empty diff yields no findings. |
+| Returns `[]` even when a project instruction file exists | Confirm there's actually a diff vs `--target`: `git diff <target>...HEAD --name-only`. Discovery is driven by the changed paths, so an empty diff yields no findings. |
 | Subproject `AGENTS.md` not picked up | Discovery walks upward from each changed file's directory. If no changed file lives under that subproject, its standards file isn't in scope and its rules don't apply. Add `--include path/to/AGENTS.md` to force-include it as repo-wide. |
 | `--target` fails ("not a branch") | Pass an explicit ref: `--target origin/main` or `--target main`. Auto-detection assumes `origin/HEAD` is set. |
 | Conventional Commits flagged but the type is valid | Set `CC_TYPES` to your repo's accepted types (see above) or extend the script. |

@@ -37,15 +37,15 @@ The three time range options (`--week`, `--date`, `--from`/`--to`) are **mutuall
 
 ## Instructions
 
-When this skill is invoked with `$ARGUMENTS`:
+When this skill is invoked with arguments:
 
 ### 1. Load Configuration
 
-Read `~/.claude/work-status-config.json`.
+Read `~\.agents\work-status-config.json`.
 
 If missing, tell the user:
 
-> Configuration file not found. Please create `~/.claude/work-status-config.json`:
+> Configuration file not found. Please create `~\.agents\work-status-config.json`:
 > ```json
 > {
 >   "userEmail": "you@example.com",
@@ -64,7 +64,7 @@ Required config keys for this skill: `userEmail`, `adoProject`, `defaultRepos`.
 
 ### 2. Determine Date Range
 
-Parse the time range argument from `$ARGUMENTS`. The three options are mutually exclusive:
+Parse the time range arguments. The three options are mutually exclusive:
 
 1. **`--week YYYY-WNN`** — resolve to Monday and Sunday of that ISO week.
 2. **`--date YYYY-MM-DD`** — resolve to the ISO week containing that date (Monday–Sunday).
@@ -318,7 +318,7 @@ Write the report to `<statusRepoPath>/weekly-statuses/<startDate>_to_<endDate>.m
 | `userEmail` | Yes | — | Your email for filtering ADO PRs by author |
 | `adoProject` | Yes | — | Azure DevOps project name |
 | `adoTeam` | No | — | ADO team name (for sprint resolution) |
-| `statusRepoPath` | No | `~/.claude/work-status/` | Root directory for status data |
+| `statusRepoPath` | No | `~\.agents\work-status\` | Root directory for status data |
 | `defaultRepos` | Yes | — | List of ADO repo names to search |
 | `todoistProject` | No | — | Todoist project name to filter tasks (recursive) |
 | `todoistLabels` | No | — | Todoist label names to include |

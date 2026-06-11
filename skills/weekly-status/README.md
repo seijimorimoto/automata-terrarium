@@ -4,15 +4,15 @@ Generates a weekly status report by aggregating data from multiple sources: Azur
 
 ## Prerequisites
 
-1. **Azure DevOps MCP server** — must be configured and connected in Claude Code.
+1. **Azure DevOps MCP server** — must be configured and connected in your runtime.
 
-   Verify by checking that `mcp__ado__*` tools are available in your session.
+   Verify by checking that Azure DevOps MCP tools are available in your session.
 
-2. **Todoist MCP server** — must be configured and connected in Claude Code.
+2. **Todoist MCP server** — must be configured and connected in your runtime.
 
-   Verify by checking that `mcp__todoist__*` tools are available in your session.
+   Verify by checking that Todoist MCP tools are available in your session.
 
-3. **Configuration file** — create `~\.claude\work-status-config.json`:
+3. **Configuration file** — create `~\.agents\work-status-config.json`:
 
    ```json
    {
@@ -131,7 +131,7 @@ The skill produces a markdown report grouped by feature area, not by data source
 
 | Problem | Solution |
 |---------|----------|
-| "Configuration file not found" | Create `~\.claude\work-status-config.json` per the Prerequisites section |
+| "Configuration file not found" | Create `~\.agents\work-status-config.json` per the Prerequisites section |
 | No ADO data returned | Verify `userEmail` matches your ADO identity and `defaultRepos` lists correct repo names |
 | No Todoist data returned | Verify `todoistProject` matches an existing project name exactly (case-sensitive) |
 | Missing work log entries | Use `/log` to add entries before generating the status |

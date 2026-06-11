@@ -4,8 +4,8 @@ Create, update, complete, and list Azure DevOps work items from the command line
 
 ## Prerequisites
 
-- **Azure DevOps MCP server** — configured and running in your Claude Code or Copilot CLI environment
-- **Configuration file** — `~\.claude\work-status-config.json` for Claude Code or `~\.copilot\work-status-config.json` for Copilot CLI
+- **Azure DevOps MCP server** — configured and running in your runtime
+- **Configuration file** — `~\.agents\work-status-config.json`
 
 ```json
 {

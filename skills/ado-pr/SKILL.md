@@ -1,6 +1,7 @@
 ---
 name: ado-pr
 description: Create a pull request in Azure DevOps with standardized formatting
+argument-hint: "[--target BRANCH] [--title \"Title\"] [--draft]"
 ---
 
 # Azure DevOps Pull Request Creator
@@ -15,8 +16,9 @@ Creates a pull request in Azure DevOps with a standardized format.
 
 ## Parameters
 
-- `--target`: Target branch (default: master)
+- `--target`: Target branch (default: auto-detected from `origin/HEAD`; falls back to `main`)
 - `--title`: Custom PR title (optional, will be auto-generated if not provided)
+- `--draft`: Create the PR as a draft when supported by the Azure DevOps CLI or MCP tool
 
 ## Instructions
 
@@ -28,6 +30,7 @@ When this skill is invoked:
    - `git log --oneline -10` - Show recent commits
 
 2. **Analyze Branch Commits**: Compare current branch to target branch:
+   - If `--target` was not provided, detect it with `git symbolic-ref refs/remotes/origin/HEAD --short` and strip `origin/`; if unavailable, use `main`.
    - `git log <target>..HEAD --oneline` - Show commits not in target
    - `git diff <target>...HEAD --stat` - Show summary of changes
 
@@ -78,20 +81,16 @@ az repos pr create \
   --source-branch <current-branch> \
   --target-branch <target> \
   --title "<title>" \
+  [--draft if requested] \
   --description "$(cat <<'EOF'
 <generated description>
 EOF
 )"
 ```
 
-If an ADO MCP server is available and preferable in the current environment, use the equivalent PR creation tool instead of Azure CLI.
+If an Azure DevOps MCP server is available and preferable in the current environment, use the equivalent PR creation tool instead of Azure CLI.
 
 6. **Return PR URL**: After successful creation, display the PR URL for easy access.
-
-## Runtime Notes
-
-- The Claude Code version uses a skill-frontmatter `PostToolUse` hook to capture PR output. Copilot CLI does not support skill-frontmatter-scoped hooks; Copilot hooks use separate JSON/settings lifecycle configuration, so this skill cannot register that hook in frontmatter.
-- Do not include Claude-specific coauthor text in the PR body.
 
 ## Important Notes
 
@@ -102,7 +101,7 @@ If an ADO MCP server is available and preferable in the current environment, use
 - Only include "Risk & Mitigation" and "Validation" sections when applicable
 - Use the EXACT section format specified above
 - If the user provides a custom title with --title, use it exactly as provided
-- Default target branch is "master" for the Reno repository
+- Default target branch is auto-detected from the remote default branch
 
 ## Examples
 
@@ -119,6 +118,11 @@ With custom target:
 With custom title:
 ```
 /ado-pr --title "[ReadServices] Add authentication middleware for API endpoints"
+```
+
+As a draft:
+```
+/ado-pr --draft
 ```
 
 With both:

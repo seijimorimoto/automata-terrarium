@@ -6,7 +6,7 @@ argument-hint: "[--target BRANCH] [--include PATH[,PATH...]]"
 
 # Standards Check
 
-A repo-agnostic standards verifier. Finds the repo's standards files (CLAUDE.md, AGENTS.md, .cursorrules, etc.), extracts the rules they encode, runs the rules against the current diff, and emits findings as a JSON array. Used standalone for spot checks or as one of the parallel verification steps in `/implement`.
+A repo-agnostic standards verifier. Finds the repo's project instruction and standards files (`AGENTS.md`, `CLAUDE.md`, `.cursorrules`, etc.), extracts the rules they encode, runs the rules against the current diff, and emits findings as a JSON array. Used standalone for spot checks or as one of the parallel verification steps in `/implement`.
 
 ## Usage
 
@@ -31,7 +31,7 @@ Returns a JSON array of finding objects to stdout. Each finding has the shape:
   "file": "path/to/file or null",
   "line": 42,
   "rule_quote": "exact rule text from source",
-  "source_file": "CLAUDE.md",
+  "source_file": "AGENTS.md",
   "confidence": "high | medium | low",
   "message": "short explanation of the violation"
 }
@@ -55,8 +55,8 @@ Discovery is **driven by the changed paths**, so the skill behaves correctly in 
 
 For every changed file, walk **upward** from the file's directory to the repo root. At each level, collect these files when they exist:
 
-- `CLAUDE.md`
 - `AGENTS.md`
+- `CLAUDE.md`
 - `.cursorrules`
 
 Always also include the repo-root copies of the above plus `.github/copilot-instructions.md` (this last one is conventionally repo-root only) — that catches repo-wide rules even when no changed file lives at the root.
@@ -127,7 +127,7 @@ If a finding can't be tied to a specific file/line (e.g., a commit-message viola
 
 This skill ships with helpers under `scripts/` that the agent can invoke when running mechanical checks:
 
-- `scripts/check-conventional-commits.sh` (POSIX) and `.ps1` (Windows) — read commit subjects on stdin (one `<sha> <subject>` per line) and emit one JSON finding per non-conforming commit. Both variants use the canonical Conventional Commits regex (`^(feat|fix|docs|refactor|chore|test|style|perf|build|ci|revert)(\([^)]+\))?!?: .+$`). The `<type>` whitelist matches the types listed in this repo's CLAUDE.md. Repos that allow extra types can either bypass the helper (run their own check from the SKILL prompt) or override the script's `TYPES` env var.
+- `scripts/check-conventional-commits.sh` (POSIX) and `.ps1` (Windows) — read commit subjects on stdin (one `<sha> <subject>` per line) and emit one JSON finding per non-conforming commit. Both variants use the canonical Conventional Commits regex (`^(feat|fix|docs|refactor|chore|test|style|perf|build|ci|revert)(\([^)]+\))?!?: .+$`). The `<type>` whitelist matches the types listed in this repo's project instructions. Repos that allow extra types can either bypass the helper (run their own check from the SKILL prompt) or override the script's `TYPES` env var.
 
 ## Examples
 

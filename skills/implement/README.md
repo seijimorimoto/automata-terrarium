@@ -53,6 +53,12 @@ Install the skill with the sync scripts.
 # Use a custom branch and target
 /implement --branch u/alice/cool-feature --target develop
 
+# Base the implementation branch on the current branch for stacked work
+/implement --source current
+
+# Use a custom worktree parent directory
+/implement --worktree-dir ..\feature-worktrees
+
 # Work in the current tree instead of a new worktree
 /implement --no-worktree
 
@@ -67,6 +73,8 @@ Install the skill with the sync scripts.
 | `--plan-source` | No | `session` | Session discussion, local file path, issue/PR URL, work item, or other readable reference |
 | `--branch` | No | Generated from project instructions or plan title | Feature branch name |
 | `--target` | No | Remote default branch, then `main` | Target branch for the PR |
+| `--source` | No | Resolved `--target` | Branch/ref used as the starting point for the new implementation branch; use `current` for stacked work from the current branch |
+| `--worktree-dir` | No | `<repo-root>\.worktrees\` | Parent directory for generated worktree folders; relative paths resolve from the original repo root |
 | `--no-worktree` | No | `false` (worktrees on by default) | Work in the current tree instead of creating a git worktree |
 | `--pr-tool` | No | GitHub -> `/quick-pr`, Azure DevOps -> `/ado-pr` | PR-creation skill |
 | `--skip-native-verify` | No | `false` | Skip best-effort runtime-native or equivalent review, security, and simplification checks |
@@ -77,8 +85,8 @@ Install the skill with the sync scripts.
 
 ```text
 1. Read plan      -> session, file, issue, PR, work item, or readable reference
-2. Resolve args   -> branch, target, worktree mode, PR tool, checks
-3. Branch/worktree-> git worktree add -b ... or git checkout -b ...
+2. Resolve args   -> branch, target, source, worktree mode, PR tool, checks
+3. Branch/worktree-> create branch from source under .worktrees, or git checkout -b ...
 4. Code + commit  -> one logical commit per plan step
 5. Verify         -> repo checks plus best-effort native/equivalent checks
 6. Fix/queue      -> fix hard blocks, ask plainly on soft blocks, queue reports
@@ -86,6 +94,18 @@ Install the skill with the sync scripts.
 8. Comments       -> post verify summary and unresolved findings
 9. Summary        -> branch, commit count, PR URL, /rename hint
 ```
+
+## Worktree behavior
+
+By default, worktree mode creates generated worktrees under `<repo-root>\.worktrees\<sanitized-branch-name>`. If `.worktrees\` is not ignored in the original checkout, the skill resolves the checkout's local exclude file with `git rev-parse --git-path info/exclude` and asks before adding `.worktrees/` there so the original checkout stays clean. Pass `--worktree-dir DIR` to choose a different parent directory; relative paths resolve from the original repo root and absolute paths are used as-is.
+
+After creating the worktree, the skill moves the session/current working directory to the new worktree root using the runtime's cwd command when available. All subsequent file, search, edit, shell, git, verification, commit, push, and PR operations run from that worktree root, or use paths explicitly rooted at the worktree when a tool cannot inherit the changed cwd.
+
+The skill treats branch names, source refs, target names, and worktree paths as untrusted before passing them to shell commands. It prefers argument-safe tool calls and rejects unsafe values rather than interpolating raw user input into command strings.
+
+## Source and target branches
+
+`--target` is the PR target branch. `--source` is the starting branch/ref used when creating the new implementation branch. By default, `--source` resolves to `--target`, which keeps new work based on the PR base branch and avoids accidentally including unrelated changes from the current branch. Use `--source current` or pass a specific branch when intentionally building stacked work.
 
 ## Verification behavior
 
@@ -103,7 +123,11 @@ Unresolved findings are posted as line-targeted review comments when possible. I
 |---------|----------|
 | No plan found | Pass `--plan-source <file-or-url>` or provide a plan in the session |
 | Target branch is wrong | Pass `--target <branch>` |
+| New branch should start from current work | Pass `--source current` |
+| Source branch does not exist | Pass a valid `--source <branch-or-ref>` or omit it to use the resolved target |
 | PR-tool auto-detection fails | Pass `--pr-tool /quick-pr` or `--pr-tool /ado-pr` |
-| Worktree path already exists | Choose `--branch` with a unique name or remove the stale worktree |
+| Worktree path already exists | Choose `--branch` or `--worktree-dir` with a unique path, or remove the stale worktree |
+| `.worktrees\` is not ignored | Approve the local exclude update, pass `--worktree-dir`, or add an ignore rule manually |
+| Runtime cwd command is unavailable | Continue only if operations can be explicitly rooted at the worktree path |
 | Verify-runner unavailable | The skill falls back to direct checks |
 | Branch conflicts with target | Stop and resolve manually; the skill does not auto-resolve conflicts |

@@ -93,9 +93,11 @@ Install the skill with the sync scripts.
 
 ## Worktree behavior
 
-By default, worktree mode creates generated worktrees under `<repo-root>\.worktrees\<sanitized-branch-name>`. If `.worktrees\` is not ignored yet, the skill asks before adding `.worktrees/` to the repo root `.gitignore`. Pass `--worktree-dir DIR` to choose a different parent directory; relative paths resolve from the original repo root and absolute paths are used as-is.
+By default, worktree mode creates generated worktrees under `<repo-root>\.worktrees\<sanitized-branch-name>`. If `.worktrees\` is not ignored in the original checkout, the skill asks before adding `.worktrees/` to the repo root `.git\info\exclude` so the original checkout stays clean. Pass `--worktree-dir DIR` to choose a different parent directory; relative paths resolve from the original repo root and absolute paths are used as-is.
 
 After creating the worktree, the skill moves the session/current working directory to the new worktree root using the runtime's cwd command when available. All subsequent file, search, edit, shell, git, verification, commit, push, and PR operations run from that worktree root, or use paths explicitly rooted at the worktree when a tool cannot inherit the changed cwd.
+
+The skill treats branch names, target names, and worktree paths as untrusted before passing them to shell commands. It prefers argument-safe tool calls and rejects unsafe values rather than interpolating raw user input into command strings.
 
 ## Verification behavior
 
@@ -115,7 +117,7 @@ Unresolved findings are posted as line-targeted review comments when possible. I
 | Target branch is wrong | Pass `--target <branch>` |
 | PR-tool auto-detection fails | Pass `--pr-tool /quick-pr` or `--pr-tool /ado-pr` |
 | Worktree path already exists | Choose `--branch` or `--worktree-dir` with a unique path, or remove the stale worktree |
-| `.worktrees\` is not ignored | Approve the `.gitignore` update, pass `--worktree-dir`, or add an ignore rule manually |
+| `.worktrees\` is not ignored | Approve the `.git\info\exclude` update, pass `--worktree-dir`, or add an ignore rule manually |
 | Runtime cwd command is unavailable | Continue only if operations can be explicitly rooted at the worktree path |
 | Verify-runner unavailable | The skill falls back to direct checks |
 | Branch conflicts with target | Stop and resolve manually; the skill does not auto-resolve conflicts |

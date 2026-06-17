@@ -55,6 +55,7 @@ Extract a short feature title and an ordered step list. If the source is prose r
 
 - Resolve `--target` from the flag, then `origin/HEAD`, then `main`.
 - Resolve `--branch` from the flag, then project instructions, then `{alias}/{short-kebab-case-feature-title}`.
+- Treat resolved branch names, target names, and worktree paths as untrusted before passing them to shell commands. Prefer argument-safe tool calls. If only shell commands are available, reject branch and target names that start with `-` or contain characters outside `[A-Za-z0-9._/-]`; reject paths containing quotes, control characters, or shell metacharacters. Do not concatenate raw user input into shell commands.
 - Resolve `--pr-tool` from the flag or this table:
 
   | Remote URL contains | Default PR-creation skill | Required interface |
@@ -77,13 +78,13 @@ Before coding, compare the current branch to `<target>`. If there are merge conf
   2. Resolve the worktree parent directory:
      - If `--worktree-dir` is set, use that directory. Resolve relative paths from the original repo root and absolute paths as-is.
      - Otherwise, use `<repo-root>\.worktrees`.
-  3. If the default `.worktrees\` parent is not ignored yet, ask before adding `.worktrees/` to the repo root `.gitignore`. If the user declines, stop and ask them to choose `--worktree-dir` or add an ignore rule manually.
+  3. If the default `.worktrees\` parent is not ignored in the original checkout, ask before adding `.worktrees/` to the repo root `.git\info\exclude`. Do not modify tracked `.gitignore` in the original checkout before creating the worktree because that dirties the tree the worktree is meant to isolate. If the user declines, stop and ask them to choose `--worktree-dir` or add an ignore rule manually.
   4. Choose `<worktree-parent>\<sanitized-worktree-name>` unless that path is occupied. If the parent path is occupied by a file, or the generated worktree path already exists, stop and report the path conflict.
-  5. Run `git worktree add -b '<branch-name>' '<worktree-path>' '<target-branch>'`.
+  5. Run the argument-safe equivalent of `git worktree add -b <branch-name> <worktree-path> <target-branch>`.
   6. Move the session/current working directory to `<worktree-path>` using the runtime's cwd command when available, then confirm `git rev-parse --show-toplevel` resolves to `<worktree-path>`. Runtime examples: Copilot CLI supports `/cwd <worktree-path>` or `/cd <worktree-path>`; Claude Code supports `/cd <worktree-path>` on supported versions.
-  7. Run all subsequent file, search, edit, shell, git, verify, commit, push, and PR operations from the new worktree. If a tool cannot inherit the changed cwd, root that tool call at `<worktree-path>` or use `git -C '<worktree-path>' ...`.
+  7. Run all subsequent file, search, edit, shell, git, verify, commit, push, and PR operations from the new worktree. If a tool cannot inherit the changed cwd, root that tool call at `<worktree-path>` or use an argument-safe `git -C <worktree-path> ...` invocation.
 - `--no-worktree` mode:
-  1. Run `git checkout -b '<branch-name>'`.
+  1. Run the argument-safe equivalent of `git checkout -b <branch-name>`.
   2. Work in the current tree.
 
 If branch creation fails because the branch already exists, inspect where it is checked out and continue only when doing so is safe and unambiguous.
@@ -125,7 +126,7 @@ Resolve findings:
 
 ### 6. Push, create the draft PR, and post verify output
 
-1. Push the branch: `git push -u origin '<branch-name>'`.
+1. Push the branch with the argument-safe equivalent of `git push -u origin <branch-name>`.
 2. Create a draft PR through the selected PR skill:
    - GitHub: `/quick-pr --draft --target <target-branch> --no-merge` (or the runtime-equivalent invocation).
    - Azure DevOps: `/ado-pr --draft --target <target-branch>`.
@@ -165,6 +166,6 @@ Display the branch name, number of commits created by this run, and PR URL. Prin
 - PR-tool auto-detection failure: ask plainly which PR skill to use.
 - Verify-runner unavailable: fall back to direct checks.
 - Verify output is non-JSON or a check errors: convert that check result into one `report` finding and continue.
-- Default `.worktrees\` is not ignored and the user declines the `.gitignore` update: stop and ask for `--worktree-dir` or a manual ignore rule.
+- Default `.worktrees\` is not ignored and the user declines the `.git\info\exclude` update: stop and ask for `--worktree-dir` or a manual ignore rule.
 - Worktree cwd switch is unavailable: continue only if every subsequent file, shell, git, verify, commit, push, and PR operation can be explicitly rooted at the worktree path.
 - Merge conflicts with target, build failures, or unsafe branch/worktree state: stop and report the blocker.

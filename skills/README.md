@@ -16,6 +16,7 @@ Use shared `SKILL.md` when the same entrypoint works for both runtimes. Prefer r
 | Skill | Claude Code | Copilot CLI | Description | Docs | Notes |
 |-------|-------------|-------------|-------------|------|-------|
 | `/ado-pr` | ✅ | ✅ | Create Azure DevOps PRs with standardized formatting | [README](ado-pr/README.md) | Shared skill. |
+| `/ado-pr-fix` | ✅ | ✅ | Analyze and address Azure DevOps PR review comments with approval gates | [README](ado-pr-fix/README.md) | Requires Azure DevOps MCP PR thread tools. |
 | `/ado-task` | ✅ | ✅ | Create, update, complete, and list Azure DevOps work items | [README](ado-task/README.md) | Requires Azure DevOps MCP setup. |
 | `/cleanup-worktree` | ✅ | ✅ | Remove a git worktree and its local branch after PR merge | [README](cleanup-worktree/README.md) | Uses local git commands only. |
 | `/coverage-check` | ✅ | ✅ | Run diff coverage, classify uncovered chunks, and emit JSON findings | [README](coverage-check/README.md) | Requires a project coverage tool when coverage is expected. |

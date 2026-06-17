@@ -104,6 +104,7 @@ skills\    - AI agent skills; shared or target-specific entrypoints
 | Skill | Claude Code | Copilot CLI | Description | Docs | Notes |
 |-------|-------------|-------------|-------------|------|-------|
 | `/ado-pr` | ✅ | ✅ | Create Azure DevOps PRs with standardized formatting | [README](skills/ado-pr/README.md) | Shared skill. |
+| `/ado-pr-fix` | ✅ | ✅ | Analyze and address Azure DevOps PR review comments with approval gates | [README](skills/ado-pr-fix/README.md) | Requires Azure DevOps MCP PR thread tools. |
 | `/ado-task` | ✅ | ✅ | Create, update, complete, and list Azure DevOps work items | [README](skills/ado-task/README.md) | Requires Azure DevOps MCP setup. |
 | `/cleanup-worktree` | ✅ | ✅ | Remove a git worktree and its local branch after PR merge | [README](skills/cleanup-worktree/README.md) | Uses local git commands only. |
 | `/coverage-check` | ✅ | ✅ | Run diff coverage, classify uncovered chunks, and emit JSON findings | [README](skills/coverage-check/README.md) | Requires a project coverage tool when coverage is expected. |

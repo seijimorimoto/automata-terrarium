@@ -53,6 +53,9 @@ Install the skill with the sync scripts.
 # Use a custom branch and target
 /implement --branch u/alice/cool-feature --target develop
 
+# Use a custom worktree parent directory
+/implement --worktree-dir ..\feature-worktrees
+
 # Work in the current tree instead of a new worktree
 /implement --no-worktree
 
@@ -67,6 +70,7 @@ Install the skill with the sync scripts.
 | `--plan-source` | No | `session` | Session discussion, local file path, issue/PR URL, work item, or other readable reference |
 | `--branch` | No | Generated from project instructions or plan title | Feature branch name |
 | `--target` | No | Remote default branch, then `main` | Target branch for the PR |
+| `--worktree-dir` | No | `<repo-root>\.worktrees\` | Parent directory for generated worktree folders; relative paths resolve from the original repo root |
 | `--no-worktree` | No | `false` (worktrees on by default) | Work in the current tree instead of creating a git worktree |
 | `--pr-tool` | No | GitHub -> `/quick-pr`, Azure DevOps -> `/ado-pr` | PR-creation skill |
 | `--skip-native-verify` | No | `false` | Skip best-effort runtime-native or equivalent review, security, and simplification checks |
@@ -78,7 +82,7 @@ Install the skill with the sync scripts.
 ```text
 1. Read plan      -> session, file, issue, PR, work item, or readable reference
 2. Resolve args   -> branch, target, worktree mode, PR tool, checks
-3. Branch/worktree-> git worktree add -b ... or git checkout -b ...
+3. Branch/worktree-> git worktree add -b ... under .worktrees, or git checkout -b ...
 4. Code + commit  -> one logical commit per plan step
 5. Verify         -> repo checks plus best-effort native/equivalent checks
 6. Fix/queue      -> fix hard blocks, ask plainly on soft blocks, queue reports
@@ -86,6 +90,12 @@ Install the skill with the sync scripts.
 8. Comments       -> post verify summary and unresolved findings
 9. Summary        -> branch, commit count, PR URL, /rename hint
 ```
+
+## Worktree behavior
+
+By default, worktree mode creates generated worktrees under `<repo-root>\.worktrees\<sanitized-branch-name>`. If `.worktrees\` is not ignored yet, the skill asks before adding `.worktrees/` to the repo root `.gitignore`. Pass `--worktree-dir DIR` to choose a different parent directory; relative paths resolve from the original repo root and absolute paths are used as-is.
+
+After creating the worktree, the skill moves the session/current working directory to the new worktree root using the runtime's cwd command when available. All subsequent file, search, edit, shell, git, verification, commit, push, and PR operations run from that worktree root, or use paths explicitly rooted at the worktree when a tool cannot inherit the changed cwd.
 
 ## Verification behavior
 
@@ -104,6 +114,8 @@ Unresolved findings are posted as line-targeted review comments when possible. I
 | No plan found | Pass `--plan-source <file-or-url>` or provide a plan in the session |
 | Target branch is wrong | Pass `--target <branch>` |
 | PR-tool auto-detection fails | Pass `--pr-tool /quick-pr` or `--pr-tool /ado-pr` |
-| Worktree path already exists | Choose `--branch` with a unique name or remove the stale worktree |
+| Worktree path already exists | Choose `--branch` or `--worktree-dir` with a unique path, or remove the stale worktree |
+| `.worktrees\` is not ignored | Approve the `.gitignore` update, pass `--worktree-dir`, or add an ignore rule manually |
+| Runtime cwd command is unavailable | Continue only if operations can be explicitly rooted at the worktree path |
 | Verify-runner unavailable | The skill falls back to direct checks |
 | Branch conflicts with target | Stop and resolve manually; the skill does not auto-resolve conflicts |

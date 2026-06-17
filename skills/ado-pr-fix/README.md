@@ -22,13 +22,30 @@ Fetches Azure DevOps PR review comments, investigates them, proposes actions, an
 
   The server must expose Azure DevOps repo capabilities for repository lookup, pull request lookup/listing, pull request thread listing, thread comment listing, thread replies, and thread status updates. MCP server install commands vary by provider; use the command and server package from your Azure DevOps MCP provider.
 
-  For Copilot CLI, configure the server through `/mcp`:
+  For Claude Code, register the server with your provider's command:
+
+  ```powershell
+  # Windows (PowerShell)
+  claude mcp add ado -- <ado-mcp-server-command>
+  ```
+
+  ```sh
+  # Linux / macOS / POSIX
+  claude mcp add ado -- <ado-mcp-server-command>
+  ```
+
+  For Copilot CLI, start Copilot and configure the server through `/mcp`:
+
+  ```powershell
+  # Windows (PowerShell)
+  copilot
+  ```
 
   ```text
   /mcp
   ```
 
-  For Claude Code, configure the server through your Claude MCP settings, then merge the ADO permission preset described below.
+  Then merge the ADO permission preset described below when using Claude Code.
 
 ## Available Skills
 

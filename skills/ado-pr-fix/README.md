@@ -85,21 +85,26 @@ For project-level installs, the skills are available to anyone who clones the ta
 
 ## Permissions
 
-For Claude Code, merge the ADO permissions preset into your settings file:
+For Claude Code, sync the settings presets after installing or updating this repository:
 
 ```powershell
-# Windows (PowerShell) - view the preset
-Get-Content settings\claude\ado.json
+# Windows (PowerShell)
+.\bin\seiji-claude-sync-settings.ps1
 ```
 
-The preset includes the Azure DevOps PR thread permissions used by this skill:
+```sh
+# Linux / macOS / POSIX
+./bin/seiji-claude-sync-settings
+```
+
+This merges `settings\claude\ado.json` into `~\.claude\settings.json`. The ADO preset includes the Azure DevOps PR thread permissions used by this skill:
 
 - `mcp__ado__repo_list_pull_request_thread_comments`
 - `mcp__ado__repo_list_pull_request_threads`
 - `mcp__ado__repo_reply_to_comment`
 - `mcp__ado__repo_update_pull_request_thread`
 
-For Copilot CLI, configure the Azure DevOps MCP server with `/mcp` and approve or allow the equivalent ADO MCP tools exposed by that server.
+For Copilot CLI, settings sync does not grant MCP permissions. Configure the Azure DevOps MCP server with `/mcp` and approve or allow the equivalent ADO MCP tools exposed by that server.
 
 ## Usage
 

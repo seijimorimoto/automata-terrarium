@@ -2,7 +2,7 @@
 
 Sync executables that install this repo's skills, agents, hooks, and settings into user-level runtime config directories.
 
-Actual script renames are out of scope for this migration and tracked by #20. The tables below use conceptual `seiji-<orchestrator>-...` patterns while listing the current script files.
+The command namespace is `terrarium-*`. This is a breaking rename from the previous `seiji-*` scripts; no compatibility shims are provided.
 
 | Marker | Meaning |
 |--------|---------|
@@ -13,14 +13,14 @@ Actual script renames are out of scope for this migration and tracked by #20. Th
 
 ## Available Sync Scripts
 
-| Conceptual script | Claude Code | Copilot CLI | Current files | Purpose | Notes |
-|-------------------|-------------|-------------|---------------|---------|-------|
-| `seiji-<orchestrator>-install` | ✅ | ❌ | `seiji-claude-install`, `seiji-claude-install.ps1` | One-time PATH setup for sync commands | Copilot install helper is not implemented; broader renames are tracked by #20. |
-| `seiji-<orchestrator>-sync` | ✅ | ⚠️ | `seiji-claude-sync`, `seiji-claude-sync.ps1`, `seiji-copilot-sync.ps1` | Wrapper that runs skills, agents, hooks, then settings sync | Copilot wrapper is PowerShell-only; POSIX parity is tracked by #21. |
-| `seiji-<orchestrator>-sync-skills` | ✅ | ⚠️ | `seiji-claude-sync-skills`, `seiji-claude-sync-skills.ps1`, `seiji-copilot-sync-skills.ps1` | Install compatible skill entrypoints | Copilot skill sync is PowerShell-only; POSIX parity is tracked by #21. |
-| `seiji-<orchestrator>-sync-agents` | ✅ | ⚠️ | `seiji-claude-sync-agents`, `seiji-claude-sync-agents.ps1`, `seiji-copilot-sync-agents.ps1` | Install compatible agent/custom-agent profiles | Copilot agent sync is PowerShell-only; POSIX parity is tracked by #21. |
-| `seiji-<orchestrator>-sync-hooks` | ✅ | ⚠️ | `seiji-claude-sync-hooks`, `seiji-claude-sync-hooks.ps1`, `seiji-copilot-sync-hooks.ps1` | Install hook script files and Copilot hook JSON | Hook registration/merge automation is tracked by #22; Copilot sync is PowerShell-only (#21). |
-| `seiji-<orchestrator>-sync-settings` | ✅ | ⚠️ | `seiji-claude-sync-settings`, `seiji-claude-sync-settings.ps1`, `seiji-copilot-sync-settings.ps1` | Merge settings presets into user-level settings files | Claude reads `settings\claude\`; Copilot reads `settings\copilot\` and is PowerShell-only (#21). |
+| Command family | Claude Code | Copilot CLI | Current files | Purpose | Notes |
+|----------------|-------------|-------------|---------------|---------|-------|
+| `terrarium-install` | ✅ | ❌ | `terrarium-install`, `terrarium-install.ps1` | One-time PATH setup for `terrarium-*` commands | Breaking rename; no `seiji-*` compatibility shims are provided. |
+| `terrarium-sync-<runtime>` | ✅ | ⚠️ | `terrarium-sync-claude`, `terrarium-sync-claude.ps1`, `terrarium-sync-copilot.ps1` | Wrapper that runs skills, agents, hooks, then settings sync | Copilot wrapper is PowerShell-only; POSIX parity is tracked by #21. |
+| `terrarium-sync-<runtime>-skills` | ✅ | ⚠️ | `terrarium-sync-claude-skills`, `terrarium-sync-claude-skills.ps1`, `terrarium-sync-copilot-skills.ps1` | Install compatible skill entrypoints | Copilot skill sync is PowerShell-only; POSIX parity is tracked by #21. |
+| `terrarium-sync-<runtime>-agents` | ✅ | ⚠️ | `terrarium-sync-claude-agents`, `terrarium-sync-claude-agents.ps1`, `terrarium-sync-copilot-agents.ps1` | Install compatible agent/custom-agent profiles | Copilot agent sync is PowerShell-only; POSIX parity is tracked by #21. |
+| `terrarium-sync-<runtime>-hooks` | ✅ | ⚠️ | `terrarium-sync-claude-hooks`, `terrarium-sync-claude-hooks.ps1`, `terrarium-sync-copilot-hooks.ps1` | Install hook script files and Copilot hook JSON | Hook registration/merge automation is tracked by #22; Copilot sync is PowerShell-only (#21). |
+| `terrarium-sync-<runtime>-settings` | ✅ | ⚠️ | `terrarium-sync-claude-settings`, `terrarium-sync-claude-settings.ps1`, `terrarium-sync-copilot-settings.ps1` | Merge settings presets into user-level settings files | Claude reads `settings\claude\`; Copilot reads `settings\copilot\` and is PowerShell-only (#21). |
 
 ## Prerequisites
 
@@ -43,18 +43,18 @@ sudo apt-get install jq
 
 ```powershell
 # Windows (PowerShell)
-.\bin\seiji-claude-install.ps1
+.\bin\terrarium-install.ps1
 # Open a new PowerShell window so PATH refreshes.
-seiji-claude-sync
+terrarium-sync-claude
 
-.\bin\seiji-copilot-sync.ps1
+.\bin\terrarium-sync-copilot.ps1
 ```
 
 ```sh
 # Linux / macOS / POSIX
-./bin/seiji-claude-install
+./bin/terrarium-install
 # Open a new shell so PATH refreshes.
-seiji-claude-sync
+terrarium-sync-claude
 # POSIX Copilot sync is tracked by #21.
 ```
 
@@ -62,29 +62,29 @@ seiji-claude-sync
 
 ```powershell
 # Windows (PowerShell)
-seiji-claude-sync-skills.ps1
-seiji-claude-sync-agents.ps1
-seiji-claude-sync-hooks.ps1
-seiji-claude-sync-settings.ps1
+terrarium-sync-claude-skills.ps1
+terrarium-sync-claude-agents.ps1
+terrarium-sync-claude-hooks.ps1
+terrarium-sync-claude-settings.ps1
 
-.\bin\seiji-copilot-sync-skills.ps1
-.\bin\seiji-copilot-sync-agents.ps1
-.\bin\seiji-copilot-sync-hooks.ps1
-.\bin\seiji-copilot-sync-settings.ps1
+.\bin\terrarium-sync-copilot-skills.ps1
+.\bin\terrarium-sync-copilot-agents.ps1
+.\bin\terrarium-sync-copilot-hooks.ps1
+.\bin\terrarium-sync-copilot-settings.ps1
 ```
 
 ```sh
 # Linux / macOS / POSIX
-seiji-claude-sync-skills
-seiji-claude-sync-agents
-seiji-claude-sync-hooks
-seiji-claude-sync-settings
+terrarium-sync-claude-skills
+terrarium-sync-claude-agents
+terrarium-sync-claude-hooks
+terrarium-sync-claude-settings
 # POSIX Copilot sync is tracked by #21.
 ```
 
 ## Settings merge rules
 
-`seiji-claude-sync-settings` merges every `settings\claude\*.json` preset into `~\.claude\settings.json`. `seiji-copilot-sync-settings.ps1` merges every `settings\copilot\*.json` preset into `~\.copilot\settings.json`.
+`terrarium-sync-claude-settings` merges every `settings\claude\*.json` preset into `~\.claude\settings.json`. `terrarium-sync-copilot-settings.ps1` merges every `settings\copilot\*.json` preset into `~\.copilot\settings.json`.
 
 For each key:
 
@@ -97,7 +97,7 @@ By default, settings sync scripts back up existing user settings before writing.
 
 ## What sync does not do
 
-- It does not rename repo/bin scripts; #20 tracks that work.
+- It does not provide compatibility shims for previous `seiji-*` command names.
 - It does not provide POSIX Copilot sync scripts; #21 tracks that work.
 - It does not auto-register or merge hook settings; #22 tracks that work.
 - It does not translate Copilot's full permission model into JSON settings; #19 tracks that work.

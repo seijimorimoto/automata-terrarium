@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# seiji-claude-sync-settings — merge each <repo>/settings/*.json into ~/.claude/settings.json
+# terrarium-sync-claude-settings — merge each <repo>/settings/*.json into ~/.claude/settings.json
 # Use --dry-run to print the merged result and warnings without writing.
 # Use --no-backup to skip writing the timestamped backup file.
 #
@@ -25,7 +25,7 @@ for arg in "$@"; do
     --no-backup) NO_BACKUP=1 ;;
     -h|--help)
       cat <<'EOF'
-Usage: seiji-claude-sync-settings [--dry-run] [--no-backup]
+Usage: terrarium-sync-claude-settings [--dry-run] [--no-backup]
 
 Merges every <repo>/settings/*.json into ~/.claude/settings.json per the
 locked merge rules (string-arrays union+dedupe+sort; object-arrays
@@ -44,14 +44,14 @@ EOF
       exit 0
       ;;
     *)
-      echo "seiji-claude-sync-settings: unknown argument: $arg" >&2
+      echo "terrarium-sync-claude-settings: unknown argument: $arg" >&2
       exit 2
       ;;
   esac
 done
 
 if ! command -v jq >/dev/null 2>&1; then
-  echo "seiji-claude-sync-settings: requires 'jq' on PATH (install: https://jqlang.github.io/jq/)" >&2
+  echo "terrarium-sync-claude-settings: requires 'jq' on PATH (install: https://jqlang.github.io/jq/)" >&2
   exit 1
 fi
 
@@ -66,18 +66,18 @@ MERGE_JQ="$LIB_DIR/merge-settings.jq"
 WARN_JQ="$LIB_DIR/find-settings-conflicts.jq"
 
 if [ ! -d "$PRESETS_DIR" ]; then
-  echo "seiji-claude-sync-settings: presets directory not found: $PRESETS_DIR" >&2
+  echo "terrarium-sync-claude-settings: presets directory not found: $PRESETS_DIR" >&2
   exit 1
 fi
 if [ ! -f "$MERGE_JQ" ] || [ ! -f "$WARN_JQ" ]; then
-  echo "seiji-claude-sync-settings: missing jq filters in $LIB_DIR" >&2
+  echo "terrarium-sync-claude-settings: missing jq filters in $LIB_DIR" >&2
   exit 1
 fi
 
 # Start from user's existing settings, or {} if none/empty
 if [ -f "$USER_CONFIG" ] && [ -s "$USER_CONFIG" ]; then
   if ! ACCUMULATOR="$(jq -c . "$USER_CONFIG" 2>/dev/null)"; then
-    echo "seiji-claude-sync-settings: existing $USER_CONFIG is not valid JSON" >&2
+    echo "terrarium-sync-claude-settings: existing $USER_CONFIG is not valid JSON" >&2
     exit 1
   fi
 else
@@ -90,7 +90,7 @@ preset_files=( "$PRESETS_DIR"/*.json )
 shopt -u nullglob
 
 if [ "${#preset_files[@]}" -eq 0 ]; then
-  echo "seiji-claude-sync-settings: no presets found in $PRESETS_DIR; nothing to merge"
+  echo "terrarium-sync-claude-settings: no presets found in $PRESETS_DIR; nothing to merge"
   exit 0
 fi
 
@@ -98,7 +98,7 @@ ALL_WARNINGS=""
 for preset in "${preset_files[@]}"; do
   preset_name="$(basename "$preset")"
   if ! preset_json="$(jq -c . "$preset" 2>/dev/null)"; then
-    echo "seiji-claude-sync-settings: preset $preset_name is not valid JSON" >&2
+    echo "terrarium-sync-claude-settings: preset $preset_name is not valid JSON" >&2
     exit 1
   fi
 
@@ -126,7 +126,7 @@ done
 
 # Validate the merged result parses cleanly
 if ! echo "$ACCUMULATOR" | jq -e . >/dev/null 2>&1; then
-  echo "seiji-claude-sync-settings: merged result is not valid JSON" >&2
+  echo "terrarium-sync-claude-settings: merged result is not valid JSON" >&2
   exit 1
 fi
 

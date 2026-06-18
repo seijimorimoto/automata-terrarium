@@ -1,4 +1,4 @@
-# seiji-claude-sync-agents.ps1 — copy <repo>\agents\ entries to ~\.claude\agents\.
+# terrarium-sync-claude-agents.ps1 — copy <repo>\agents\ entries to ~\.claude\agents\.
 # Use -DryRun to preview without writing.
 #
 # Two layouts are supported:
@@ -23,7 +23,7 @@ $SrcDir    = Join-Path $RepoRoot 'agents'
 $DstDir    = Join-Path $HOME '.claude\agents'
 
 if (-not (Test-Path -LiteralPath $SrcDir)) {
-    Write-Error "seiji-claude-sync-agents: source not found: $SrcDir"
+    Write-Error "terrarium-sync-claude-agents: source not found: $SrcDir"
     exit 1
 }
 
@@ -86,7 +86,7 @@ Get-ChildItem -LiteralPath $SrcDir -Directory | Sort-Object Name | ForEach-Objec
     }
     else {
         if (-not (Test-Path -LiteralPath $claudeAgent) -and -not (Test-Path -LiteralPath $sharedAgent)) {
-            Write-Error "seiji-claude-sync-agents: agent '$name' is missing $name.claude.md or $name.md"
+            Write-Error "terrarium-sync-claude-agents: agent '$name' is missing $name.claude.md or $name.md"
             exit 1
         }
         Copy-AgentForClaude -Source $src -Destination $dst -Name $name

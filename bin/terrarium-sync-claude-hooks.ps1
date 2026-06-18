@@ -1,4 +1,4 @@
-# seiji-claude-sync-hooks.ps1 — copy each <repo>\hooks\<name>\ to ~\.claude\hooks\<name>\
+# terrarium-sync-claude-hooks.ps1 — copy each <repo>\hooks\<name>\ to ~\.claude\hooks\<name>\
 # Use -DryRun to preview without writing.
 #
 # This script copies hook scripts only. It does NOT register hooks in
@@ -19,7 +19,7 @@ $SrcDir    = Join-Path $RepoRoot 'hooks'
 $DstDir    = Join-Path $HOME '.claude\hooks'
 
 if (-not (Test-Path -LiteralPath $SrcDir)) {
-    Write-Error "seiji-claude-sync-hooks: source not found: $SrcDir"
+    Write-Error "terrarium-sync-claude-hooks: source not found: $SrcDir"
     exit 1
 }
 

@@ -1,6 +1,6 @@
-# seiji-copilot-sync-skills.ps1 — copy each Copilot-compatible skill to ~\.copilot\skills\<name>\
+# terrarium-sync-claude-skills.ps1 — copy each <repo>\skills\<name>\ to ~\.claude\skills\<name>\
 # Use -DryRun to preview without writing.
-# If a skill uses split entrypoints, SKILL.copilot.md is installed as SKILL.md.
+# If a skill uses split entrypoints, SKILL.claude.md is installed as SKILL.md.
 [CmdletBinding()]
 param(
     [switch]$DryRun
@@ -11,10 +11,10 @@ $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $PSCommandPath
 $RepoRoot  = Split-Path -Parent $ScriptDir
 $SrcDir    = Join-Path $RepoRoot 'skills'
-$DstDir    = Join-Path $HOME '.copilot\skills'
+$DstDir    = Join-Path $HOME '.claude\skills'
 
 if (-not (Test-Path -LiteralPath $SrcDir)) {
-    Write-Error "seiji-copilot-sync-skills: source not found: $SrcDir"
+    Write-Error "terrarium-sync-claude-skills: source not found: $SrcDir"
     exit 1
 }
 
@@ -22,7 +22,7 @@ if (-not $DryRun -and -not (Test-Path -LiteralPath $DstDir)) {
     New-Item -ItemType Directory -Path $DstDir -Force | Out-Null
 }
 
-function Copy-SkillForCopilot {
+function Copy-SkillForClaude {
     param(
         [string]$Source,
         [string]$Destination
@@ -38,9 +38,9 @@ function Copy-SkillForCopilot {
         Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $Destination $_.Name) -Recurse -Force
     }
 
-    $copilotSkill = Join-Path $Source 'SKILL.copilot.md'
-    if (Test-Path -LiteralPath $copilotSkill) {
-        Copy-Item -LiteralPath $copilotSkill -Destination (Join-Path $Destination 'SKILL.md') -Force
+    $claudeSkill = Join-Path $Source 'SKILL.claude.md'
+    if (Test-Path -LiteralPath $claudeSkill) {
+        Copy-Item -LiteralPath $claudeSkill -Destination (Join-Path $Destination 'SKILL.md') -Force
     }
 }
 
@@ -52,24 +52,17 @@ Get-ChildItem -LiteralPath $SrcDir -Directory | Sort-Object Name | ForEach-Objec
     $claudeSkill = Join-Path $src 'SKILL.claude.md'
     $copilotSkill = Join-Path $src 'SKILL.copilot.md'
     $usesSplitSkill = (Test-Path -LiteralPath $claudeSkill) -or (Test-Path -LiteralPath $copilotSkill)
-
-    if ($usesSplitSkill -and -not (Test-Path -LiteralPath $copilotSkill)) {
-        if ($DryRun) {
-            Write-Host "[dry-run] skip skill '$name' (no Copilot entrypoint)"
-        }
-        else {
-            Write-Host "skipped skill '$name' (no Copilot entrypoint)"
-        }
-        return
-    }
-
     if ($DryRun) {
-        $mode = if ($usesSplitSkill) { 'copilot variant' } else { 'shared' }
+        $mode = if ($usesSplitSkill) { 'claude variant' } else { 'shared' }
         Write-Host "[dry-run] sync skill '$name' ($mode): $src -> $dst"
     }
     else {
         if ($usesSplitSkill) {
-            Copy-SkillForCopilot -Source $src -Destination $dst
+            if (-not (Test-Path -LiteralPath $claudeSkill)) {
+                Write-Error "terrarium-sync-claude-skills: skill '$name' has split entrypoints but is missing SKILL.claude.md"
+                exit 1
+            }
+            Copy-SkillForClaude -Source $src -Destination $dst
         }
         else {
             if (Test-Path -LiteralPath $dst) {

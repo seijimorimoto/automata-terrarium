@@ -16,13 +16,13 @@ These are Copilot CLI JSON settings fragments only. They do **not** replace Copi
 Use the sync script:
 
 ```powershell
-.\bin\seiji-copilot-sync-settings.ps1
+.\bin\terrarium-sync-copilot-settings.ps1
 ```
 
 Dry-run without writing:
 
 ```powershell
-.\bin\seiji-copilot-sync-settings.ps1 -DryRun
+.\bin\terrarium-sync-copilot-settings.ps1 -DryRun
 ```
 
 ## Tool permission flags

@@ -71,13 +71,13 @@ Install user-level skill variants with the sync scripts.
 
 ```powershell
 # Windows (PowerShell)
-.\bin\seiji-claude-sync-skills.ps1
-.\bin\seiji-copilot-sync-skills.ps1
+.\bin\terrarium-sync-claude-skills.ps1
+.\bin\terrarium-sync-copilot-skills.ps1
 ```
 
 ```sh
 # Linux / macOS / POSIX
-./bin/seiji-claude-sync-skills
+./bin/terrarium-sync-claude-skills
 # POSIX Copilot sync is tracked by #21.
 ```
 
@@ -89,12 +89,12 @@ For Claude Code, sync the settings presets after installing or updating this rep
 
 ```powershell
 # Windows (PowerShell)
-.\bin\seiji-claude-sync-settings.ps1
+.\bin\terrarium-sync-claude-settings.ps1
 ```
 
 ```sh
 # Linux / macOS / POSIX
-./bin/seiji-claude-sync-settings
+./bin/terrarium-sync-claude-settings
 ```
 
 This merges `settings\claude\ado.json` into `~\.claude\settings.json`. The ADO preset includes the Azure DevOps PR thread permissions used by this skill:

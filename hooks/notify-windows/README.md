@@ -26,7 +26,7 @@ Install-Module -Name BurntToast
 Install script files:
 
 ```powershell
-.\bin\seiji-claude-sync-hooks.ps1
+.\bin\terrarium-sync-claude-hooks.ps1
 ```
 
 `claude.hooks.json` is the registration template. Copy its `"hooks"` block into `~\.claude\settings.json` or `<project-root>\.claude\settings.json`, then replace `{{CLAUDE_HOOK_DIR}}` with the full installed hook folder path, such as `~\.claude\hooks\notify-windows`.
@@ -38,7 +38,7 @@ Automatic hook registration is not implemented yet; #22 tracks safe registration
 Install script files and hook JSON:
 
 ```powershell
-.\bin\seiji-copilot-sync-hooks.ps1
+.\bin\terrarium-sync-copilot-hooks.ps1
 ```
 
 The sync script copies `copilot.hooks.json` to `~\.copilot\hooks\notify-windows.json` and replaces `{{COPILOT_HOOK_DIR}}` with the installed hook folder path.
@@ -50,7 +50,7 @@ For Linux/macOS, POSIX Copilot sync parity is tracked by #21.
 | Runtime | Preset file | Notes |
 |---------|-------------|-------|
 | Claude Code | `claude.hooks.json` | Manual registration template; replace `{{CLAUDE_HOOK_DIR}}`. |
-| Copilot CLI | `copilot.hooks.json` | Installed by `seiji-copilot-sync-hooks.ps1`; placeholder rewritten during sync. |
+| Copilot CLI | `copilot.hooks.json` | Installed by `terrarium-sync-copilot-hooks.ps1`; placeholder rewritten during sync. |
 
 ## Notification types
 

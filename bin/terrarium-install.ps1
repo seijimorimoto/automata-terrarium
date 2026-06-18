@@ -1,6 +1,6 @@
-# seiji-claude-install.ps1 — add this repo's bin\ to the user's PowerShell $PROFILE PATH.
+# terrarium-install.ps1 — add this repo's bin\ to the user's PowerShell $PROFILE PATH.
 #
-# Idempotent: a marker block (`# >>> seiji-claude bin >>> ... # <<< seiji-claude bin <<<`)
+# Idempotent: a marker block (`# >>> terrarium bin >>> ... # <<< terrarium bin <<<`)
 # is appended to $PROFILE. Re-running detects the marker and does nothing.
 #
 # Use -DryRun to preview. Use -Uninstall to remove the marker block.
@@ -18,8 +18,8 @@ $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $PSCommandPath
 $BinDir    = $ScriptDir
 
-$StartMarker = '# >>> seiji-claude bin >>>'
-$EndMarker   = '# <<< seiji-claude bin <<<'
+$StartMarker = '# >>> terrarium bin >>>'
+$EndMarker   = '# <<< terrarium bin <<<'
 $PathLine    = '$env:PATH = "$env:PATH;' + $BinDir + '"'
 
 # $PROFILE may not exist yet; ensure parent dir exists for write
@@ -92,4 +92,4 @@ Add-Content -LiteralPath $profilePath -Value $block -Encoding UTF8
 Write-Host "appended marker block to $profilePath"
 Write-Host ""
 Write-Host "Open a new PowerShell window, or run:  . `$PROFILE"
-Write-Host "to pick up the updated PATH. Then:  seiji-claude-sync"
+Write-Host "to pick up the updated PATH. Then:  terrarium-sync-claude"

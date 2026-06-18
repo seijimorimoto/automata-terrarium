@@ -61,27 +61,27 @@ Install the agent with the runtime-specific sync script. The sync scripts rename
 
 ### Claude Code
 
-`seiji-claude-sync-agents` installs `verify-runner.claude.md` as `~\.claude\agents\verify-runner\verify-runner.md` and copies the `scripts\` folder needed by the Claude-specific hook.
+`terrarium-sync-claude-agents` installs `verify-runner.claude.md` as `~\.claude\agents\verify-runner\verify-runner.md` and copies the `scripts\` folder needed by the Claude-specific hook.
 
 ```powershell
 # Windows (PowerShell)
-.\bin\seiji-claude-install.ps1   # one-time PATH setup
-seiji-claude-sync-agents
+.\bin\terrarium-install.ps1   # one-time PATH setup
+terrarium-sync-claude-agents
 ```
 
 ```sh
 # Linux / macOS / Git Bash
-./bin/seiji-claude-install
-seiji-claude-sync-agents
+./bin/terrarium-install
+terrarium-sync-claude-agents
 ```
 
 ### Copilot CLI
 
-`seiji-copilot-sync-agents.ps1` installs `verify-runner.copilot.md` as `~\.copilot\agents\verify-runner.agent.md`.
+`terrarium-sync-copilot-agents.ps1` installs `verify-runner.copilot.md` as `~\.copilot\agents\verify-runner.agent.md`.
 
 ```powershell
 # Windows (PowerShell)
-.\bin\seiji-copilot-sync-agents.ps1
+.\bin\terrarium-sync-copilot-agents.ps1
 ```
 
 ```sh
@@ -111,7 +111,7 @@ The frontmatter `command:` value is:
 pwsh -NoProfile -ExecutionPolicy Bypass -File "$HOME/.claude/agents/verify-runner/scripts/verify-runner-bash-guard.ps1"
 ```
 
-PowerShell expands `$HOME` to the user's home regardless of OS, and the `~\.claude\agents\verify-runner\` path is where `seiji-claude-sync-agents` installs this folder. POSIX users who prefer the bash variant: edit the `command:` line in the installed `verify-runner.md` to:
+PowerShell expands `$HOME` to the user's home regardless of OS, and the `~\.claude\agents\verify-runner\` path is where `terrarium-sync-claude-agents` installs this folder. POSIX users who prefer the bash variant: edit the `command:` line in the installed `verify-runner.md` to:
 
 ```text
 bash "$HOME/.claude/agents/verify-runner/scripts/verify-runner-bash-guard.sh"

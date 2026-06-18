@@ -1,4 +1,4 @@
-# seiji-copilot-sync-settings.ps1 — merge settings\copilot\*.json into ~\.copilot\settings.json
+# terrarium-sync-copilot-settings.ps1 — merge settings\copilot\*.json into ~\.copilot\settings.json
 # Use -DryRun to print the merged result without writing.
 # Use -NoBackup to skip writing the timestamped backup file.
 [CmdletBinding()]
@@ -16,7 +16,7 @@ $UserConfDir = Join-Path $HOME '.copilot'
 $UserConfig  = Join-Path $UserConfDir 'settings.json'
 
 if (-not (Test-Path -LiteralPath $PresetsDir)) {
-    Write-Error "seiji-copilot-sync-settings: presets directory not found: $PresetsDir"
+    Write-Error "terrarium-sync-copilot-settings: presets directory not found: $PresetsDir"
     exit 1
 }
 
@@ -134,7 +134,7 @@ if (Test-Path -LiteralPath $UserConfig) {
             $accumulator = $userText | ConvertFrom-Json
         }
         catch {
-            Write-Error "seiji-copilot-sync-settings: existing $UserConfig is not valid JSON: $($_.Exception.Message)"
+            Write-Error "terrarium-sync-copilot-settings: existing $UserConfig is not valid JSON: $($_.Exception.Message)"
             exit 1
         }
     }
@@ -146,7 +146,7 @@ else {
 $warnings = New-Object System.Collections.ArrayList
 $presetFiles = Get-ChildItem -LiteralPath $PresetsDir -Filter '*.json' -File | Sort-Object Name
 if ($presetFiles.Count -eq 0) {
-    Write-Host "seiji-copilot-sync-settings: no presets found in $PresetsDir; nothing to merge"
+    Write-Host "terrarium-sync-copilot-settings: no presets found in $PresetsDir; nothing to merge"
     exit 0
 }
 
@@ -156,7 +156,7 @@ foreach ($presetFile in $presetFiles) {
         $preset = Get-Content -LiteralPath $presetFile.FullName -Raw | ConvertFrom-Json
     }
     catch {
-        Write-Error "seiji-copilot-sync-settings: preset $presetName is not valid JSON: $($_.Exception.Message)"
+        Write-Error "terrarium-sync-copilot-settings: preset $presetName is not valid JSON: $($_.Exception.Message)"
         exit 1
     }
     $accumulator = Merge-Json -User $accumulator -Preset $preset -PathStr '' -PresetName $presetName -Warnings $warnings
@@ -167,7 +167,7 @@ try {
     [void]($mergedJson | ConvertFrom-Json)
 }
 catch {
-    Write-Error "seiji-copilot-sync-settings: merged result is not valid JSON: $($_.Exception.Message)"
+    Write-Error "terrarium-sync-copilot-settings: merged result is not valid JSON: $($_.Exception.Message)"
     exit 1
 }
 

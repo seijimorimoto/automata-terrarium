@@ -27,13 +27,13 @@ Install the skill with the sync scripts.
 
 ```powershell
 # Windows (PowerShell)
-.\bin\seiji-claude-sync-skills.ps1
-.\bin\seiji-copilot-sync-skills.ps1
+.\bin\terrarium-sync-claude-skills.ps1
+.\bin\terrarium-sync-copilot-skills.ps1
 ```
 
 ```sh
 # Linux / macOS
-./bin/seiji-claude-sync-skills
+./bin/terrarium-sync-claude-skills
 # POSIX Copilot sync is planned.
 ```
 

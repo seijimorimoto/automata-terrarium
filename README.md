@@ -1,6 +1,6 @@
 # automata-terrarium
 
-Reusable AI agent workflows for Claude Code and GitHub Copilot CLI: skills, agents, hooks, settings, and sync scripts.
+**Automata Terrarium** is a personal lab for growing reusable AI agent workflows. It captures experimental skills, agents, hooks, settings, and sync scripts, then shapes them into runtime-agnostic tools that can evolve across agent environments like Claude Code and GitHub Copilot CLI.
 
 `AGENTS.md` is the canonical project instruction file. `CLAUDE.md` remains as a compatibility symlink for Claude Code.
 

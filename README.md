@@ -67,7 +67,7 @@ skills\    - AI agent skills; shared or target-specific entrypoints
 
 | Command family | Claude Code | Copilot CLI | Current files | Purpose | Notes |
 |----------------|-------------|-------------|---------------|---------|-------|
-| `terrarium-install` | ✅ | ❌ | `terrarium-install`, `terrarium-install.ps1` | One-time PATH setup for `terrarium-*` commands | Breaking rename; no `seiji-*` compatibility shims are provided. |
+| `terrarium-install` | ✅ | ❌ | `terrarium-install`, `terrarium-install.ps1` | One-time PATH setup for `terrarium-*` commands | Copilot install helper is not implemented. |
 | `terrarium-sync-<runtime>` | ✅ | ⚠️ | `terrarium-sync-claude`, `terrarium-sync-claude.ps1`, `terrarium-sync-copilot.ps1` | Wrapper that runs skills, agents, hooks, then settings sync | Copilot wrapper is PowerShell-only; POSIX parity is tracked by #21. |
 | `terrarium-sync-<runtime>-skills` | ✅ | ⚠️ | `terrarium-sync-claude-skills`, `terrarium-sync-claude-skills.ps1`, `terrarium-sync-copilot-skills.ps1` | Install compatible skill entrypoints | Copilot skill sync is PowerShell-only; POSIX parity is tracked by #21. |
 | `terrarium-sync-<runtime>-agents` | ✅ | ⚠️ | `terrarium-sync-claude-agents`, `terrarium-sync-claude-agents.ps1`, `terrarium-sync-copilot-agents.ps1` | Install compatible agent/custom-agent profiles | Copilot agent sync is PowerShell-only; POSIX parity is tracked by #21. |

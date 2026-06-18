@@ -2,7 +2,7 @@
 
 Sync executables that install this repo's skills, agents, hooks, and settings into user-level runtime config directories.
 
-The command namespace is `terrarium-*`. This is a breaking rename from the previous `seiji-*` scripts; no compatibility shims are provided.
+The command namespace is `terrarium-*`.
 
 | Marker | Meaning |
 |--------|---------|
@@ -15,7 +15,7 @@ The command namespace is `terrarium-*`. This is a breaking rename from the previ
 
 | Command family | Claude Code | Copilot CLI | Current files | Purpose | Notes |
 |----------------|-------------|-------------|---------------|---------|-------|
-| `terrarium-install` | ✅ | ❌ | `terrarium-install`, `terrarium-install.ps1` | One-time PATH setup for `terrarium-*` commands | Breaking rename; no `seiji-*` compatibility shims are provided. |
+| `terrarium-install` | ✅ | ❌ | `terrarium-install`, `terrarium-install.ps1` | One-time PATH setup for `terrarium-*` commands | Copilot install helper is not implemented. |
 | `terrarium-sync-<runtime>` | ✅ | ⚠️ | `terrarium-sync-claude`, `terrarium-sync-claude.ps1`, `terrarium-sync-copilot.ps1` | Wrapper that runs skills, agents, hooks, then settings sync | Copilot wrapper is PowerShell-only; POSIX parity is tracked by #21. |
 | `terrarium-sync-<runtime>-skills` | ✅ | ⚠️ | `terrarium-sync-claude-skills`, `terrarium-sync-claude-skills.ps1`, `terrarium-sync-copilot-skills.ps1` | Install compatible skill entrypoints | Copilot skill sync is PowerShell-only; POSIX parity is tracked by #21. |
 | `terrarium-sync-<runtime>-agents` | ✅ | ⚠️ | `terrarium-sync-claude-agents`, `terrarium-sync-claude-agents.ps1`, `terrarium-sync-copilot-agents.ps1` | Install compatible agent/custom-agent profiles | Copilot agent sync is PowerShell-only; POSIX parity is tracked by #21. |
@@ -97,7 +97,6 @@ By default, settings sync scripts back up existing user settings before writing.
 
 ## What sync does not do
 
-- It does not provide compatibility shims for previous `seiji-*` command names.
 - It does not provide POSIX Copilot sync scripts; #21 tracks that work.
 - It does not auto-register or merge hook settings; #22 tracks that work.
 - It does not translate Copilot's full permission model into JSON settings; #19 tracks that work.

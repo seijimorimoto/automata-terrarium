@@ -1,4 +1,4 @@
-# seiji-copilot-sync-agents.ps1 — copy Copilot custom agent profiles to ~\.copilot\agents\
+# terrarium-sync-copilot-agents.ps1 — copy Copilot custom agent profiles to ~\.copilot\agents\
 # Use -DryRun to preview without writing.
 # Source files use <name>.copilot.md and install as <name>.agent.md.
 [CmdletBinding()]
@@ -14,7 +14,7 @@ $SrcDir    = Join-Path $RepoRoot 'agents'
 $DstDir    = Join-Path $HOME '.copilot\agents'
 
 if (-not (Test-Path -LiteralPath $SrcDir)) {
-    Write-Error "seiji-copilot-sync-agents: source not found: $SrcDir"
+    Write-Error "terrarium-sync-copilot-agents: source not found: $SrcDir"
     exit 1
 }
 

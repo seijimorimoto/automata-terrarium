@@ -1,6 +1,6 @@
-# Seiji-Claude
+# automata-terrarium
 
-Reusable AI agent workflows for Claude Code and GitHub Copilot CLI: skills, agents, hooks, settings, and sync scripts.
+**Automata Terrarium** is a personal lab for growing reusable AI agent workflows. It captures experimental skills, agents, hooks, settings, and sync scripts, then shapes them into runtime-agnostic tools that can evolve across agent environments like Claude Code and GitHub Copilot CLI.
 
 `AGENTS.md` is the canonical project instruction file. `CLAUDE.md` remains as a compatibility symlink for Claude Code.
 
@@ -48,7 +48,7 @@ skills\    - AI agent skills; shared or target-specific entrypoints
 | Type | Claude Code install location | Copilot CLI install location | Docs | Notes |
 |------|------------------------------|-------------------------------|------|-------|
 | Agents | `~\.claude\agents\` or `<project>\.claude\agents\` | `~\.copilot\agents\` or `<project>\.github\agents\` | [agents\README.md](agents/README.md) |  |
-| Bin / sync scripts | `bin\seiji-claude-*` | `bin\seiji-copilot-*` | [bin\README.md](bin/README.md) | Copilot POSIX parity is tracked by #21. |
+| Bin / sync scripts | `bin\terrarium-*` | `bin\terrarium-*` | [bin\README.md](bin/README.md) | Copilot POSIX parity is tracked by #21. |
 | Hooks | `~\.claude\hooks\` or `<project>\.claude\hooks\` | `~\.copilot\hooks\` or `<project>\.github\hooks\` | [hooks\README.md](hooks/README.md) | Registration merge automation is tracked by #22. |
 | Settings | `~\.claude\settings.json` or `<project>\.claude\settings.json` | `~\.copilot\settings.json` or `<project>\.github\copilot\settings.json` | [settings\README.md](settings/README.md) | Copilot permissions are not equivalent to Claude `permissions.allow`; see #19. |
 | Skills | `~\.claude\skills\` or `<project>\.claude\skills\` | `~\.copilot\skills\` or `<project>\.github\skills\` | [skills\README.md](skills/README.md) |  |
@@ -65,14 +65,14 @@ skills\    - AI agent skills; shared or target-specific entrypoints
 <details>
 <summary><strong>Available Sync Scripts</strong></summary>
 
-| Conceptual script | Claude Code | Copilot CLI | Current files | Purpose | Notes |
-|-------------------|-------------|-------------|---------------|---------|-------|
-| `seiji-<orchestrator>-install` | ✅ | ❌ | `seiji-claude-install`, `seiji-claude-install.ps1` | One-time PATH setup for sync commands | Copilot install helper is not implemented; broader renames are tracked by #20. |
-| `seiji-<orchestrator>-sync` | ✅ | ⚠️ | `seiji-claude-sync`, `seiji-claude-sync.ps1`, `seiji-copilot-sync.ps1` | Wrapper that runs skills, agents, hooks, then settings sync | Copilot wrapper is PowerShell-only; POSIX parity is tracked by #21. |
-| `seiji-<orchestrator>-sync-skills` | ✅ | ⚠️ | `seiji-claude-sync-skills`, `seiji-claude-sync-skills.ps1`, `seiji-copilot-sync-skills.ps1` | Install compatible skill entrypoints | Copilot skill sync is PowerShell-only; POSIX parity is tracked by #21. |
-| `seiji-<orchestrator>-sync-agents` | ✅ | ⚠️ | `seiji-claude-sync-agents`, `seiji-claude-sync-agents.ps1`, `seiji-copilot-sync-agents.ps1` | Install compatible agent/custom-agent profiles | Copilot agent sync is PowerShell-only; POSIX parity is tracked by #21. |
-| `seiji-<orchestrator>-sync-hooks` | ✅ | ⚠️ | `seiji-claude-sync-hooks`, `seiji-claude-sync-hooks.ps1`, `seiji-copilot-sync-hooks.ps1` | Install hook script files and Copilot hook JSON | Hook registration/merge automation is tracked by #22; Copilot sync is PowerShell-only (#21). |
-| `seiji-<orchestrator>-sync-settings` | ✅ | ⚠️ | `seiji-claude-sync-settings`, `seiji-claude-sync-settings.ps1`, `seiji-copilot-sync-settings.ps1` | Merge settings presets into user-level settings files | Claude reads `settings\claude\`; Copilot reads `settings\copilot\` and is PowerShell-only (#21). |
+| Command family | Claude Code | Copilot CLI | Current files | Purpose | Notes |
+|----------------|-------------|-------------|---------------|---------|-------|
+| `terrarium-install` | ✅ | ✅ | `terrarium-install`, `terrarium-install.ps1` | One-time PATH setup for `terrarium-*` commands | Only performs PATH setup; No difference between runtimes |
+| `terrarium-sync-<runtime>` | ✅ | ⚠️ | `terrarium-sync-claude`, `terrarium-sync-claude.ps1`, `terrarium-sync-copilot.ps1` | Wrapper that runs skills, agents, hooks, then settings sync | Copilot wrapper is PowerShell-only; POSIX parity is tracked by #21. |
+| `terrarium-sync-<runtime>-skills` | ✅ | ⚠️ | `terrarium-sync-claude-skills`, `terrarium-sync-claude-skills.ps1`, `terrarium-sync-copilot-skills.ps1` | Install compatible skill entrypoints | Copilot skill sync is PowerShell-only; POSIX parity is tracked by #21. |
+| `terrarium-sync-<runtime>-agents` | ✅ | ⚠️ | `terrarium-sync-claude-agents`, `terrarium-sync-claude-agents.ps1`, `terrarium-sync-copilot-agents.ps1` | Install compatible agent/custom-agent profiles | Copilot agent sync is PowerShell-only; POSIX parity is tracked by #21. |
+| `terrarium-sync-<runtime>-hooks` | ✅ | ⚠️ | `terrarium-sync-claude-hooks`, `terrarium-sync-claude-hooks.ps1`, `terrarium-sync-copilot-hooks.ps1` | Install hook script files and Copilot hook JSON | Hook registration/merge automation is tracked by #22; Copilot sync is PowerShell-only (#21). |
+| `terrarium-sync-<runtime>-settings` | ✅ | ⚠️ | `terrarium-sync-claude-settings`, `terrarium-sync-claude-settings.ps1`, `terrarium-sync-copilot-settings.ps1` | Merge settings presets into user-level settings files | Claude reads `settings\claude\`; Copilot reads `settings\copilot\` and is PowerShell-only (#21). |
 
 </details>
 
@@ -121,18 +121,18 @@ skills\    - AI agent skills; shared or target-specific entrypoints
 
 ```powershell
 # Windows (PowerShell)
-.\bin\seiji-claude-install.ps1
+.\bin\terrarium-install.ps1
 # Open a new PowerShell window so PATH refreshes.
-seiji-claude-sync
+terrarium-sync-claude
 
-.\bin\seiji-copilot-sync.ps1
+.\bin\terrarium-sync-copilot.ps1
 ```
 
 ```sh
 # Linux / macOS / POSIX
-./bin/seiji-claude-install
+./bin/terrarium-install
 # Open a new shell so PATH refreshes.
-seiji-claude-sync
+terrarium-sync-claude
 # POSIX Copilot sync is tracked by #21.
 ```
 
@@ -140,5 +140,5 @@ seiji-claude-sync
 
 ```powershell
 # Windows (PowerShell)
-.\bin\seiji-validate.ps1
+.\bin\terrarium-validate.ps1
 ```

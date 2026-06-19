@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# seiji-claude-sync-hooks — copy each <repo>/hooks/<name>/ to ~/.claude/hooks/<name>/
+# terrarium-sync-claude-hooks — copy each <repo>/hooks/<name>/ to ~/.claude/hooks/<name>/
 # Use --dry-run to preview without writing.
 #
 # This script copies hook scripts only. It does NOT register hooks in
 # ~/.claude/settings.json — that responsibility belongs to
-# seiji-claude-sync-settings, which merges settings/*.json presets.
+# terrarium-sync-claude-settings, which merges settings/*.json presets.
 set -euo pipefail
 
 DRY_RUN=0
@@ -13,19 +13,19 @@ for arg in "$@"; do
     --dry-run) DRY_RUN=1 ;;
     -h|--help)
       cat <<'EOF'
-Usage: seiji-claude-sync-hooks [--dry-run]
+Usage: terrarium-sync-claude-hooks [--dry-run]
 
 Copies each subfolder of <repo>/hooks/ to ~/.claude/hooks/<name>/.
 Existing destination folders are removed before copy so deletions in the
 source propagate. With --dry-run, prints planned actions without writing.
 
 This script copies scripts only — it does NOT register hooks in
-~/.claude/settings.json. Use seiji-claude-sync-settings for that.
+~/.claude/settings.json. Use terrarium-sync-claude-settings for that.
 EOF
       exit 0
       ;;
     *)
-      echo "seiji-claude-sync-hooks: unknown argument: $arg" >&2
+      echo "terrarium-sync-claude-hooks: unknown argument: $arg" >&2
       exit 2
       ;;
   esac
@@ -38,7 +38,7 @@ SRC_DIR="$REPO_ROOT/hooks"
 DST_DIR="$HOME/.claude/hooks"
 
 if [ ! -d "$SRC_DIR" ]; then
-  echo "seiji-claude-sync-hooks: source not found: $SRC_DIR" >&2
+  echo "terrarium-sync-claude-hooks: source not found: $SRC_DIR" >&2
   exit 1
 fi
 

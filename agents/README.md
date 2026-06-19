@@ -47,8 +47,8 @@ Agents differ from skills in three important ways:
 
 Agent sources are synced to user-level via the runtime-specific sync scripts:
 
-- Claude Code: [`bin\seiji-claude-sync-agents`](..\bin\README.md) copies each `agents\<name>\` folder to `~\.claude\agents\<name>\` and installs `<name>.claude.md` as `<name>.md`.
-- Copilot CLI: `bin\seiji-copilot-sync-agents.ps1` installs `<name>.copilot.md` as `~\.copilot\agents\<name>.agent.md`.
+- Claude Code: [`bin\terrarium-sync-claude-agents`](..\bin\README.md) copies each `agents\<name>\` folder to `~\.claude\agents\<name>\` and installs `<name>.claude.md` as `<name>.md`.
+- Copilot CLI: `bin\terrarium-sync-copilot-agents.ps1` installs `<name>.copilot.md` as `~\.copilot\agents\<name>.agent.md`.
 
 The Claude script also accepts flat `agents\<name>.md` entries for compatibility with externally-authored agents, but new agents in this repo should follow the folder convention.
 

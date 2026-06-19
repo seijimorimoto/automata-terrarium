@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# seiji-claude-sync-skills — copy each <repo>/skills/<name>/ to ~/.claude/skills/<name>/
+# terrarium-sync-claude-skills — copy each <repo>/skills/<name>/ to ~/.claude/skills/<name>/
 # Use --dry-run to preview without writing.
 set -euo pipefail
 
@@ -9,7 +9,7 @@ for arg in "$@"; do
     --dry-run) DRY_RUN=1 ;;
     -h|--help)
       cat <<'EOF'
-Usage: seiji-claude-sync-skills [--dry-run]
+Usage: terrarium-sync-claude-skills [--dry-run]
 
 Copies each subfolder of <repo>/skills/ to ~/.claude/skills/<name>/.
 Existing destination folders are removed before copy so deletions in the
@@ -18,7 +18,7 @@ EOF
       exit 0
       ;;
     *)
-      echo "seiji-claude-sync-skills: unknown argument: $arg" >&2
+      echo "terrarium-sync-claude-skills: unknown argument: $arg" >&2
       exit 2
       ;;
   esac
@@ -31,7 +31,7 @@ SRC_DIR="$REPO_ROOT/skills"
 DST_DIR="$HOME/.claude/skills"
 
 if [ ! -d "$SRC_DIR" ]; then
-  echo "seiji-claude-sync-skills: source not found: $SRC_DIR" >&2
+  echo "terrarium-sync-claude-skills: source not found: $SRC_DIR" >&2
   exit 1
 fi
 

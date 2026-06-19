@@ -1,6 +1,6 @@
 # Claude settings
 
-Claude Code settings fragments merge into `~\.claude\settings.json` with `bin\seiji-claude-sync-settings.ps1`.
+Claude Code settings fragments merge into `~\.claude\settings.json` with `bin\terrarium-sync-claude-settings.ps1`.
 
 ## Available presets
 
@@ -16,12 +16,12 @@ Claude Code settings fragments merge into `~\.claude\settings.json` with `bin\se
 
 ```powershell
 # Windows (PowerShell)
-.\bin\seiji-claude-sync-settings.ps1
-.\bin\seiji-claude-sync-settings.ps1 -DryRun
+.\bin\terrarium-sync-claude-settings.ps1
+.\bin\terrarium-sync-claude-settings.ps1 -DryRun
 ```
 
 ```sh
 # Linux / macOS / POSIX
-./bin/seiji-claude-sync-settings
-./bin/seiji-claude-sync-settings --dry-run
+./bin/terrarium-sync-claude-settings
+./bin/terrarium-sync-claude-settings --dry-run
 ```

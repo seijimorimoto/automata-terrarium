@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# seiji-claude-sync-agents — copy <repo>/agents/ entries to ~/.claude/agents/.
+# terrarium-sync-claude-agents — copy <repo>/agents/ entries to ~/.claude/agents/.
 # Use --dry-run to preview without writing.
 #
 # Two layouts are supported:
@@ -17,7 +17,7 @@ for arg in "$@"; do
     --dry-run) DRY_RUN=1 ;;
     -h|--help)
       cat <<'EOF'
-Usage: seiji-claude-sync-agents [--dry-run]
+Usage: terrarium-sync-claude-agents [--dry-run]
 
 Copies each entry under <repo>/agents/ to ~/.claude/agents/:
   - agents/<name>.md       -> ~/.claude/agents/<name>.md
@@ -29,7 +29,7 @@ EOF
       exit 0
       ;;
     *)
-      echo "seiji-claude-sync-agents: unknown argument: $arg" >&2
+      echo "terrarium-sync-claude-agents: unknown argument: $arg" >&2
       exit 2
       ;;
   esac
@@ -42,7 +42,7 @@ SRC_DIR="$REPO_ROOT/agents"
 DST_DIR="$HOME/.claude/agents"
 
 if [ ! -d "$SRC_DIR" ]; then
-  echo "seiji-claude-sync-agents: source not found: $SRC_DIR" >&2
+  echo "terrarium-sync-claude-agents: source not found: $SRC_DIR" >&2
   exit 1
 fi
 

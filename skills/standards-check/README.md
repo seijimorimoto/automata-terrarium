@@ -31,7 +31,7 @@ cp -r skills/standards-check <your-project>/.claude/skills/   # project-level
 cp -r skills/standards-check ~/.claude/skills/                # user-level
 ```
 
-If you're using `bin/seiji-claude-sync`, just run it once and `/standards-check` lands at the user level along with every other skill.
+If you're using `bin/terrarium-sync-claude`, just run it once and `/standards-check` lands at the user level along with every other skill.
 
 ## Permissions
 

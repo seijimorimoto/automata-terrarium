@@ -29,14 +29,14 @@ Claude presets live under `settings\claude\` and merge into `~\.claude\settings.
 
 ```powershell
 # Windows (PowerShell)
-.\bin\seiji-claude-sync-settings.ps1
-.\bin\seiji-claude-sync-settings.ps1 -DryRun
+.\bin\terrarium-sync-claude-settings.ps1
+.\bin\terrarium-sync-claude-settings.ps1 -DryRun
 ```
 
 ```sh
 # Linux / macOS / POSIX
-./bin/seiji-claude-sync-settings
-./bin/seiji-claude-sync-settings --dry-run
+./bin/terrarium-sync-claude-settings
+./bin/terrarium-sync-claude-settings --dry-run
 ```
 
 ## Copilot CLI settings
@@ -45,8 +45,8 @@ Copilot JSON presets live under `settings\copilot\` and merge into `~\.copilot\s
 
 ```powershell
 # Windows (PowerShell)
-.\bin\seiji-copilot-sync-settings.ps1
-.\bin\seiji-copilot-sync-settings.ps1 -DryRun
+.\bin\terrarium-sync-copilot-settings.ps1
+.\bin\terrarium-sync-copilot-settings.ps1 -DryRun
 ```
 
 Copilot shell, MCP, URL, and path permissions are not represented by the same JSON schema as Claude Code `permissions.allow`. Use launch flags such as `--allow-tool`, `--deny-tool`, `--allow-url`, `/mcp` setup, skill `allowed-tools`, agent `tools`, or hooks instead of implying JSON parity.

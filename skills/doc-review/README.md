@@ -28,7 +28,7 @@ cp -r skills/doc-review <your-project>/.claude/skills/   # project-level
 cp -r skills/doc-review ~/.claude/skills/                # user-level
 ```
 
-If you're using `bin/seiji-claude-sync`, it lands at the user level along with every other skill.
+If you're using `bin/terrarium-sync-claude`, it lands at the user level along with every other skill.
 
 ## Permissions
 

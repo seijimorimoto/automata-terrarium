@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# seiji-claude-install — add this repo's bin/ to the user's shell PATH.
+# terrarium-install — add this repo's bin/ to the user's shell PATH.
 #
-# Idempotent: a marker block (`# >>> seiji-claude bin >>> ... # <<< seiji-claude bin <<<`)
+# Idempotent: a marker block (`# >>> terrarium bin >>> ... # <<< terrarium bin <<<`)
 # is appended to ~/.bashrc and ~/.zshrc (whichever exist). Re-running detects
 # the marker and does nothing.
 #
@@ -20,7 +20,7 @@ for arg in "$@"; do
     --uninstall) UNINSTALL=1 ;;
     -h|--help)
       cat <<'EOF'
-Usage: seiji-claude-install [--dry-run] [--uninstall]
+Usage: terrarium-install [--dry-run] [--uninstall]
 
 Adds the repo's bin/ directory to the user's shell PATH by appending a
 marker block to ~/.bashrc and ~/.zshrc (whichever exist). Idempotent —
@@ -32,7 +32,7 @@ EOF
       exit 0
       ;;
     *)
-      echo "seiji-claude-install: unknown argument: $arg" >&2
+      echo "terrarium-install: unknown argument: $arg" >&2
       exit 2
       ;;
   esac
@@ -42,8 +42,8 @@ SCRIPT_PATH="$(readlink -f "$0")"
 SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
 BIN_DIR="$SCRIPT_DIR"
 
-START_MARKER='# >>> seiji-claude bin >>>'
-END_MARKER='# <<< seiji-claude bin <<<'
+START_MARKER='# >>> terrarium bin >>>'
+END_MARKER='# <<< terrarium bin <<<'
 PATH_LINE="export PATH=\"\$PATH:$BIN_DIR\""
 
 CANDIDATES=()
@@ -61,7 +61,7 @@ for profile in "${CANDIDATES[@]}"; do
         echo "[dry-run] would remove marker block from $profile"
       else
         # Remove between start and end markers (inclusive)
-        tmp="$profile.seiji-claude-install.tmp"
+        tmp="$profile.terrarium-install.tmp"
         awk -v start="$START_MARKER" -v end="$END_MARKER" '
           $0 == start { skip = 1; next }
           $0 == end { skip = 0; next }
@@ -98,5 +98,5 @@ done
 if [ "$UNINSTALL" -eq 0 ] && [ "$DRY_RUN" -eq 0 ]; then
   echo
   echo "Open a new shell, or run:  source ~/.bashrc   (or your shell's profile)"
-  echo "to pick up the updated PATH. Then:  seiji-claude-sync"
+  echo "to pick up the updated PATH. Then:  terrarium-sync-claude"
 fi

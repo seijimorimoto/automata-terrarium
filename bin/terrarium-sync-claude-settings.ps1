@@ -1,4 +1,4 @@
-# seiji-claude-sync-settings.ps1 — merge Claude settings presets into ~\.claude\settings.json
+# terrarium-sync-claude-settings.ps1 — merge Claude settings presets into ~\.claude\settings.json
 # Use -DryRun to print the merged result and warnings without writing.
 # Use -NoBackup to skip writing the timestamped backup file.
 #
@@ -27,7 +27,7 @@ $UserConfDir = Join-Path $HOME '.claude'
 $UserConfig  = Join-Path $UserConfDir 'settings.json'
 
 if (-not (Test-Path -LiteralPath $PresetsDir)) {
-    Write-Error "seiji-claude-sync-settings: presets directory not found: $PresetsDir"
+    Write-Error "terrarium-sync-claude-settings: presets directory not found: $PresetsDir"
     exit 1
 }
 
@@ -147,7 +147,7 @@ if (Test-Path -LiteralPath $UserConfig) {
         try {
             $accumulator = $userText | ConvertFrom-Json
         } catch {
-            Write-Error "seiji-claude-sync-settings: existing $UserConfig is not valid JSON: $($_.Exception.Message)"
+            Write-Error "terrarium-sync-claude-settings: existing $UserConfig is not valid JSON: $($_.Exception.Message)"
             exit 1
         }
     }
@@ -160,7 +160,7 @@ $warnings = New-Object System.Collections.ArrayList
 # Merge each Claude preset alphabetically for deterministic output
 $presetFiles = Get-ChildItem -LiteralPath $PresetsDir -Filter '*.json' -File | Sort-Object Name
 if ($presetFiles.Count -eq 0) {
-    Write-Host "seiji-claude-sync-settings: no presets found in $PresetsDir; nothing to merge"
+    Write-Host "terrarium-sync-claude-settings: no presets found in $PresetsDir; nothing to merge"
     exit 0
 }
 
@@ -170,7 +170,7 @@ foreach ($presetFile in $presetFiles) {
     try {
         $preset = $presetText | ConvertFrom-Json
     } catch {
-        Write-Error "seiji-claude-sync-settings: preset $presetName is not valid JSON: $($_.Exception.Message)"
+        Write-Error "terrarium-sync-claude-settings: preset $presetName is not valid JSON: $($_.Exception.Message)"
         exit 1
     }
     $accumulator = Merge-Json -User $accumulator -Preset $preset -PathStr '' -PresetName $presetName -Warnings $warnings
@@ -181,7 +181,7 @@ $mergedJson = $accumulator | ConvertTo-Json -Depth 100
 try {
     [void]($mergedJson | ConvertFrom-Json)
 } catch {
-    Write-Error "seiji-claude-sync-settings: merged result is not valid JSON: $($_.Exception.Message)"
+    Write-Error "terrarium-sync-claude-settings: merged result is not valid JSON: $($_.Exception.Message)"
     exit 1
 }
 

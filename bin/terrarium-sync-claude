@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# seiji-claude-sync — run every per-category sync in order.
+# terrarium-sync-claude — run every per-category sync in order.
 #
 # Order: skills -> agents -> hooks -> settings. Settings runs last so that
 # any hook registrations referencing scripts have the script files in
 # place first. Pass --dry-run to preview without writing.
 # Pass --no-backup to skip the settings-file backup (forwarded to
-# seiji-claude-sync-settings only — the other steps don't make backups).
+# terrarium-sync-claude-settings only — the other steps don't make backups).
 set -euo pipefail
 
 DRY_RUN=()
@@ -16,24 +16,24 @@ for arg in "$@"; do
     --no-backup) NO_BACKUP=(--no-backup) ;;
     -h|--help)
       cat <<'EOF'
-Usage: seiji-claude-sync [--dry-run] [--no-backup]
+Usage: terrarium-sync-claude [--dry-run] [--no-backup]
 
 Runs every per-category sync in order:
-  1. seiji-claude-sync-skills
-  2. seiji-claude-sync-agents
-  3. seiji-claude-sync-hooks
-  4. seiji-claude-sync-settings
+  1. terrarium-sync-claude-skills
+  2. terrarium-sync-claude-agents
+  3. terrarium-sync-claude-hooks
+  4. terrarium-sync-claude-settings
 
 Pass --dry-run to preview without writing. Settings runs last so any hook
 registrations land after their script files are in place.
 
---no-backup is forwarded only to seiji-claude-sync-settings (the other
+--no-backup is forwarded only to terrarium-sync-claude-settings (the other
 steps don't produce backups).
 EOF
       exit 0
       ;;
     *)
-      echo "seiji-claude-sync: unknown argument: $arg" >&2
+      echo "terrarium-sync-claude: unknown argument: $arg" >&2
       exit 2
       ;;
   esac
@@ -50,16 +50,16 @@ run_step() {
   shift
   local script="$SCRIPT_DIR/$label"
   if [ ! -x "$script" ] && [ ! -f "$script" ]; then
-    echo "seiji-claude-sync: missing $label" >&2
+    echo "terrarium-sync-claude: missing $label" >&2
     exit 1
   fi
   echo "==> $label"
   "$script" "$@"
 }
 
-run_step "seiji-claude-sync-skills"   "${COMMON_ARGS[@]}"
-run_step "seiji-claude-sync-agents"   "${COMMON_ARGS[@]}"
-run_step "seiji-claude-sync-hooks"    "${COMMON_ARGS[@]}"
-run_step "seiji-claude-sync-settings" "${COMMON_ARGS[@]}" "${NO_BACKUP[@]}"
+run_step "terrarium-sync-claude-skills"   "${COMMON_ARGS[@]}"
+run_step "terrarium-sync-claude-agents"   "${COMMON_ARGS[@]}"
+run_step "terrarium-sync-claude-hooks"    "${COMMON_ARGS[@]}"
+run_step "terrarium-sync-claude-settings" "${COMMON_ARGS[@]}" "${NO_BACKUP[@]}"
 
 echo "==> done"

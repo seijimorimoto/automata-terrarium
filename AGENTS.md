@@ -59,7 +59,7 @@ skills/      - AI agent skills (shared or target-specific variants per skill)
 agents/      - AI subagents/custom agents (Claude .md and Copilot .agent.md variants)
 hooks/       - Event-driven hook scripts and runtime-specific hook registrations
 settings/    - Reusable settings snippets and permission/config presets
-bin/         - Sync executables (seiji-claude-*, seiji-copilot-*)
+bin/         - Sync executables (terrarium-*)
 git-hooks/   - Git hooks for repo workflow (not Claude hooks)
 ```
 
@@ -175,7 +175,7 @@ git-hooks/   - Git hooks for repo workflow (not Claude hooks)
 - Claude sync installs Claude-compatible artifacts and filters/skips Copilot-only artifacts.
 - Copilot sync installs Copilot-compatible artifacts and skips Claude-only artifacts.
 - Sync scripts should support `-DryRun`.
-- Use `bin\seiji-validate.ps1` to enforce dual-target invariants such as instruction-file compatibility, skill/agent entrypoint layout, Copilot frontmatter requirements, README availability coverage, and target-specific settings conventions.
+- Use `bin\terrarium-validate.ps1` to enforce dual-target invariants such as instruction-file compatibility, skill/agent entrypoint layout, Copilot frontmatter requirements, README availability coverage, and target-specific settings conventions.
 
 ## Security
 

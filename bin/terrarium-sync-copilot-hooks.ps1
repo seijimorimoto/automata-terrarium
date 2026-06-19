@@ -1,4 +1,4 @@
-# seiji-copilot-sync-hooks.ps1 — install Copilot hook scripts and JSON configs to ~\.copilot\hooks\
+# terrarium-sync-copilot-hooks.ps1 — install Copilot hook scripts and JSON configs to ~\.copilot\hooks\
 # Use -DryRun to preview without writing.
 [CmdletBinding()]
 param(
@@ -13,7 +13,7 @@ $SrcDir    = Join-Path $RepoRoot 'hooks'
 $DstDir    = Join-Path $HOME '.copilot\hooks'
 
 if (-not (Test-Path -LiteralPath $SrcDir)) {
-    Write-Error "seiji-copilot-sync-hooks: source not found: $SrcDir"
+    Write-Error "terrarium-sync-copilot-hooks: source not found: $SrcDir"
     exit 1
 }
 

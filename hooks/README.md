@@ -26,11 +26,11 @@ Hook sync scripts copy hook script files. They do **not** automatically merge ho
 Install script files:
 
 ```powershell
-.\bin\seiji-claude-sync-hooks.ps1
+.\bin\terrarium-sync-claude-hooks.ps1
 ```
 
 ```sh
-./bin/seiji-claude-sync-hooks
+./bin/terrarium-sync-claude-hooks
 ```
 
 Then use the checked-in preset `hooks\<name>\claude.hooks.json` as the registration template for `~\.claude\settings.json` or `<project-root>\.claude\settings.json`. Replace template placeholders such as `{{CLAUDE_HOOK_DIR}}` with the installed hook folder path.
@@ -40,7 +40,7 @@ Then use the checked-in preset `hooks\<name>\claude.hooks.json` as the registrat
 Install script files and Copilot hook JSON:
 
 ```powershell
-.\bin\seiji-copilot-sync-hooks.ps1
+.\bin\terrarium-sync-copilot-hooks.ps1
 ```
 
 For Linux/macOS, POSIX Copilot sync parity is tracked by #21.

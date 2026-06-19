@@ -1,4 +1,4 @@
-# seiji-copilot-sync.ps1 — run every available Copilot per-category sync in order.
+# terrarium-sync-copilot.ps1 — run every available Copilot per-category sync in order.
 #
 # Order as categories are implemented: skills -> agents -> hooks -> settings.
 # Pass -DryRun to preview without writing.
@@ -28,14 +28,14 @@ function Invoke-StepIfPresent {
     else              { & $script }
 
     if ($LASTEXITCODE -is [int] -and $LASTEXITCODE -gt 0) {
-        Write-Error "seiji-copilot-sync: $Name failed with exit code $LASTEXITCODE"
+        Write-Error "terrarium-sync-copilot: $Name failed with exit code $LASTEXITCODE"
         exit $LASTEXITCODE
     }
 }
 
-Invoke-StepIfPresent 'seiji-copilot-sync-skills.ps1'   -ChildDryRun:$DryRun
-Invoke-StepIfPresent 'seiji-copilot-sync-agents.ps1'   -ChildDryRun:$DryRun
-Invoke-StepIfPresent 'seiji-copilot-sync-hooks.ps1'    -ChildDryRun:$DryRun
-Invoke-StepIfPresent 'seiji-copilot-sync-settings.ps1' -ChildDryRun:$DryRun
+Invoke-StepIfPresent 'terrarium-sync-copilot-skills.ps1'   -ChildDryRun:$DryRun
+Invoke-StepIfPresent 'terrarium-sync-copilot-agents.ps1'   -ChildDryRun:$DryRun
+Invoke-StepIfPresent 'terrarium-sync-copilot-hooks.ps1'    -ChildDryRun:$DryRun
+Invoke-StepIfPresent 'terrarium-sync-copilot-settings.ps1' -ChildDryRun:$DryRun
 
 Write-Host "==> done"

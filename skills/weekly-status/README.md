@@ -80,6 +80,9 @@ The skill produces a markdown report grouped by ADO work stream when work item h
 ```markdown
 # Weekly Status — 2026-W12 (2026-03-16 – 2026-03-22)
 
+## Highlights
+- Fixed the auth token expiry crash and identified the next latency-regression validation step.
+
 ## ReadServices
 - **[#78901](https://dev.azure.com/org/project/_workitems/edit/78901)**: Fix token expiry crash in auth middleware (Bug, Resolved, ReadServices\Auth)
   - **Progress this week:** Completed the token refresh fix and linked implementation PR.

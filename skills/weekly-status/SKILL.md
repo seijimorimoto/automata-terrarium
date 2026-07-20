@@ -281,6 +281,8 @@ Only runs after the user confirms the grouping. Combine data using the **confirm
 
 - Use the confirmed groups from Step 4 as the feature-area sections
 - Prefer the ADO parent/child hierarchy as the report structure when a group contains ADO work items
+- When a group contains a parent Feature/Epic and child User Stories/Tasks, render the parent as the top-level outcome bullet and nest related children under a **Child work:** sub-bullet. Do not list the parent and children as peer accomplishments.
+- Put shared narrative on the parent item: common progress, cross-child evidence, overall impact, and next step. Use child bullets only for distinct week-bounded deltas that are specific to that child item.
 - For merged items (e.g., `[P1]+[T1]`), combine into a single outcome entry — use the ADO work item as primary when present, otherwise use the PR, and incorporate supporting context from Todoist tasks, WorkIQ candidates, or work log entries
 - Keep active/stale/follow-up labels internal. Do **not** add **Active This Week** or **Stale** inventory sections to the final report.
 - When source signals conflict or are unclear, place the item in a concise **Needs Follow-up** entry only if it affects the coming week
@@ -292,6 +294,7 @@ Before writing the report, build a compact evidence model for each confirmed gro
 - **Work stream / owning ADO item**: parent item, child items, state, and area path
 - **Weekly deltas**: comments, state changes, description/title changes, PR updates, Todoist completions, WorkIQ candidates, and work log entries within startDate–endDate
 - **Outcome**: the progress or decision implied by the deltas
+- **Child work**: distinct week-bounded deltas per child item; omit or keep terse when the child only repeats the parent outcome
 - **Evidence references**: ADO item links, PR links, Todoist links, WorkIQ candidate IDs, and work log IDs
 - **Next step / risk**: only when the evidence supports one
 
@@ -300,8 +303,8 @@ Use the evidence model to write outcome-oriented bullets. Avoid repeating the sa
 #### Hyperlinked References
 
 Use web UI URLs from tool responses — **never** use the `url` field for ADO items (it points to the REST API and renders as raw JSON):
-- ADO Work Items: `[#78901]({_links.html.href})` — the web UI edit page
-- ADO PRs: `[PR #123]({_links.web.href})` — the web UI PR page
+- ADO Work Items: `**[#78901]({_links.html.href}) <title>**` — bold the linked ID and title together
+- ADO PRs: `**[PR #123]({_links.web.href}) <title>**` — bold the linked PR ID and title together
 - Todoist tasks: `[task title]({url})` — Todoist's `url` field is already a web link
 - WorkIQ candidates: summarize as source type and date only unless the user explicitly approves a link or quotation during review
 
@@ -314,13 +317,16 @@ Use web UI URLs from tool responses — **never** use the `url` field for ADO it
 - <Most important outcome or decision from the week> ([#78901](url), [PR #123](url))
 
 ## <ADO Work Stream / Feature Area 1>
-- **[#78901](url)**: <Work item title> (<Type>, <State>, <Area Path>)
-  - **Progress this week:** <week-bounded summary from comments, description changes, PRs, Todoist, WorkIQ, and work log>
-  - **Evidence:** [PR #123](url), [task title](todoist-url), WorkIQ Teams decision on <date>, W1
+- **[#78901](url) <Parent Feature title>** (<Type>, <State>, <Area Path>)
+  - **Progress this week:** <shared week-bounded outcome from comments, description changes, PRs, Todoist, WorkIQ, and work log>
+  - **Child work:**
+    - **[#78902](url) <Child User Story title>**: <distinct week-bounded delta for this child>
+    - **[#78903](url) <Child Task title>**: <distinct week-bounded delta for this child>
+  - **Evidence:** **[PR #123](url) <PR title>**, [task title](todoist-url), WorkIQ Teams decision on <date>, W1
   - **Next:** <next step, only if clear from evidence>
 
 ## <Feature Area / Project 2>
-- **[PR #456](url)**: <PR title> (<N> files changed) — <Completed|Active>
+- **[PR #456](url) <PR title>** (<N> files changed) — <Completed|Active>
   - **Progress this week:** <outcome summary from the PR and related tasks>
   - **Evidence:** [task title](todoist-url)
 
@@ -356,6 +362,9 @@ Before presenting or archiving the report, check:
 - Every main claim is grounded in week-bounded evidence.
 - Related ADO items, PRs, Todoist tasks, WorkIQ candidates, and work log entries are deduplicated into one outcome where possible.
 - PR-only items have been linked back to ADO work items when relationships or titles support it.
+- Parent and child ADO items are not flattened into peer bullets when a clear hierarchy exists.
+- Shared narrative is not duplicated across parent and child items; children only carry distinct deltas.
+- The full artifact identity is bolded together: linked ID plus title, not only the ID.
 - Terminal inactive ADO states are not described as stale or pending follow-up unless they changed during the report week.
 - The report does not contain raw **Active This Week** or **Stale** inventory sections.
 - WorkIQ content is included only when confirmed in the review phase, and the archived report contains synthesized outcomes rather than raw email, Teams, or meeting text.

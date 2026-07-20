@@ -86,13 +86,16 @@ The skill produces a markdown report grouped by ADO work stream when work item h
 - Fixed the auth token expiry crash and identified the next latency-regression validation step.
 
 ## ReadServices
-- **[#78901](https://dev.azure.com/org/project/_workitems/edit/78901)**: Fix token expiry crash in auth middleware (Bug, Resolved, ReadServices\Auth)
+- **[#78901](https://dev.azure.com/org/project/_workitems/edit/78901) Improve auth middleware reliability** (Feature, Active, ReadServices\Auth)
   - **Progress this week:** Completed the token refresh fix and linked implementation PR.
-  - **Evidence:** [PR #4521](https://dev.azure.com/org/project/_git/repo/pullrequest/4521), ADO discussion update, Todoist completion.
+  - **Child work:**
+    - **[#78911](https://dev.azure.com/org/project/_workitems/edit/78911) Fix token expiry crash in auth middleware**: Added clock-skew handling and moved the bug toward resolution.
+    - **[#78912](https://dev.azure.com/org/project/_workitems/edit/78912) Validate token refresh behavior**: Captured the remaining validation path for next week.
+  - **Evidence:** **[PR #4521](https://dev.azure.com/org/project/_git/repo/pullrequest/4521) Add token refresh clock-skew handling**, ADO discussion update, Todoist completion.
   - **Impact:** Added a 5-minute clock-skew buffer to prevent token expiry crashes.
 
 ## NotificationServices
-- **[#78902](https://dev.azure.com/org/project/_workitems/edit/78902)**: Investigate latency regression in event pipeline (Task, Active, NotificationServices)
+- **[#78902](https://dev.azure.com/org/project/_workitems/edit/78902) Investigate latency regression in event pipeline** (Task, Active, NotificationServices)
   - **Progress this week:** Profiling identified serialization as the likely bottleneck.
   - **Evidence:** ADO comment from 2026-03-18, WorkIQ Teams discussion from 2026-03-19, [Review Q1 OKR draft](https://todoist.com/app/task/123456), work log entry.
   - **Next:** Validate the serialization fix candidate next week.

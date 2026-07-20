@@ -167,6 +167,27 @@ Read the file `<statusRepoPath>/work-log/<startDate>_to_<endDate>.md` if it exis
    - **Project name**
    - **URL**: use the `url` field from the task object in the tool response
 
+#### 3e. WorkIQ Candidate Evidence
+
+If the WorkIQ MCP server is available, use the available WorkIQ MCP equivalent of `ask` to gather week-bounded candidate evidence from Microsoft 365 sources such as email, Teams messages, meetings, and files. Do not add a configuration key for this source.
+
+Ask for work-relevant activity during startDate–endDate that may not be captured in ADO, PRs, Todoist, or the local work log. Focus the query on:
+- Decisions, approvals, and planning discussions
+- Follow-ups or action items from email, Teams, or meetings
+- Reviews, design discussions, and coordination work
+- Files or meeting artifacts that changed the status or next step of a work stream
+
+When the tool supports timezone input, pass the user's local IANA timezone. If WorkIQ is unavailable or fails, continue without it and mention the missing source in the review phase only if it materially affects confidence.
+
+For each WorkIQ candidate, capture:
+- **Synthesized outcome**: a short summary in your own words
+- **Source type**: email, Teams, meeting, file, or mixed
+- **Date or date range**
+- **Likely related ADO work item, PR, Todoist task, or work-log entry** when there is a clear match
+- **Confidence**: strong, possible, or weak
+
+Treat WorkIQ output as ambient evidence. Do **not** copy raw email, Teams, or meeting text into the report or archive. Do not quote people unless the user explicitly approves it during review.
+
 ### 4. Present Items and Propose Grouping
 
 Before synthesizing the final report, present all collected data to the user for review.
@@ -178,6 +199,7 @@ Display a flat list of all items from every source, using prefixed identifiers f
 - `A<n>` = ADO work item with week-bounded activity or relevant hierarchy context (e.g., `A1`, `A2`)
 - `T<n>` = Todoist completed task (e.g., `T1`, `T2`)
 - `W<n>` = Work log entry (e.g., `W1`, `W2`)
+- `I<n>` = WorkIQ candidate insight (e.g., `I1`, `I2`)
 
 Format:
 ```markdown
@@ -203,18 +225,22 @@ Format:
 [W1] 2026-03-23: Cleaned up ADO items assigned to me
 [W2] 2026-03-25: Created GEAR-CAP request for OneCert domain registrations...
 [W3] 2026-03-27: Added new MOBR v2 pipeline for deploying SCP 1P...
+
+**WorkIQ Candidate Insights:**
+[I1] Teams/meeting: Decision to validate serialization fix candidate next week (2026-03-19, possible match: A3)
+[I2] Email: Follow-up requested for SCP 1P onboarding approval (2026-03-25, strong match: A2)
 ```
 
 #### Part B — Show proposed grouping
 
-Propose work-stream groups using the ADO work item hierarchy as the primary structure. Attach related PRs, commits, Todoist tasks, and work log entries under the most specific matching work item. If a PR or task cannot be linked to an ADO item, group it by feature area as a fallback. Use the item IDs for reference:
+Propose work-stream groups using the ADO work item hierarchy as the primary structure. Attach related PRs, commits, Todoist tasks, WorkIQ candidates, and work log entries under the most specific matching work item. If a PR, task, or WorkIQ candidate cannot be linked to an ADO item, group it by feature area as a fallback. Use the item IDs for reference:
 
 ```markdown
 ## Proposed Grouping
 
 **Group 1 — [A2] SCP 1P App Onboarding:**
   [A2]
-  └─ [A1]+[P4]+[W2]+[W3] (linked work item, PR, and work log evidence)
+  └─ [A1]+[P4]+[W2]+[W3]+[I2] (linked work item, PR, work log, and WorkIQ evidence)
 
 **Group 2 — ENST / Notification Services Cloud:**
   [P1]+[T1] (merged — same IKeyVaultReader DI fix)
@@ -222,7 +248,7 @@ Propose work-stream groups using the ADO work item hierarchy as the primary stru
   [P3]
 
 **Group 3 — On Call & Issues:**
-  [A3], [T3]
+  [A3], [T3], [I1]
 
 **Ungrouped:**
   [W1] (standalone — ADO cleanup)
@@ -237,6 +263,7 @@ Prompt the user:
 > - Merge items: "merge A1 with W2"
 > - Split items: "split P1 and T1"
 > - Rename groups: "rename Group 2 to 'MEO Certificate Setup'"
+> - Include or remove WorkIQ insights: "remove I1" / "include I2 in Group 1"
 > - Add/remove groups
 
 **If the user requests changes:**
@@ -254,20 +281,21 @@ Only runs after the user confirms the grouping. Combine data using the **confirm
 
 - Use the confirmed groups from Step 4 as the feature-area sections
 - Prefer the ADO parent/child hierarchy as the report structure when a group contains ADO work items
-- For merged items (e.g., `[P1]+[T1]`), combine into a single outcome entry — use the ADO work item as primary when present, otherwise use the PR, and incorporate supporting context from Todoist tasks or work log entries
+- For merged items (e.g., `[P1]+[T1]`), combine into a single outcome entry — use the ADO work item as primary when present, otherwise use the PR, and incorporate supporting context from Todoist tasks, WorkIQ candidates, or work log entries
 - Keep active/stale/follow-up labels internal. Do **not** add **Active This Week** or **Stale** inventory sections to the final report.
 - When source signals conflict or are unclear, place the item in a concise **Needs Follow-up** entry only if it affects the coming week
+- Include WorkIQ evidence only when the user keeps it in the confirmed grouping. Omit removed WorkIQ candidates entirely.
 
 #### Evidence Model
 
 Before writing the report, build a compact evidence model for each confirmed group:
 - **Work stream / owning ADO item**: parent item, child items, state, and area path
-- **Weekly deltas**: comments, state changes, description/title changes, PR updates, Todoist completions, and work log entries within startDate–endDate
+- **Weekly deltas**: comments, state changes, description/title changes, PR updates, Todoist completions, WorkIQ candidates, and work log entries within startDate–endDate
 - **Outcome**: the progress or decision implied by the deltas
-- **Evidence references**: ADO item links, PR links, Todoist links, and work log IDs
+- **Evidence references**: ADO item links, PR links, Todoist links, WorkIQ candidate IDs, and work log IDs
 - **Next step / risk**: only when the evidence supports one
 
-Use the evidence model to write outcome-oriented bullets. Avoid repeating the same work across ADO, PR, Todoist, and work-log sections.
+Use the evidence model to write outcome-oriented bullets. Avoid repeating the same work across ADO, PR, Todoist, WorkIQ, and work-log sections.
 
 #### Hyperlinked References
 
@@ -275,6 +303,7 @@ Use web UI URLs from tool responses — **never** use the `url` field for ADO it
 - ADO Work Items: `[#78901]({_links.html.href})` — the web UI edit page
 - ADO PRs: `[PR #123]({_links.web.href})` — the web UI PR page
 - Todoist tasks: `[task title]({url})` — Todoist's `url` field is already a web link
+- WorkIQ candidates: summarize as source type and date only unless the user explicitly approves a link or quotation during review
 
 #### Detailed Format
 
@@ -286,8 +315,8 @@ Use web UI URLs from tool responses — **never** use the `url` field for ADO it
 
 ## <ADO Work Stream / Feature Area 1>
 - **[#78901](url)**: <Work item title> (<Type>, <State>, <Area Path>)
-  - **Progress this week:** <week-bounded summary from comments, description changes, PRs, Todoist, and work log>
-  - **Evidence:** [PR #123](url), [task title](todoist-url), W1
+  - **Progress this week:** <week-bounded summary from comments, description changes, PRs, Todoist, WorkIQ, and work log>
+  - **Evidence:** [PR #123](url), [task title](todoist-url), WorkIQ Teams decision on <date>, W1
   - **Next:** <next step, only if clear from evidence>
 
 ## <Feature Area / Project 2>
@@ -325,10 +354,11 @@ Use web UI URLs from tool responses — **never** use the `url` field for ADO it
 
 Before presenting or archiving the report, check:
 - Every main claim is grounded in week-bounded evidence.
-- Related ADO items, PRs, Todoist tasks, and work log entries are deduplicated into one outcome where possible.
+- Related ADO items, PRs, Todoist tasks, WorkIQ candidates, and work log entries are deduplicated into one outcome where possible.
 - PR-only items have been linked back to ADO work items when relationships or titles support it.
 - Terminal inactive ADO states are not described as stale or pending follow-up unless they changed during the report week.
 - The report does not contain raw **Active This Week** or **Stale** inventory sections.
+- WorkIQ content is included only when confirmed in the review phase, and the archived report contains synthesized outcomes rather than raw email, Teams, or meeting text.
 
 ### 6. Archive
 

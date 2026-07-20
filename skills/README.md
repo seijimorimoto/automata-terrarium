@@ -25,7 +25,7 @@ Use shared `SKILL.md` when the same entrypoint works for both runtimes. Prefer r
 | `/log` | ✅ | ✅ | Append timestamped work entries to the current week's log | [SKILL.md](log/SKILL.md) | Uses agent-neutral `~\.agents\` work-status paths. |
 | `/quick-pr` | ✅ | ✅ | Create a branch, commit, push, open a GitHub PR, optionally merge, and clean up | [README](quick-pr/README.md) | Requires GitHub CLI authentication. |
 | `/standards-check` | ✅ | ✅ | Discover project instructions and standards files, check the diff, and emit tiered JSON findings | [README](standards-check/README.md) | Uses local git and helper scripts. |
-| `/weekly-status` | ✅ | ✅ | Generate weekly status from Azure DevOps, Todoist, and local work logs | [README](weekly-status/README.md) | Requires ADO/Todoist MCP setup. |
+| `/weekly-status` | ✅ | ✅ | Generate weekly status from Azure DevOps, Todoist, WorkIQ candidate insights, and local work logs | [README](weekly-status/README.md) | Requires ADO/Todoist MCP setup; uses WorkIQ when available. |
 
 ## Installation
 

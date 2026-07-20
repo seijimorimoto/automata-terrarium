@@ -1,12 +1,12 @@
 ---
 name: weekly-status
-description: Generate a weekly status report from ADO, Todoist, and local work log
+description: Generate a weekly status report from ADO, Todoist, WorkIQ, and local work log
 argument-hint: "[--week 2026-W12] [--date 2026-03-16] [--from DATE --to DATE] [--output console|file|both] [--format detailed|manager|both]"
 ---
 
 # Weekly Status Report Generator
 
-Generates a comprehensive weekly status report by aggregating data from Azure DevOps, Todoist, and local work log entries.
+Generates a comprehensive weekly status report by aggregating data from Azure DevOps, Todoist, WorkIQ candidate insights, and local work log entries.
 
 ## Usage
 

@@ -113,7 +113,7 @@ skills\    - AI agent skills; shared or target-specific entrypoints
 | `/log` | ✅ | ✅ | Append timestamped work entries to the current week's log | [SKILL.md](skills/log/SKILL.md) | Uses agent-neutral `~\.agents\` work-status paths. |
 | `/quick-pr` | ✅ | ✅ | Create a branch, commit, push, open a GitHub PR, optionally merge, and clean up | [README](skills/quick-pr/README.md) | Requires GitHub CLI authentication. |
 | `/standards-check` | ✅ | ✅ | Discover project instructions and standards files, check the diff, and emit tiered JSON findings | [README](skills/standards-check/README.md) | Uses local git and helper scripts. |
-| `/weekly-status` | ✅ | ✅ | Generate weekly status from Azure DevOps, Todoist, and local work logs | [README](skills/weekly-status/README.md) | Requires ADO/Todoist MCP setup. |
+| `/weekly-status` | ✅ | ✅ | Generate weekly status from Azure DevOps, Todoist, WorkIQ candidate insights, and local work logs | [README](skills/weekly-status/README.md) | Requires ADO/Todoist MCP setup; uses WorkIQ when available. |
 
 </details>
 

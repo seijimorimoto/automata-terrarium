@@ -12,11 +12,7 @@ Generates a weekly status report by aggregating data from multiple sources: Azur
 
    Verify by checking that Todoist MCP tools are available in your session.
 
-3. **WorkIQ MCP server** — optional but recommended when available. The skill uses it to gather review-gated candidate insights from Microsoft 365 sources such as email, Teams, meetings, and files. No additional configuration key is required.
-
-   Verify by checking that WorkIQ MCP tools are available in your session.
-
-4. **Configuration file** — create `~\.agents\work-status-config.json`:
+3. **Configuration file** — create `~\.agents\work-status-config.json`:
 
    ```json
    {
@@ -29,6 +25,8 @@ Generates a weekly status report by aggregating data from multiple sources: Azur
      "todoistLabels": ["work"]
    }
    ```
+
+When WorkIQ MCP tools are available in the session, the skill also gathers review-gated candidate insights from Microsoft 365 sources such as email, Teams, meetings, and files. No additional configuration key is required.
 
 ## Installation
 

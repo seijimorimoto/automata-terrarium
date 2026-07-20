@@ -107,27 +107,45 @@ For each repo in `defaultRepos`:
 
 #### 3b. ADO Work Items
 
-**Step 1 — Fetch item IDs and basic fields:**
+**Step 1 — Fetch item IDs, basic fields, and links:**
 
 Use the available Azure DevOps MCP equivalent of `wit_my_work_items` to get work items assigned to the user. This returns IDs, titles, types, states, area paths, and `ChangedDate`.
-
-**Step 2 — Classify as active or stale:**
-
-- **Active This Week**: items with `ChangedDate` within the report date range (startDate to endDate, inclusive).
-- **Stale (No Recent Updates)**: assigned items whose `ChangedDate` falls outside the report date range.
 
 For each item, note:
 - **Title**, **Type**, **State**, **Area Path**
 - **ChangedDate**
 - **URL**: use `_links.html.href` from the tool response (the web UI link, **not** the `url` field which points to the REST API)
 
-**Step 3 — Fetch descriptions only for active items:**
+If the basic response does not include relationships, use the available Azure DevOps MCP equivalent of `wit_get_work_items_batch_by_ids` with relationship expansion in batches of **10 items at a time** to fetch:
+- **Parent and child work item links**
+- **Related work item links**
+- **PR, commit, and artifact links**
 
-For items classified as **Active This Week**, use the available Azure DevOps MCP equivalent of `wit_get_work_items_batch_by_ids` to fetch `System.Description` in batches of **10 items at a time** (to stay within tool response limits). Extract a brief summary of key details from the description.
+Fetch basic fields for linked parent and child items that are not already in the assigned-item set. Use them to build hierarchy and context, but do not treat an unassigned linked item as the user's work unless another weekly signal supports it.
 
-Do **not** fetch descriptions for stale items — they only need ID, title, and URL.
+**Step 2 — Classify work item signals internally:**
 
-> **Why batches of 10?** The `System.Description` field contains rich HTML that can be very large. Fetching too many items with descriptions in a single call can exceed tool response token limits, causing failures or requiring workarounds like Python parsing scripts.
+Classify items for data-fetching and synthesis only. Do **not** create final report inventory sections from these labels.
+
+- **Changed this week**: items whose `ChangedDate` falls within startDate–endDate (inclusive), have comments/discussion updates in the range, or have linked PR activity in the range.
+- **Follow-up candidate**: non-terminal assigned items whose `ChangedDate` falls outside the report date range and have no week-bounded comments or linked PR activity.
+- **Inactive terminal**: items in terminal/inactive states such as `Removed`, `Closed`, `Deleted`, `Done`, or `Completed`. Exclude these from follow-up/stale handling unless they changed during the report week and matter to the week's narrative.
+
+Treat the exact state comparison as case-insensitive. If a team's workflow uses additional terminal states, apply the same rule only when the state clearly means no further action is expected.
+
+**Step 3 — Fetch descriptions and comments for changed items:**
+
+For items classified as **Changed this week**, use the available Azure DevOps MCP equivalent of `wit_get_work_items_batch_by_ids` to fetch `System.Description` in batches of **10 items at a time**. Also fetch comments or discussion threads with the available Azure DevOps MCP equivalent for work item comments.
+
+When summarizing, emphasize week-bounded deltas:
+- Comments added during the report range
+- State, assignment, title, or description changes when available
+- PRs, commits, and linked artifacts created, updated, or completed during the report range
+- How this week's updates changed the outcome, risk, or next step
+
+Do not fetch large descriptions or comment histories for inactive terminal items unless they changed during the report range and are needed to explain the week's work.
+
+> **Why batches of 10?** The `System.Description` field and comments can contain rich HTML that can be very large. Fetching too many items with descriptions and comments in a single call can exceed tool response token limits, causing failures or requiring workarounds like Python parsing scripts.
 
 #### 3c. Local Work Log
 
@@ -157,7 +175,7 @@ Before synthesizing the final report, present all collected data to the user for
 
 Display a flat list of all items from every source, using prefixed identifiers for easy reference:
 - `P<n>` = PR (e.g., `P1`, `P2`)
-- `A<n>` = ADO work item — active this week only (e.g., `A1`, `A2`)
+- `A<n>` = ADO work item with week-bounded activity or relevant hierarchy context (e.g., `A1`, `A2`)
 - `T<n>` = Todoist completed task (e.g., `T1`, `T2`)
 - `W<n>` = Work log entry (e.g., `W1`, `W2`)
 
@@ -171,9 +189,9 @@ Format:
 [P3] PR #5045104: [ENST] Register Kiota serialization factories... — Completed
 [P4] PR #5038062: [NSCS] Configure MEO certificate and auth settings... — Completed
 
-**ADO Work Items (active this week):**
+**ADO Work Items:**
 [A1] #7114889: Register in 1P app a trusted subject name... (Task, Active)
-[A2] #7029123: Angel Seiji Morimoto Burgos - SCP (User Story, New)
+[A2] #7029123: Angel Seiji Morimoto Burgos - SCP (User Story, New; parent of A1)
 [A3] #6950056: [PROD] Sev 3: Major alert email not sent... (Bug, Active)
 
 **Todoist:**
@@ -189,30 +207,25 @@ Format:
 
 #### Part B — Show proposed grouping
 
-Propose feature-area groups by analyzing item titles, ADO area paths, Todoist project names, and work log content. Merge items that represent the same work across sources. Use the item IDs for reference:
+Propose work-stream groups using the ADO work item hierarchy as the primary structure. Attach related PRs, commits, Todoist tasks, and work log entries under the most specific matching work item. If a PR or task cannot be linked to an ADO item, group it by feature area as a fallback. Use the item IDs for reference:
 
 ```markdown
 ## Proposed Grouping
 
-**Group 1 — ENST / Notification Services Cloud:**
+**Group 1 — [A2] SCP 1P App Onboarding:**
+  [A2]
+  └─ [A1]+[P4]+[W2]+[W3] (linked work item, PR, and work log evidence)
+
+**Group 2 — ENST / Notification Services Cloud:**
   [P1]+[T1] (merged — same IKeyVaultReader DI fix)
   [P2]+[T2] (merged — same Kiota handler DI fix)
   [P3]
-
-**Group 2 — 1P App / MEO Authentication:**
-  [P4], [A1], [W2], [W3]
 
 **Group 3 — On Call & Issues:**
   [A3], [T3]
 
 **Ungrouped:**
   [W1] (standalone — ADO cleanup)
-
-**Active This Week** (auto-section, not editable):
-  [A1], [A2], [A3]
-
-**Stale** (auto-section, not editable):
-  (items with no recent updates)
 ```
 
 #### Part C — Confirmation loop
@@ -240,8 +253,21 @@ Only runs after the user confirms the grouping. Combine data using the **confirm
 #### Grouping and Deduplication
 
 - Use the confirmed groups from Step 4 as the feature-area sections
-- For merged items (e.g., `[P1]+[T1]`), combine into a single entry — use the PR as the primary item and incorporate any additional context from the Todoist task or work log entry
-- The **Active This Week** and **Stale** sections are auto-generated and not subject to user grouping
+- Prefer the ADO parent/child hierarchy as the report structure when a group contains ADO work items
+- For merged items (e.g., `[P1]+[T1]`), combine into a single outcome entry — use the ADO work item as primary when present, otherwise use the PR, and incorporate supporting context from Todoist tasks or work log entries
+- Keep active/stale/follow-up labels internal. Do **not** add **Active This Week** or **Stale** inventory sections to the final report.
+- When source signals conflict or are unclear, place the item in a concise **Needs Follow-up** entry only if it affects the coming week
+
+#### Evidence Model
+
+Before writing the report, build a compact evidence model for each confirmed group:
+- **Work stream / owning ADO item**: parent item, child items, state, and area path
+- **Weekly deltas**: comments, state changes, description/title changes, PR updates, Todoist completions, and work log entries within startDate–endDate
+- **Outcome**: the progress or decision implied by the deltas
+- **Evidence references**: ADO item links, PR links, Todoist links, and work log IDs
+- **Next step / risk**: only when the evidence supports one
+
+Use the evidence model to write outcome-oriented bullets. Avoid repeating the same work across ADO, PR, Todoist, and work-log sections.
 
 #### Hyperlinked References
 
@@ -255,25 +281,22 @@ Use web UI URLs from tool responses — **never** use the `url` field for ADO it
 ```markdown
 # Weekly Status — <weekLabel> (<startDate> – <endDate>)
 
-## <Feature Area / Project 1>
-- **[PR #123](url)**: <PR title> (<N> files changed) — <Completed|Active>
-  - **Summary:** <extracted from PR description body>
-  - **Impact:** <extracted from PR description body>
+## Highlights
+- <Most important outcome or decision from the week> ([#78901](url), [PR #123](url))
+
+## <ADO Work Stream / Feature Area 1>
 - **[#78901](url)**: <Work item title> (<Type>, <State>, <Area Path>)
-  - <brief summary from description/comments if available>
+  - **Progress this week:** <week-bounded summary from comments, description changes, PRs, Todoist, and work log>
+  - **Evidence:** [PR #123](url), [task title](todoist-url), W1
+  - **Next:** <next step, only if clear from evidence>
 
 ## <Feature Area / Project 2>
-- [Task title](todoist-url) (Todoist, <project name>)
-- <Work log entry> — Impact: <annotation>
+- **[PR #456](url)**: <PR title> (<N> files changed) — <Completed|Active>
+  - **Progress this week:** <outcome summary from the PR and related tasks>
+  - **Evidence:** [task title](todoist-url)
 
-## Active This Week
-- **[#78902](url)**: <Title> (<Type>, <State>) — updated <date>
-  - <brief summary from description/comments if available>
-
-## Stale (No Recent Updates)
-> These items are assigned to you but have not been updated during this period.
-- [#45001](url): <Title>
-- [#45002](url): <Title>
+## Needs Follow-up
+- <Only include unclear, blocked, or risk-bearing items that need attention next week; omit when none>
 ```
 
 #### Manager Format
@@ -297,6 +320,15 @@ Use web UI URLs from tool responses — **never** use the `url` field for ADO it
 - If `--format both` (default): produce both detailed and manager formats.
 - If `--format detailed`: produce only the detailed format.
 - If `--format manager`: produce only the manager format.
+
+#### Final Review Pass
+
+Before presenting or archiving the report, check:
+- Every main claim is grounded in week-bounded evidence.
+- Related ADO items, PRs, Todoist tasks, and work log entries are deduplicated into one outcome where possible.
+- PR-only items have been linked back to ADO work items when relationships or titles support it.
+- Terminal inactive ADO states are not described as stale or pending follow-up unless they changed during the report week.
+- The report does not contain raw **Active This Week** or **Stale** inventory sections.
 
 ### 6. Archive
 

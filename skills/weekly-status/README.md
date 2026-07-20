@@ -1,6 +1,6 @@
 # Weekly Status Skill
 
-Generates a weekly status report by aggregating data from multiple sources: Azure DevOps commits/PRs/work items, Todoist completed tasks, and local work log entries.
+Generates a weekly status report by aggregating data from multiple sources: Azure DevOps PRs/work items, Todoist completed tasks, and local work log entries.
 
 ## Prerequisites
 
@@ -92,8 +92,6 @@ The skill produces a markdown report grouped by ADO work stream when work item h
   - **Evidence:** ADO comment from 2026-03-18, [Review Q1 OKR draft](https://todoist.com/app/task/123456), work log entry.
   - **Next:** Validate the serialization fix candidate next week.
 
-## Needs Follow-up
-- (none)
 ```
 
 ### Example Output (Manager)

@@ -1,7 +1,7 @@
 ---
 name: weekly-status
 description: Generate a weekly status report from ADO, Todoist, WorkIQ, and local work log
-argument-hint: "[--week 2026-W12] [--date 2026-03-16] [--from DATE --to DATE] [--output console|file|both] [--format detailed|manager|both]"
+argument-hint: "[--week 2026-W12] [--date 2026-03-16] [--from DATE --to DATE] [--output console|file|both] [--format detailed|manager|both] [--ado-updates on|off] [--ado-update-mode skip|replace] [--no-confirm]"
 ---
 
 # Weekly Status Report Generator
@@ -17,6 +17,9 @@ Generates a comprehensive weekly status report by aggregating data from Azure De
 /weekly-status --from 2026-03-16 --to 2026-03-22
 /weekly-status --output console --format manager
 /weekly-status --output file --format detailed
+/weekly-status --ado-updates off
+/weekly-status --ado-update-mode replace
+/weekly-status --no-confirm --ado-updates on
 ```
 
 ## Parameters
@@ -32,8 +35,17 @@ Generates a comprehensive weekly status report by aggregating data from Azure De
   - `detailed` — full grouped report with rich detail.
   - `manager` — concise bullets for manager updates.
   - `both` — produce both formats. When output includes console, display both. When output includes file, archive the detailed version.
+- `--ado-updates` — Whether to prepare Feature-level ADO update comments. Values: `on`, `off` (default: `on`).
+  - `on` — render ADO update previews after the local report is generated and ask before posting in interactive runs.
+  - `off` — generate only the local report; do not render or post ADO update comments.
+- `--ado-update-mode` — How to handle an existing generated ADO update for the same work item and date range. Values: `skip`, `replace` (default: `skip`).
+  - `skip` — do not create a duplicate when a matching idempotency marker already exists.
+  - `replace` — update the existing generated comment when supported, or delete and repost when both operations are supported.
+- `--no-confirm` — Skip interactive grouping and posting prompts. ADO posting in non-interactive mode requires `--ado-updates on` to be explicitly present; a defaulted `--ado-updates on` is not enough.
 
 The three time range options (`--week`, `--date`, `--from`/`--to`) are **mutually exclusive**. If none is specified, the current ISO week is used.
+
+When parsing arguments, track whether `--ado-updates` was explicitly supplied. This distinguishes the convenient interactive default from intentional non-interactive posting.
 
 ## Instructions
 
@@ -142,6 +154,8 @@ When summarizing, emphasize week-bounded deltas:
 - State, assignment, title, or description changes when available
 - PRs, commits, and linked artifacts created, updated, or completed during the report range
 - How this week's updates changed the outcome, risk, or next step
+
+Ignore generated weekly-status comments as source evidence. Treat any ADO comment containing an idempotency marker that starts with `<!-- weekly-status:` as prior tool output; use those comments only for duplicate detection and replacement in Step 7.
 
 Do not fetch large descriptions or comment histories for inactive terminal items unless they changed during the report range and are needed to explain the week's work.
 
@@ -273,6 +287,8 @@ Prompt the user:
 
 **Repeat this cycle** until the user explicitly confirms the grouping is ready (e.g., "looks good", "ready", "go ahead").
 
+If `--no-confirm` is set, do not prompt. Use the proposed grouping as confirmed for report generation. This does not by itself authorize ADO update posting unless `--ado-updates on` was explicitly supplied.
+
 ### 5. Synthesize Report
 
 Only runs after the user confirms the grouping. Combine data using the **confirmed grouping**.
@@ -368,6 +384,7 @@ Before presenting or archiving the report, check:
 - Terminal inactive ADO states are not described as stale or pending follow-up unless they changed during the report week.
 - The report does not contain raw **Active This Week** or **Stale** inventory sections.
 - WorkIQ content is included only when confirmed in the review phase, and the archived report contains synthesized outcomes rather than raw email, Teams, or meeting text.
+- Generated weekly-status ADO comments are excluded from the evidence model so the report does not summarize its own previous output.
 
 ### 6. Archive
 
@@ -376,10 +393,73 @@ Write the report to `<statusRepoPath>/weekly-statuses/<startDate>_to_<endDate>.m
 - When `--output` is `file` or `both`: write the file. When archiving with `--format both`, archive the **detailed** version.
 - When `--output` is `console`: skip archiving entirely.
 
-### 7. Output
+### 7. ADO Feature Updates
+
+Run this step after the local report is synthesized and archived.
+
+#### Enablement and confirmation
+
+- If `--ado-updates off`: skip this step entirely.
+- If `--ado-updates on` (default) in an interactive run: render ADO update previews and ask before posting.
+- If `--no-confirm` is set and `--ado-updates` was omitted/defaulted: do not render or post ADO updates. State that non-interactive ADO posting requires explicit `--ado-updates on`.
+- If `--no-confirm --ado-updates on` is set: post without prompting, using `--ado-update-mode` for existing generated comments.
+
+#### Target selection
+
+Build ADO update comments from the same confirmed evidence model as the local report, but scope each comment to one parent Feature. If a group has no Feature parent and the confirmed grouping uses an Epic as the owning item, use that Epic. Skip groups that do not have a clear parent work item.
+
+For each target parent:
+- Include only child work with week-bounded evidence from the report range.
+- Use child items as the progress bullets and put the shared narrative on the parent.
+- Keep the comment concise and safe for ADO history; do not include raw WorkIQ, email, Teams, meeting, or Todoist content.
+- Prefer synthesized outcomes over evidence inventory. Work item and PR IDs may be referenced when useful.
+
+#### Comment template
+
+Use this structure for every generated ADO update comment:
+
+```markdown
+<!-- weekly-status:<startDate>_to_<endDate>:<target-work-item-id> -->
+## Weekly update (<startDate> to <endDate>)
+
+**TL;DR:** <one-sentence feature-level progress summary>
+
+**Progress this week:**
+- **#<child-id> <child title>:** <week-bounded progress, summarized at outcome level>
+
+**Why it matters:** <impact, decision unlocked, risk reduced, or clarity gained>
+
+**Next:** <next step / owner / open decision; omit this section if nothing actionable is known>
+```
+
+Do not include an empty `Next` section.
+
+#### Idempotency and posting
+
+Before posting, fetch comments for each target parent work item and search for the exact marker `<!-- weekly-status:<startDate>_to_<endDate>:<target-work-item-id> -->`.
+
+- `--ado-update-mode skip`:
+  - If a matching marker exists, skip that parent and report it as skipped.
+  - If no matching marker exists, create a new comment with the available ADO work item comment write tool.
+- `--ado-update-mode replace`:
+  - If one matching marker exists, update that generated comment when the available ADO tool supports edits.
+  - If edit is unavailable but delete and create are both supported, delete the existing generated comment and post the new body.
+  - If replacement is unsupported, skip that parent and report the unsupported replacement rather than creating a duplicate.
+  - If no matching marker exists, create a new comment.
+- If multiple matching generated comments exist on the same parent, do not post automatically. In interactive mode, ask the user how to proceed. In `--no-confirm` mode, skip that parent and report the conflict.
+
+In interactive mode, display each target parent, the planned action (`create`, `replace`, or `skip`), and the full comment body before asking:
+
+> **Post these ADO updates?**
+
+If the user declines, do not post any ADO updates; the local report remains generated and archived.
+
+### 8. Output
 
 - When `--output` is `console` or `both`: display the report(s) to the user. If `--format both`, display both detailed and manager formats (separated by a horizontal rule).
 - When `--output` is `file`: confirm the archive file path but do not display the report.
+- When ADO updates are enabled interactively, display ADO update previews separately from the local report, even when `--output file` suppresses report display.
+- After ADO posting, summarize created, replaced, skipped, and conflicted parent work item IDs.
 - Prompt: **"Any items have notable impact worth capturing? You can use `/log <note> --impact \"...\"` to annotate them."**
 
 ## Configuration Reference

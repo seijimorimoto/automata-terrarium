@@ -1,12 +1,12 @@
 # Weekly Status Skill
 
-Generates a weekly status report by aggregating data from multiple sources: Azure DevOps PRs/work items, Todoist completed tasks, WorkIQ candidate insights, and local work log entries.
+Generates a weekly status report by aggregating data from multiple sources: Azure DevOps PRs/work items, Todoist completed tasks, WorkIQ candidate insights, and local work log entries. It can also prepare Feature-level ADO update comments from the same evidence model after the local report is generated.
 
 ## Prerequisites
 
 1. **Azure DevOps MCP server** — must be configured and connected in your runtime.
 
-   Verify by checking that Azure DevOps MCP tools are available in your session.
+   Verify by checking that Azure DevOps MCP tools are available in your session. Posting ADO updates also requires access to the work item comment write tool.
 
 2. **Todoist MCP server** — must be configured and connected in your runtime.
 
@@ -51,7 +51,7 @@ cp -r skills/weekly-status <project-root>/.claude/skills/
 ## Usage
 
 ```
-/weekly-status                                          # Current week, display + archive
+/weekly-status                                          # Current week, display + archive, preview ADO updates
 /weekly-status --week 2026-W12                          # Specific ISO week
 /weekly-status --date 2026-03-16                        # Week containing this date
 /weekly-status --from 2026-03-16 --to 2026-03-22       # Custom date range (inclusive)
@@ -59,6 +59,9 @@ cp -r skills/weekly-status <project-root>/.claude/skills/
 /weekly-status --output file                            # Archive only, no console display
 /weekly-status --format manager                         # Concise bullets for manager
 /weekly-status --output console --format manager        # Display manager format only
+/weekly-status --ado-updates off                        # Local report only
+/weekly-status --ado-update-mode replace                # Replace prior generated weekly ADO comments after confirmation
+/weekly-status --no-confirm --ado-updates on            # Non-interactive report + explicitly authorized ADO posting
 ```
 
 ### Parameters
@@ -70,12 +73,17 @@ cp -r skills/weekly-status <project-root>/.claude/skills/
 | `--from` / `--to` | Arbitrary date range (inclusive both ends) | — |
 | `--output` | `console`, `file`, or `both` | `both` |
 | `--format` | `detailed`, `manager`, or `both` | `both` |
+| `--ado-updates` | `on` previews Feature-level ADO updates and asks before posting; `off` keeps the run local only. With `--no-confirm`, posting requires this flag to be explicitly set to `on` | `on` |
+| `--ado-update-mode` | `skip` avoids duplicate generated comments; `replace` updates the prior generated comment for the same work item and date range when supported | `skip` |
+| `--no-confirm` | Uses the proposed grouping and skips interactive prompts. Does not authorize defaulted ADO posting unless `--ado-updates on` is explicitly present | Off |
 
 Time range options (`--week`, `--date`, `--from`/`--to`) are mutually exclusive.
 
 ## Output
 
 The skill produces a markdown report grouped by ADO work stream when work item hierarchy is available, with PRs, Todoist tasks, WorkIQ candidate insights, and work log entries attached as supporting evidence after review. By default (`--output both`), it displays the report and archives it to `<statusRepoPath>\weekly-statuses\<startDate>_to_<endDate>.md`.
+
+The local report and ADO comments are intentionally not identical. The local report is the complete weekly archive; ADO comments are concise, Feature-scoped rollups derived from the same confirmed evidence model. ADO updates are enabled by default for interactive runs, but the skill shows previews and asks before posting. Non-interactive posting requires `--no-confirm --ado-updates on` so backfills do not accidentally post historical comments.
 
 ### Example Output (Detailed)
 
@@ -117,12 +125,29 @@ The skill produces a markdown report grouped by ADO work stream when work item h
 - (none)
 ```
 
+### Example ADO Feature Update Comment
+
+```markdown
+<!-- weekly-status:2026-03-16_to_2026-03-22:78901 -->
+## Weekly update (2026-03-16 to 2026-03-22)
+
+**TL;DR:** Improved auth middleware reliability by completing the token-refresh fix and clarifying the remaining validation path.
+
+**Progress this week:**
+- **#78911 Fix token expiry crash in auth middleware:** Added clock-skew handling and moved the fix toward resolution.
+- **#78912 Validate token refresh behavior:** Captured the next validation step for the candidate fix.
+
+**Why it matters:** Reduces the risk of token-expiry crashes and makes the remaining release validation explicit.
+
+**Next:** Validate the serialization fix candidate next week.
+```
+
 ## Data Sources
 
 | Source | MCP Tools Used | What It Captures |
 |--------|---------------|------------------|
 | ADO PRs | `mcp__ado__repo_list_pull_requests_by_repo_or_project` | PRs authored by you in configured repos, including completed and active weekly activity |
-| ADO Work Items | `mcp__ado__wit_my_work_items`, `mcp__ado__wit_get_work_items_batch_by_ids`, work item comment tools | Assigned items, hierarchy, linked PRs/artifacts, descriptions, and week-bounded comments |
+| ADO Work Items | `mcp__ado__wit_my_work_items`, `mcp__ado__wit_get_work_items_batch_by_ids`, work item comment tools | Assigned items, hierarchy, linked PRs/artifacts, descriptions, week-bounded comments, and confirmed Feature update comments |
 | Todoist | `mcp__todoist__find-projects`, `mcp__todoist__find-completed-tasks` | Completed tasks in your work project (recursive) |
 | WorkIQ | `mcp__workiq__ask` | Review-gated candidate insights from week-bounded email, Teams, meeting, and file activity |
 | Work Log | Local file read | Manual `/log` entries for the week |
@@ -138,3 +163,6 @@ The skill produces a markdown report grouped by ADO work stream when work item h
 | Missing work log entries | Use `/log` to add entries before generating the status |
 | Report not archived | Check that `--output` is `file` or `both` (default). `--output console` skips archiving |
 | Missing ADO comments or hierarchy | Confirm the available ADO MCP tools can fetch work item comments and expanded relations; if unavailable, the skill should continue with the fields it can fetch and call out the missing evidence |
+| ADO updates not posted with `--no-confirm` | Pass `--ado-updates on` explicitly. A defaulted `on` is treated as preview-only safety in non-interactive runs |
+| Duplicate generated ADO update already exists | Keep the default `--ado-update-mode skip` to avoid another comment, or rerun with `--ado-update-mode replace` to update the existing generated comment when supported |
+| Weekly report repeats a prior generated update | Generated comments include `<!-- weekly-status:... -->` markers and should be excluded from source evidence; confirm the comment history was fetched with markers intact |
